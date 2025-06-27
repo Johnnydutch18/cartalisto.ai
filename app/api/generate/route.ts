@@ -5,6 +5,8 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+console.log("✅ Loaded OpenAI key:", process.env.OPENAI_API_KEY ? "Found" : "Missing");
+
 export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
