@@ -67,3 +67,25 @@ export default function FixMyResume() {
           onClick={handleSubmit}
           disabled={loading}
           style={{
+            marginTop: "1rem",
+            padding: "0.75rem 1.5rem",
+            backgroundColor: "#0070f3",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer"
+          }}
+        >
+          {loading ? "Generando..." : "Mejorar con IA"}
+        </button>
+      </div>
+
+      {output && (
+        <div style={{ marginTop: "2rem", background: "#f9f9f9", padding: "1rem", borderRadius: "6px", whiteSpace: "pre-wrap" }}>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Versión Mejorada</h2>
+          <p>{output}</p>
+        </div>
+      )}
+    </main>
+  );
+}
