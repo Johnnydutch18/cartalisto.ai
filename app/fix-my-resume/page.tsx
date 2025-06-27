@@ -8,40 +8,28 @@ export default function FixMyResume() {
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
 
-async function handleSubmit() {
-  setLoading(true);
-  setOutput("");
+  async function handleSubmit() {
+    setLoading(true);
+    setOutput("");
 
-  const prompt = `Eres un experto en redacción de currículums para el mercado laboral de España. Tu tarea es mejorar el siguiente CV en cuanto a claridad, profesionalismo, gramática y presentación, manteniendo los datos esenciales. Utiliza un tono formal y profesional.\n\nEste es el CV original:\n${resume}\n\nTipo de empleo: ${jobType}`;
+    const prompt = `Eres un experto en redacción de currículums para el mercado laboral de España. Tu tarea es mejorar el siguiente CV en cuanto a claridad, profesionalismo, gramática y presentación, manteniendo los datos esenciales. Utiliza un tono formal y profesional.\n\nEste es el CV original:\n${resume}\n\nTipo de empleo: ${jobType}`;
 
-  try {
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
-    });
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
 
-    if (!response.ok) throw new Error("OpenAI API failed");
+      if (!response.ok) throw new Error("OpenAI API failed");
 
-    const data = await response.json();
-    setOutput(data.result);
-  } catch (error) {
-    setOutput("Ocurrió un error al generar el currículum. Inténtalo de nuevo más tarde.");
-    console.error("❌ Error calling API:", error);
-  }
+      const data = await response.json();
+      setOutput(data.result);
+    } catch (error) {
+      setOutput("Ocurrió un error al generar el currículum. Inténtalo de nuevo más tarde.");
+      console.error("❌ Error calling API:", error);
+    }
 
-  setLoading(false);
-}
-
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ prompt }),
-    });
-
-    const data = await response.json();
-    setOutput(data.result);
     setLoading(false);
   }
 
@@ -79,25 +67,3 @@ async function handleSubmit() {
           onClick={handleSubmit}
           disabled={loading}
           style={{
-            marginTop: "1rem",
-            padding: "0.75rem 1.5rem",
-            backgroundColor: "#0070f3",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer"
-          }}
-        >
-          {loading ? "Generando..." : "Mejorar con IA"}
-        </button>
-      </div>
-
-      {output && (
-        <div style={{ marginTop: "2rem", background: "#f9f9f9", padding: "1rem", borderRadius: "6px", whiteSpace: "pre-wrap" }}>
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Versión Mejorada</h2>
-          <p>{output}</p>
-        </div>
-      )}
-    </main>
-  );
-}
