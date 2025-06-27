@@ -1,10 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 
 export default function FixMyResume() {
   const [resume, setResume] = useState("");
@@ -32,43 +28,57 @@ export default function FixMyResume() {
   }
 
   return (
-    <main className="max-w-2xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Arregla Mi Currículum</h1>
-      <p className="text-gray-600">
+    <main style={{ maxWidth: "600px", margin: "2rem auto", padding: "1rem" }}>
+      <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>Arregla Mi Currículum</h1>
+      <p style={{ color: "#555" }}>
         Mejora tu CV para destacar en tus postulaciones laborales.
       </p>
 
-      <div className="space-y-4">
-        <Label htmlFor="resume">Pega aquí tu currículum actual:</Label>
-        <Textarea
+      <div style={{ marginTop: "1rem" }}>
+        <label htmlFor="resume"><strong>Currículum actual:</strong></label>
+        <textarea
           id="resume"
           rows={8}
           value={resume}
           onChange={(e) => setResume(e.target.value)}
           placeholder="Ejemplo: Experiencia laboral, educación, habilidades..."
+          style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
         />
 
-        <Label htmlFor="jobType">¿A qué tipo de empleo estás aplicando? (opcional)</Label>
-        <Textarea
+        <label htmlFor="jobType" style={{ marginTop: "1rem", display: "block" }}>
+          <strong>Tipo de empleo (opcional):</strong>
+        </label>
+        <textarea
           id="jobType"
           rows={2}
           value={jobType}
           onChange={(e) => setJobType(e.target.value)}
           placeholder="Ejemplo: Administrativo, Marketing, Atención al cliente..."
+          style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
         />
 
-        <Button onClick={handleSubmit} disabled={loading}>
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          style={{
+            marginTop: "1rem",
+            padding: "0.75rem 1.5rem",
+            backgroundColor: "#0070f3",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer"
+          }}
+        >
           {loading ? "Generando..." : "Mejorar con IA"}
-        </Button>
+        </button>
       </div>
 
       {output && (
-        <Card className="mt-6">
-          <CardContent className="whitespace-pre-wrap p-4">
-            <h2 className="text-xl font-semibold mb-2">Versión Mejorada</h2>
-            {output}
-          </CardContent>
-        </Card>
+        <div style={{ marginTop: "2rem", background: "#f9f9f9", padding: "1rem", borderRadius: "6px", whiteSpace: "pre-wrap" }}>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Versión Mejorada</h2>
+          <p>{output}</p>
+        </div>
       )}
     </main>
   );
