@@ -50,6 +50,9 @@ importers:
       next:
         specifier: 15.4.0-canary.47
         version: 15.4.0-canary.47(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      openai:
+        specifier: ^5.8.1
+        version: 5.8.1(zod@3.24.4)
       postcss:
         specifier: ^8.5.3
         version: 8.5.3
@@ -1801,6 +1804,18 @@ packages:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
     engines: {node: '>= 0.4'}
 
+  openai@5.8.1:
+    resolution: {integrity: sha512-+qp4vQjJs43pzMSb6quTYslOhVE0c0c7j4YMoEks83BnusG23UrsWn3Hey6/8mwYadY05KipLvbp+PTO4jxO9w==}
+    hasBin: true
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.23.8
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
+
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
@@ -3508,6 +3523,10 @@ snapshots:
   normalize-range@0.1.2: {}
 
   object-inspect@1.13.4: {}
+
+  openai@5.8.1(zod@3.24.4):
+    optionalDependencies:
+      zod: 3.24.4
 
   picocolors@1.1.1: {}
 
