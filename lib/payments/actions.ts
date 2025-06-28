@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { createCheckoutSession, createCustomerPortalSession } from './stripe';
 import { withTeam } from '@/lib/auth/middleware';
 
-export const checkoutAction = withTeam(async (formData, team) => {
+export const checkoutAction = withTeam(async (formData: FormData, team: { id: string; name: string }) => {
   const priceId = formData.get('priceId') as string;
   await createCheckoutSession({ team: team, priceId });
 });
