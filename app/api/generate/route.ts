@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { createServerClient } from '@supabase/ssr'; // Supabase helper
-import { cookies } from 'next/headers'; // Needed for Supabase auth
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -10,14 +10,19 @@ const openai = new OpenAI({
 export async function POST(req: Request) {
   const cookieStore = cookies();
 
-  // 1. Create Supabase client
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: () => cookieStore }
+    {
+      cookies: {
+        get: (name: string) => cookieStore.get(name),
+        getAll: () => cookieStore.getAll(),
+        set: () => {},
+        remove: () => {},
+      },
+    }
   );
 
-  // 2. Get authenticated user
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -28,7 +33,6 @@ export async function POST(req: Request) {
 
   const userId = user.id;
 
-  // 3. Count how many generations today
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
 
@@ -43,7 +47,7 @@ export async function POST(req: Request) {
   }
 
   const usageCount = generationsToday?.length ?? 0;
-  const isPaidUser = false; // You’ll need to integrate your billing logic here later
+  const isPaidUser = false;
 
   if (usageCount >= 1 && !isPaidUser) {
     return NextResponse.json(
@@ -52,7 +56,6 @@ export async function POST(req: Request) {
     );
   }
 
-  // 4. Parse prompt and check validity
   const { prompt, type = "cv" } = await req.json();
 
   if (!prompt) {
@@ -78,11 +81,10 @@ export async function POST(req: Request) {
 
     const result = chat.choices[0].message.content;
 
-    // 5. Log this generation
     await supabase.from("generations").insert([
       {
         user_id: userId,
-        type: type === "cover" ? "cover" : "cv", // default to cv
+        type: type === "cover" ? "cover" : "cv",
       },
     ]);
 
