@@ -140,9 +140,9 @@ Haz que la carta sea convincente, clara y adecuada para destacar al candidato.`;
           id="generated-letter"
           style={{
             marginTop: "2rem",
-            background: "#f9f9f9",
+            background: "#ffffff",
             padding: "1rem",
-            borderRadius: "6px",
+            borderRadius: "0px",
             whiteSpace: "pre-wrap"
           }}
         >
