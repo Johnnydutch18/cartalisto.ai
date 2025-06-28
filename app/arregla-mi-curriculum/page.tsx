@@ -46,9 +46,8 @@ Tipo de empleo (si se indicó): ${jobType}
     setLoading(false);
   }
 
-  async function downloadPDF() {
+    async function downloadPDF() {
     const element = document.getElementById("pdf-content");
-
     if (!element) return;
 
     const html2pdfModule = await import("html2pdf.js");
@@ -63,7 +62,7 @@ Tipo de empleo (si se indicó): ${jobType}
     };
 
     html2pdf().set(opt).from(element).save();
-  }
+  } // ✅ Make sure this closing curly brace exists!
 
   return (
     <main style={{ maxWidth: "600px", margin: "2rem auto", padding: "1rem" }}>
@@ -132,7 +131,7 @@ Tipo de empleo (si se indicó): ${jobType}
       <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Versión Mejorada</h2>
       <pre style={{ fontFamily: "inherit", margin: 0 }}lang="es">{output}</pre>
     </div>
-    <button
+        <button
       onClick={downloadPDF}
       style={{
         marginTop: "1rem",
@@ -147,4 +146,8 @@ Tipo de empleo (si se indicó): ${jobType}
       Descargar PDF
     </button>
   </div>
-)}
+)} 
+
+</main> 
+);       
+}         
