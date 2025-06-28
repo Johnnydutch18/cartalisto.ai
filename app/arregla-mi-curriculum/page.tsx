@@ -7,10 +7,12 @@ export default function FixMyResume() {
   const [jobType, setJobType] = useState("");
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState<null | "up" | "down">(null);
 
   async function handleSubmit() {
     setLoading(true);
     setOutput("");
+    setFeedback(null);
 
     const prompt = `Actúa como un experto redactor de currículums con experiencia en el mercado laboral español. Tu tarea es:
 
@@ -46,7 +48,7 @@ Tipo de empleo (si se indicó): ${jobType}
     setLoading(false);
   }
 
-    async function downloadPDF() {
+  async function downloadPDF() {
     const element = document.getElementById("pdf-content");
     if (!element) return;
 
@@ -62,10 +64,17 @@ Tipo de empleo (si se indicó): ${jobType}
     };
 
     html2pdf().set(opt).from(element).save();
-  } // ✅ Make sure this closing curly brace exists!
+  }
+
+  function resetForm() {
+    setResume("");
+    setJobType("");
+    setOutput("");
+    setFeedback(null);
+  }
 
   return (
-    <main style={{ maxWidth: "600px", margin: "2rem auto", padding: "1rem" }}>
+    <main style={{ maxWidth: "650px", margin: "2rem auto", padding: "1rem" }}>
       <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>Arregla Mi Currículum</h1>
       <p style={{ color: "#555" }}>
         Mejora tu CV para destacar en tus postulaciones laborales.
@@ -94,71 +103,122 @@ Tipo de empleo (si se indicó): ${jobType}
           style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
         />
 
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          style={{
-            marginTop: "1rem",
-            padding: "0.75rem 1.5rem",
-            backgroundColor: "#0070f3",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer"
-          }}
-        >
-          {loading ? "✍️ Mejorando tu CV con IA..." : "Mejorar con IA"}
-        </button>
+        <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            style={{
+              flex: 1,
+              padding: "0.75rem",
+              backgroundColor: "#0070f3",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer"
+            }}
+          >
+            {loading ? "✍️ Generando con IA..." : "Mejorar con IA"}
+          </button>
+          <button
+            onClick={resetForm}
+            style={{
+              padding: "0.75rem",
+              backgroundColor: "#999",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer"
+            }}
+          >
+            Limpiar
+          </button>
+        </div>
 
         {loading && (
           <p style={{ color: "#888", marginTop: "0.5rem" }}>
-            Esto puede tardar unos segundos... tu CV está siendo mejorado por IA.
+            ⏳ Esto puede tardar unos segundos... tu CV está siendo mejorado por IA.
           </p>
         )}
       </div>
 
       {output && (
-  <div style={{ marginTop: "2rem" }}>
-    <div
-      id="pdf-content"
-      style={{
-        background: "#ffffff",
-        padding: "1rem",
-        borderRadius: "0px",
-        whiteSpace: "pre-wrap"
-      }}
-    >
-      <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Versión Mejorada</h2>
-    <div
-  style={{
-    fontFamily: "inherit",
-    margin: 0,
-    whiteSpace: "pre-wrap",
-    wordWrap: "break-word"
-  }}
-  lang="es"
->
-  {output}
-</div>
+        <div style={{ marginTop: "2rem" }}>
+          <div
+            id="pdf-content"
+            style={{
+              background: "#ffffff",
+              padding: "1rem",
+              borderRadius: "6px",
+              whiteSpace: "pre-wrap",
+              border: "1px solid #ccc"
+            }}
+          >
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
+              ✅ Versión Mejorada
+            </h2>
+            <div
+              style={{
+                fontFamily: "inherit",
+                margin: 0,
+                whiteSpace: "pre-wrap",
+                wordWrap: "break-word"
+              }}
+              lang="es"
+            >
+              {output}
+            </div>
+          </div>
 
-    </div>
-        <button
-      onClick={downloadPDF}
-      style={{
-        marginTop: "1rem",
-        padding: "0.5rem 1rem",
-        backgroundColor: "#333",
-        color: "white",
-        border: "none",
-        borderRadius: "4px",
-        cursor: "pointer"
-      }}
-    >
-      Descargar PDF
-    </button>
-  </div>
-)} 
+          <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+            <button
+              onClick={downloadPDF}
+              style={{
+                flex: 1,
+                padding: "0.5rem",
+                backgroundColor: "#333",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              Descargar PDF
+            </button>
+            <button
+              onClick={handleSubmit}
+              style={{
+                flex: 1,
+                padding: "0.5rem",
+                backgroundColor: "#0070f3",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              Regenerar
+            </button>
+          </div>
 
-</main> 
-);       
-}         
+          <div style={{ marginTop: "1rem", textAlign: "center", color: "#666" }}>
+            <p>¿Te fue útil?</p>
+            <div style={{ fontSize: "1.5rem", cursor: "pointer" }}>
+              <span
+                onClick={() => setFeedback("up")}
+                style={{ marginRight: "1rem", opacity: feedback === "up" ? 1 : 0.4 }}
+              >
+                👍
+              </span>
+              <span
+                onClick={() => setFeedback("down")}
+                style={{ opacity: feedback === "down" ? 1 : 0.4 }}
+              >
+                👎
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
