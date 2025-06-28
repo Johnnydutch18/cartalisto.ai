@@ -18,42 +18,46 @@ export const metadata: Metadata = {
 };
 
 export default function Planes() {
-  const plans = [
-    {
-      name: "Gratis",
-      price: "0€",
-      features: [
-        "1 generación al día",
-        "GPT‑4o‑mini",
-        "Descarga en PDF",
-      ],
-      highlight: false,
-    },
-    {
-      name: "Estándar",
-      price: "6,95€/mes",
-      features: [
-        "Generaciones ilimitadas",
-        "GPT‑4o",
-        "PDF + Copiar",
-        "Selector de tono",
-      ],
-      highlight: true,
-    },
-    {
-      name: "Pro",
-      price: "8,95€/mes",
-      features: [
-        "GPT‑4.1 (alta calidad)",
-        "Inglés y Español",
-        "Todo de Estándar",
-        "Editor inline (próx.)",
-        "Historial de documentos (próx.)",
-        "Soporte prioritario",
-      ],
-      highlight: false,
-    },
-  ];
+ const plans = [
+  {
+    name: "Gratis",
+    price: "0€",
+    features: [
+      "1 generación al día",
+      "GPT‑4o‑mini",
+      "Descarga en PDF",
+    ],
+    highlight: false,
+    url: null,
+  },
+  {
+    name: "Estándar",
+    price: "6,95€/mes",
+    features: [
+      "Generaciones ilimitadas",
+      "GPT‑4o",
+      "PDF + Copiar",
+      "Selector de tono",
+    ],
+    highlight: true,
+    url: "https://buy.stripe.com/test_7sY28t9QN5mU8DH0a1frW00", 
+  },
+  {
+    name: "Pro",
+    price: "8,95€/mes",
+    features: [
+      "GPT‑4.1 (alta calidad)",
+      "Inglés y Español",
+      "Todo de Estándar",
+      "Editor inline (próx.)",
+      "Historial de documentos (próx.)",
+      "Soporte prioritario",
+    ],
+    highlight: false,
+    url: "https://buy.stripe.com/test_pro_plan_urlhttps://buy.stripe.com/test_28E9AVbYVdTq7zD2i9frW01", // Replace with your live Stripe Checkout link
+  },
+];
+
 
   return (
     <main className="min-h-screen px-4 py-12 bg-gray-50 text-gray-800">
@@ -77,7 +81,23 @@ export default function Planes() {
               ))}
             </ul>
             <button
-              className={`mt-auto px-4 py-2 rounded-xl font-semibold text-white ${plan.highlight ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600 hover:bg-gray-700"}`}
+{plan.url ? (
+  <a
+    href={plan.url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`mt-auto px-4 py-2 rounded-xl font-semibold text-white ${plan.highlight ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600 hover:bg-gray-700"}`}
+  >
+    Elegir plan
+  </a>
+) : (
+  <button
+    className="mt-auto px-4 py-2 rounded-xl font-semibold text-white bg-gray-400 cursor-not-allowed"
+    disabled
+  >
+    Próximamente
+  </button>
+)}
               disabled
             >
               Próximamente
