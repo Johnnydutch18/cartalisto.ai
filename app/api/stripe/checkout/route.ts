@@ -1,10 +1,7 @@
-// 🔒 Temporarily disabled to fix build errors
+// 🔧 Temporary placeholder to fix build error
 
-// import { eq } from 'drizzle-orm';
-// import { db } from '@/lib/db/drizzle';
-// import { users, teams, teamMembers } from '@/lib/db/schema';
-// import { setSession } from '@/lib/auth/session';
-
-// export async function POST(req: Request) {
-//   // original logic here
-// }
+export async function POST(req: Request) {
+  return new Response(JSON.stringify({ message: "Checkout placeholder" }), {
+    status: 200,
+  });
+}
