@@ -7,7 +7,9 @@ export default function FixMyResume() {
   const [jobType, setJobType] = useState("");
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<null | "up" | "down">(null);
+  const [feedback, setFeedback] = useState<null | "up" | "down" | "limit">(
+    null
+  );
 
   async function handleSubmit() {
     setLoading(true);
@@ -26,22 +28,27 @@ Conserva todos los datos importantes proporcionados por el usuario, pero expresa
 CV original:
 ${resume}
 
-Tipo de empleo (si se indicó): ${jobType}
-`;
+Tipo de empleo (si se indicó): ${jobType}`;
 
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, type: "cv" }),
       });
 
-      if (!response.ok) throw new Error("OpenAI API failed");
-
       const data = await response.json();
-      setOutput(data.result);
+
+      if (response.status === 429) {
+        setFeedback("limit");
+        setOutput(data.result);
+      } else {
+        setOutput(data.result);
+      }
     } catch (error) {
-      setOutput("Hubo un problema al generar tu currículum. Intenta de nuevo más tarde.");
+      setOutput(
+        "Hubo un problema al generar tu currículum. Intenta de nuevo más tarde."
+      );
       console.error("❌ Error calling API:", error);
     }
 
@@ -201,21 +208,34 @@ Tipo de empleo (si se indicó): ${jobType}
           </div>
 
           <div style={{ marginTop: "1rem", textAlign: "center", color: "#666" }}>
-            <p>¿Te fue útil?</p>
-            <div style={{ fontSize: "1.5rem", cursor: "pointer" }}>
-              <span
-                onClick={() => setFeedback("up")}
-                style={{ marginRight: "1rem", opacity: feedback === "up" ? 1 : 0.4 }}
-              >
-                👍
-              </span>
-              <span
-                onClick={() => setFeedback("down")}
-                style={{ opacity: feedback === "down" ? 1 : 0.4 }}
-              >
-                👎
-              </span>
-            </div>
+            {feedback === "limit" ? (
+              <>
+                <p><strong>⚠️ Has alcanzado el límite diario.</strong></p>
+                <p>
+                  <a href="/planes" style={{ color: "#0070f3", textDecoration: "underline" }}>
+                    Mejora tu plan aquí
+                  </a>
+                </p>
+              </>
+            ) : (
+              <>
+                <p>¿Te fue útil?</p>
+                <div style={{ fontSize: "1.5rem", cursor: "pointer" }}>
+                  <span
+                    onClick={() => setFeedback("up")}
+                    style={{ marginRight: "1rem", opacity: feedback === "up" ? 1 : 0.4 }}
+                  >
+                    👍
+                  </span>
+                  <span
+                    onClick={() => setFeedback("down")}
+                    style={{ opacity: feedback === "down" ? 1 : 0.4 }}
+                  >
+                    👎
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
