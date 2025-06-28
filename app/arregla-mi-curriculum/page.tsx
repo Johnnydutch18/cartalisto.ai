@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
+import FixMyResume from './ClientForm'; // direct import – no dynamic()
 
 export const metadata: Metadata = {
   title: 'Arregla tu CV con IA | CartaListo',
@@ -15,8 +15,6 @@ export const metadata: Metadata = {
     canonical: 'https://cartalisto.com/arregla-mi-curriculum',
   },
 };
-
-const FixMyResume = dynamic(() => import('./ClientForm'), { ssr: false });
 
 export default function Page() {
   return <FixMyResume />;
