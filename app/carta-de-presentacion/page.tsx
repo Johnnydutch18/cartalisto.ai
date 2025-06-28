@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import html2pdf from "html2pdf.js";
 
 export default function CoverLetterPage() {
   const [name, setName] = useState("");
@@ -49,7 +48,10 @@ Haz que la carta sea convincente, clara y adecuada para destacar al candidato.`;
     setLoading(false);
   }
 
-  function downloadPDF() {
+  async function downloadPDF() {
+    if (typeof window === "undefined") return;
+    const html2pdf = (await import("html2pdf.js")).default;
+
     const element = document.getElementById("generated-letter");
     if (!element) return;
 
