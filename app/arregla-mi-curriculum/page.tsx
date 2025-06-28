@@ -105,6 +105,7 @@ Tipo de empleo (si se indicó): ${jobType}
         <p>{output}</p>
       </div>
     )}
-  </main>
-);
+   </main>
+); 
 
+} 
