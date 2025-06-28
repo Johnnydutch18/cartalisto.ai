@@ -122,7 +122,7 @@ Tipo de empleo (si se indicó): ${jobType}
           id="improved-cv"
           style={{
             marginTop: "2rem",
-            background: background: "#ffffff",
+            background: "#ffffff",
             padding: "1rem",
             borderRadius: "0px",
             whiteSpace: "pre-wrap"
