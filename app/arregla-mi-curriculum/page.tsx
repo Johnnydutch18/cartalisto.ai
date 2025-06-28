@@ -1,10 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import dynamic from "next/dynamic";
-
-// Dynamically import html2pdf to avoid SSR issues
-const html2pdf = dynamic(() => import("html2pdf.js"), { ssr: false });
 
 export default function FixMyResume() {
   const [resume, setResume] = useState("");
@@ -50,9 +46,12 @@ Tipo de empleo (si se indicó): ${jobType}
     setLoading(false);
   }
 
-  function downloadPDF() {
+  async function downloadPDF() {
     const element = document.getElementById("improved-cv");
     if (!element) return;
+
+    const html2pdfModule = await import("html2pdf.js");
+    const html2pdf = html2pdfModule.default;
 
     const opt = {
       margin: 0.5,
