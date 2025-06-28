@@ -1,3 +1,11 @@
-// 🧹 Disabled old login logic temporarily until Supabase setup is complete
+import Stripe from "stripe";
 
-// You can safely delete this file later if we don’t rebuild login
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2023-10-16", // or your actual API version
+});
+
+// Optional: a mock handler for subscription changes (replace later)
+export async function handleSubscriptionChange(subscription: Stripe.Subscription) {
+  console.log("🔄 Subscription changed:", subscription.id);
+  // Example: Update your DB with new subscription info
+}

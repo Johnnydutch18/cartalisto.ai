@@ -1,26 +1,27 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from "@supabase/ssr";
+import { cookies as nextCookies } from "next/headers";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY!,
 });
 
 export async function POST(req: Request) {
-  const cookieStore = cookies();
+  const cookieStore = await nextCookies(); // ✅ Await here
+
+  const cookieAdapter = {
+    get: (name: string) => cookieStore.get(name)?.value ?? undefined,
+    getAll: () =>
+      cookieStore.getAll().map(({ name, value }) => ({ name, value })),
+    set: () => {},
+    remove: () => {},
+  } as const;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get: (name: string) => cookieStore.get(name),
-        getAll: () => cookieStore.getAll(),
-        set: () => {},
-        remove: () => {},
-      },
-    }
+    { cookies: cookieAdapter }
   );
 
   const {
@@ -32,7 +33,6 @@ export async function POST(req: Request) {
   }
 
   const userId = user.id;
-
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
 
@@ -68,8 +68,7 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "system",
-          content:
-            "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado.",
+          content: "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado.",
         },
         {
           role: "user",
