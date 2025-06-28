@@ -26,7 +26,7 @@ export default function FixMyResume() {
       const data = await response.json();
       setOutput(data.result);
     } catch (error) {
-      setOutput("Ocurrió un error al generar el currículum. Inténtalo de nuevo más tarde.");
+      setOutput("Hubo un problema al generar tu currículum. Intenta de nuevo más tarde.");
       console.error("❌ Error calling API:", error);
     }
 
@@ -35,13 +35,13 @@ export default function FixMyResume() {
 
   return (
     <main style={{ maxWidth: "600px", margin: "2rem auto", padding: "1rem" }}>
-      <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>Arregla Mi Currículum</h1>
+      <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>Mejora tu Currículum con IA</h1>
       <p style={{ color: "#555" }}>
-        Mejora tu CV para destacar en tus postulaciones laborales.
+        Optimiza tu CV automáticamente con inteligencia artificial para destacar entre los demás postulantes.
       </p>
 
       <div style={{ marginTop: "1rem" }}>
-        <label htmlFor="resume"><strong>Currículum actual:</strong></label>
+        <label htmlFor="resume"><strong>Pega aquí tu currículum:</strong></label>
         <textarea
           id="resume"
           rows={8}
@@ -52,14 +52,14 @@ export default function FixMyResume() {
         />
 
         <label htmlFor="jobType" style={{ marginTop: "1rem", display: "block" }}>
-          <strong>Tipo de empleo (opcional):</strong>
+          <strong>Sector o tipo de puesto (opcional):</strong>
         </label>
         <textarea
           id="jobType"
           rows={2}
           value={jobType}
           onChange={(e) => setJobType(e.target.value)}
-          placeholder="Ejemplo: Administrativo, Marketing, Atención al cliente..."
+          placeholder="Ejemplo: Administrativo, Ventas, Atención al cliente..."
           style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
         />
 
@@ -76,13 +76,13 @@ export default function FixMyResume() {
             cursor: "pointer"
           }}
         >
-          {loading ? "Generando..." : "Mejorar con IA"}
+          {loading ? "Generando versión mejorada…" : "Generar Versión Mejorada"}
         </button>
       </div>
 
       {output && (
         <div style={{ marginTop: "2rem", background: "#f9f9f9", padding: "1rem", borderRadius: "6px", whiteSpace: "pre-wrap" }}>
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Versión Mejorada</h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Resultado Mejorado</h2>
           <p>{output}</p>
         </div>
       )}
