@@ -9,7 +9,11 @@ export const checkoutAction = withTeam(async (formData: FormData, team: { id: st
   await createCheckoutSession(team.id, priceId, '/dashboard', '/pricing');
 });
 
-export const customerPortalAction = withTeam(async (_, team) => {
-  const portalSession = await createCustomerPortalSession(team);
-  redirect(portalSession.url);
-});
+export const customerPortalAction = withTeam(
+  async (_: FormData, team: { id: string; name: string }) => {
+    const returnUrl = '/dashboard'; // ✅ Adjust if needed
+    const portalSession = await createCustomerPortalSession(team.id, returnUrl);
+    redirect(portalSession.url);
+  }
+);
+
