@@ -1,11 +1,29 @@
-import Stripe from "stripe";
+import Stripe from 'stripe';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2023-10-16", // or your actual API version
+  apiVersion: '2023-10-16',
 });
 
-// Optional: a mock handler for subscription changes (replace later)
-export async function handleSubscriptionChange(subscription: Stripe.Subscription) {
-  console.log("🔄 Subscription changed:", subscription.id);
-  // Example: Update your DB with new subscription info
+// ✅ Create Checkout Session
+export async function createCheckoutSession(customerId: string, priceId: string, successUrl: string, cancelUrl: string) {
+  return await stripe.checkout.sessions.create({
+    mode: 'subscription',
+    customer: customerId,
+    line_items: [
+      {
+        price: priceId,
+        quantity: 1,
+      },
+    ],
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+  });
+}
+
+// ✅ Create Customer Portal Session
+export async function createCustomerPortalSession(customerId: string, returnUrl: string) {
+  return await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: returnUrl,
+  });
 }
