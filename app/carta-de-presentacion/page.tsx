@@ -10,34 +10,44 @@ export default function CoverLetterPage() {
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit() {
-    setLoading(true);
-    setOutput("");
+async function handleSubmit() {
+  setLoading(true);
+  setOutput("");
 
-    const prompt = `Redacta una carta de presentación en español para el mercado laboral de España.
-Debe ser personalizada, convincente, bien estructurada y adaptada al formato "${format}".
+  const styleInstruction =
+    format === "moderno"
+      ? "Utiliza un estilo moderno, con frases activas, lenguaje natural, y una estructura concisa. Evita frases muy formales o anticuadas."
+      : "Utiliza un estilo formal y tradicional, con cortesía, estructura clara y un tono profesional apropiado para empresas conservadoras.";
+
+  const prompt = `Redacta una carta de presentación en español para una solicitud de empleo en España.
+Debe estar personalizada para la siguiente persona:
 
 Nombre: ${name}
 Puesto deseado: ${position}
-Experiencia previa: ${experience}`;
+Experiencia previa: ${experience}
 
-    try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
+${styleInstruction}
 
-      if (!response.ok) throw new Error("OpenAI API failed");
-      const data = await response.json();
-      setOutput(data.result);
-    } catch (error) {
-      console.error("❌ Error:", error);
-      setOutput("Hubo un error al generar la carta. Inténtalo de nuevo.");
-    }
+Haz que la carta sea convincente, clara y adecuada para destacar al candidato.`;
 
-    setLoading(false);
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
+
+    if (!response.ok) throw new Error("OpenAI API failed");
+    const data = await response.json();
+    setOutput(data.result);
+  } catch (error) {
+    console.error("❌ Error:", error);
+    setOutput("Hubo un error al generar la carta. Inténtalo de nuevo.");
   }
+
+  setLoading(false);
+}
+
 
   return (
     <main style={{ maxWidth: "600px", margin: "2rem auto", padding: "1rem" }}>
@@ -98,8 +108,15 @@ Experiencia previa: ${experience}`;
             cursor: "pointer"
           }}
         >
-          {loading ? "Generando..." : "Generar Carta"}
+          {loading ? "✍️ Generando tu carta con IA..." : "Generar Carta"}
+
         </button>
+        {loading && (
+  <p style={{ color: "#888", marginTop: "0.5rem" }}>
+    Esto puede tardar unos segundos... tu carta está siendo escrita por IA.
+  </p>
+)}
+
       </div>
 
       {output && (
