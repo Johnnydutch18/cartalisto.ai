@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
+
+// Dynamically import html2pdf to avoid SSR issues
+const html2pdf = dynamic(() => import("html2pdf.js"), { ssr: false });
 
 export default function FixMyResume() {
   const [resume, setResume] = useState("");
@@ -12,7 +16,7 @@ export default function FixMyResume() {
     setLoading(true);
     setOutput("");
 
-const prompt = `Actúa como un experto redactor de currículums con experiencia en el mercado laboral español. Tu tarea es:
+    const prompt = `Actúa como un experto redactor de currículums con experiencia en el mercado laboral español. Tu tarea es:
 
 1. Corregir errores gramaticales y mejorar la redacción.
 2. Reorganizar la información para mayor claridad y fluidez.
@@ -46,66 +50,103 @@ Tipo de empleo (si se indicó): ${jobType}
     setLoading(false);
   }
 
+  function downloadPDF() {
+    const element = document.getElementById("improved-cv");
+    if (!element) return;
+
+    const opt = {
+      margin: 0.5,
+      filename: "curriculum-mejorado.pdf",
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+    };
+
+    html2pdf().set(opt).from(element).save();
+  }
+
   return (
-  <main style={{ maxWidth: "600px", margin: "2rem auto", padding: "1rem" }}>
-    <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>Arregla Mi Currículum</h1>
-    <p style={{ color: "#555" }}>
-      Mejora tu CV para destacar en tus postulaciones laborales.
-    </p>
+    <main style={{ maxWidth: "600px", margin: "2rem auto", padding: "1rem" }}>
+      <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>Arregla Mi Currículum</h1>
+      <p style={{ color: "#555" }}>
+        Mejora tu CV para destacar en tus postulaciones laborales.
+      </p>
 
-    <div style={{ marginTop: "1rem" }}>
-      <label htmlFor="resume"><strong>Currículum actual:</strong></label>
-      <textarea
-        id="resume"
-        rows={8}
-        value={resume}
-        onChange={(e) => setResume(e.target.value)}
-        placeholder="Ejemplo: Experiencia laboral, educación, habilidades..."
-        style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
-      />
+      <div style={{ marginTop: "1rem" }}>
+        <label htmlFor="resume"><strong>Currículum actual:</strong></label>
+        <textarea
+          id="resume"
+          rows={8}
+          value={resume}
+          onChange={(e) => setResume(e.target.value)}
+          placeholder="Ejemplo: Experiencia laboral, educación, habilidades..."
+          style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
+        />
 
-      <label htmlFor="jobType" style={{ marginTop: "1rem", display: "block" }}>
-        <strong>Tipo de empleo (opcional):</strong>
-      </label>
-      <textarea
-        id="jobType"
-        rows={2}
-        value={jobType}
-        onChange={(e) => setJobType(e.target.value)}
-        placeholder="Ejemplo: Administrativo, Marketing, Atención al cliente..."
-        style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
-      />
+        <label htmlFor="jobType" style={{ marginTop: "1rem", display: "block" }}>
+          <strong>Tipo de empleo (opcional):</strong>
+        </label>
+        <textarea
+          id="jobType"
+          rows={2}
+          value={jobType}
+          onChange={(e) => setJobType(e.target.value)}
+          placeholder="Ejemplo: Administrativo, Marketing, Atención al cliente..."
+          style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
+        />
 
-      <button
-        onClick={handleSubmit}
-        disabled={loading}
-        style={{
-          marginTop: "1rem",
-          padding: "0.75rem 1.5rem",
-          backgroundColor: "#0070f3",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer"
-        }}
-      >
-        {loading ? "✍️ Mejorando tu CV con IA..." : "Mejorar con IA"}
-      </button>
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          style={{
+            marginTop: "1rem",
+            padding: "0.75rem 1.5rem",
+            backgroundColor: "#0070f3",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer"
+          }}
+        >
+          {loading ? "✍️ Mejorando tu CV con IA..." : "Mejorar con IA"}
+        </button>
 
-      {loading && (
-        <p style={{ color: "#888", marginTop: "0.5rem" }}>
-          Esto puede tardar unos segundos... tu CV está siendo mejorado por IA.
-        </p>
-      )}
-    </div>
-
-    {output && (
-      <div style={{ marginTop: "2rem", background: "#f9f9f9", padding: "1rem", borderRadius: "6px", whiteSpace: "pre-wrap" }}>
-        <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Versión Mejorada</h2>
-        <p>{output}</p>
+        {loading && (
+          <p style={{ color: "#888", marginTop: "0.5rem" }}>
+            Esto puede tardar unos segundos... tu CV está siendo mejorado por IA.
+          </p>
+        )}
       </div>
-    )}
-   </main>
-); 
 
-} 
+      {output && (
+        <div
+          id="improved-cv"
+          style={{
+            marginTop: "2rem",
+            background: "#f9f9f9",
+            padding: "1rem",
+            borderRadius: "6px",
+            whiteSpace: "pre-wrap"
+          }}
+        >
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Versión Mejorada</h2>
+          <p>{output}</p>
+          <button
+            onClick={downloadPDF}
+            style={{
+              marginTop: "1rem",
+              padding: "0.5rem 1rem",
+              backgroundColor: "#333",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer"
+            }}
+          >
+            Descargar PDF
+          </button>
+        </div>
+      )}
+    </main>
+  );
+}
