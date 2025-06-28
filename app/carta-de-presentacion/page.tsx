@@ -1,21 +1,21 @@
 import type { Metadata } from 'next';
-import FixMyResume from './ClientForm';
+import CoverLetterForm from './ClientForm';
 
 export const metadata: Metadata = {
-  title: 'Arregla tu CV con IA | CartaListo',
-  description: 'Mejora tu currículum al instante con inteligencia artificial. Optimiza tu redacción, formato y presentación para destacar en España.',
+  title: 'Carta de Presentación con IA | CartaListo',
+  description: 'Genera cartas de presentación personalizadas y profesionales al instante con inteligencia artificial. Rápido, sencillo y en español.',
   openGraph: {
-    title: 'Arregla tu CV con IA | CartaListo',
-    description: 'Redacta un currículum profesional y optimizado para ATS en segundos. Totalmente en español.',
-    url: 'https://cartalisto.com/arregla-mi-curriculum',
+    title: 'Carta de Presentación con IA | CartaListo',
+    description: 'Redacta una carta de presentación que impresione a cualquier reclutador en segundos.',
+    url: 'https://cartalisto.com/carta-de-presentacion',
     images: ['/og-image.jpg'],
     type: 'website',
   },
   alternates: {
-    canonical: 'https://cartalisto.com/arregla-mi-curriculum',
+    canonical: 'https://cartalisto.com/carta-de-presentacion',
   },
 };
 
 export default function Page() {
-  return <FixMyResume />;
+  return <CoverLetterForm />;
 }

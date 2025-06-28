@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 
-export default function FixMyResume() {
-  const [resume, setResume] = useState('');
-  const [jobType, setJobType] = useState('');
+export default function CoverLetterForm() {
+  const [name, setName] = useState('');
+  const [experience, setExperience] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
   const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<null | 'up' | 'down'>(null);
@@ -14,20 +15,13 @@ export default function FixMyResume() {
     setOutput('');
     setFeedback(null);
 
-    const prompt = `Actúa como un experto redactor de currículums con experiencia en el mercado laboral español. Tu tarea es:
+    const prompt = `Eres un experto redactor de cartas de presentación para el mercado laboral español. Con la información siguiente, redacta una carta formal, concisa y profesional, dirigida a un reclutador, para acompañar una solicitud de empleo al puesto de "${jobTitle}". Utiliza un tono respetuoso, evita repetir el currículum, y enfócate en cómo el candidato puede aportar valor.
 
-1. Corregir errores gramaticales y mejorar la redacción.
-2. Reorganizar la información para mayor claridad y fluidez.
-3. Aplicar un formato profesional, claro y moderno.
-4. Incluir mejoras compatibles con sistemas ATS (palabras clave, estructura).
+Información:
+- Nombre: ${name}
+- Experiencia relevante: ${experience}
 
-Conserva todos los datos importantes proporcionados por el usuario, pero expresa las ideas con mayor impacto profesional.
-
-CV original:
-${resume}
-
-Tipo de empleo (si se indicó): ${jobType}
-`;
+Escribe la carta en español, estructurada correctamente, en un solo bloque de texto, sin encabezados ni firma final.`;
 
     try {
       const response = await fetch('/api/generate', {
@@ -40,7 +34,7 @@ Tipo de empleo (si se indicó): ${jobType}
       const data = await response.json();
       setOutput(data.result);
     } catch (error) {
-      setOutput('Hubo un problema al generar tu currículum. Intenta de nuevo más tarde.');
+      setOutput('Hubo un problema al generar tu carta. Intenta de nuevo más tarde.');
       console.error('❌ Error calling API:', error);
     }
 
@@ -56,7 +50,7 @@ Tipo de empleo (si se indicó): ${jobType}
 
     const opt = {
       margin: 0.5,
-      filename: 'curriculum-mejorado.pdf',
+      filename: 'carta-presentacion.pdf',
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
@@ -66,37 +60,43 @@ Tipo de empleo (si se indicó): ${jobType}
   }
 
   function resetForm() {
-    setResume('');
-    setJobType('');
+    setName('');
+    setExperience('');
+    setJobTitle('');
     setOutput('');
     setFeedback(null);
   }
 
   return (
     <main style={{ maxWidth: '650px', margin: '2rem auto', padding: '1rem' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Arregla Mi Currículum</h1>
-      <p style={{ color: '#555' }}>Mejora tu CV para destacar en tus postulaciones laborales.</p>
+      <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Carta de Presentación</h1>
+      <p style={{ color: '#555' }}>
+        Crea una carta profesional para acompañar tu solicitud de empleo.
+      </p>
 
       <div style={{ marginTop: '1rem' }}>
-        <label htmlFor="resume"><strong>Currículum actual:</strong></label>
-        <textarea
-          id="resume"
-          rows={8}
-          value={resume}
-          onChange={(e) => setResume(e.target.value)}
-          placeholder="Ejemplo: Experiencia laboral, educación, habilidades..."
-          style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }}
+        <label><strong>Nombre:</strong></label>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Tu nombre completo"
+          style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem', marginBottom: '1rem' }}
         />
 
-        <label htmlFor="jobType" style={{ marginTop: '1rem', display: 'block' }}>
-          <strong>Tipo de empleo (opcional):</strong>
-        </label>
+        <label><strong>Puesto deseado:</strong></label>
+        <input
+          value={jobTitle}
+          onChange={(e) => setJobTitle(e.target.value)}
+          placeholder="Ejemplo: Gerente de Marketing"
+          style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem', marginBottom: '1rem' }}
+        />
+
+        <label><strong>Tu experiencia relevante:</strong></label>
         <textarea
-          id="jobType"
-          rows={2}
-          value={jobType}
-          onChange={(e) => setJobType(e.target.value)}
-          placeholder="Ejemplo: Administrativo, Marketing, Atención al cliente..."
+          rows={4}
+          value={experience}
+          onChange={(e) => setExperience(e.target.value)}
+          placeholder="Ejemplo: 5 años liderando campañas digitales en España..."
           style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }}
         />
 
@@ -114,7 +114,7 @@ Tipo de empleo (si se indicó): ${jobType}
               cursor: 'pointer',
             }}
           >
-            {loading ? '✍️ Generando con IA...' : 'Mejorar con IA'}
+            {loading ? '✍️ Generando...' : 'Crear Carta'}
           </button>
           <button
             onClick={resetForm}
@@ -133,7 +133,7 @@ Tipo de empleo (si se indicó): ${jobType}
 
         {loading && (
           <p style={{ color: '#888', marginTop: '0.5rem' }}>
-            ⏳ Esto puede tardar unos segundos... tu CV está siendo mejorado por IA.
+            ⏳ Esto puede tardar unos segundos... generando carta con IA.
           </p>
         )}
       </div>
@@ -151,7 +151,7 @@ Tipo de empleo (si se indicó): ${jobType}
             }}
           >
             <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-              ✅ Versión Mejorada
+              ✅ Carta Generada
             </h2>
             <div
               style={{
