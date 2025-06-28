@@ -47,7 +47,8 @@ Tipo de empleo (si se indicó): ${jobType}
   }
 
   async function downloadPDF() {
-    const element = document.getElementById("improved-cv");
+    const element = document.getElementById("pdf-content");
+
     if (!element) return;
 
     const html2pdfModule = await import("html2pdf.js");
@@ -118,34 +119,32 @@ Tipo de empleo (si se indicó): ${jobType}
       </div>
 
       {output && (
-        <div
-          id="improved-cv"
-          style={{
-            marginTop: "2rem",
-            background: "#ffffff",
-            padding: "1rem",
-            borderRadius: "0px",
-            whiteSpace: "pre-wrap"
-          }}
-        >
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Versión Mejorada</h2>
-          <p>{output}</p>
-          <button
-            onClick={downloadPDF}
-            style={{
-              marginTop: "1rem",
-              padding: "0.5rem 1rem",
-              backgroundColor: "#333",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer"
-            }}
-          >
-            Descargar PDF
-          </button>
-        </div>
-      )}
-    </main>
-  );
-}
+  <div style={{ marginTop: "2rem" }}>
+    <div
+      id="pdf-content"
+      style={{
+        background: "#ffffff",
+        padding: "1rem",
+        borderRadius: "0px",
+        whiteSpace: "pre-wrap"
+      }}
+    >
+      <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Versión Mejorada</h2>
+      <pre style={{ fontFamily: "inherit", margin: 0 }}lang="es">{output}</pre>
+    </div>
+    <button
+      onClick={downloadPDF}
+      style={{
+        marginTop: "1rem",
+        padding: "0.5rem 1rem",
+        backgroundColor: "#333",
+        color: "white",
+        border: "none",
+        borderRadius: "4px",
+        cursor: "pointer"
+      }}
+    >
+      Descargar PDF
+    </button>
+  </div>
+)}
