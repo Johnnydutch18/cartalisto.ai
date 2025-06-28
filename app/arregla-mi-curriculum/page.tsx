@@ -12,7 +12,20 @@ export default function FixMyResume() {
     setLoading(true);
     setOutput("");
 
-    const prompt = `Eres un experto en redacción de currículums para el mercado laboral de España. Tu tarea es mejorar el siguiente CV en cuanto a claridad, profesionalismo, gramática y presentación, manteniendo los datos esenciales. Utiliza un tono formal y profesional.\n\nEste es el CV original:\n${resume}\n\nTipo de empleo: ${jobType}`;
+const prompt = `Actúa como un experto redactor de currículums con experiencia en el mercado laboral español. Tu tarea es:
+
+1. Corregir errores gramaticales y mejorar la redacción.
+2. Reorganizar la información para mayor claridad y fluidez.
+3. Aplicar un formato profesional, claro y moderno.
+4. Incluir mejoras compatibles con sistemas ATS (palabras clave, estructura).
+
+Conserva todos los datos importantes proporcionados por el usuario, pero expresa las ideas con mayor impacto profesional.
+
+CV original:
+${resume}
+
+Tipo de empleo (si se indicó): ${jobType}
+`;
 
     try {
       const response = await fetch("/api/generate", {
