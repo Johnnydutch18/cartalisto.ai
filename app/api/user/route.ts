@@ -1,6 +1,3 @@
-import { getUser } from '@/lib/db/queries';
+// 🧹 Disabled old login logic temporarily until Supabase setup is complete
 
-export async function GET() {
-  const user = await getUser();
-  return Response.json(user);
-}
+// You can safely delete this file later if we don’t rebuild login
