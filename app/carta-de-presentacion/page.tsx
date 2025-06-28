@@ -6,6 +6,7 @@ export default function CoverLetterPage() {
   const [name, setName] = useState("");
   const [position, setPosition] = useState("");
   const [experience, setExperience] = useState("");
+  const [format, setFormat] = useState("formal"); // ← new format toggle
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -13,14 +14,12 @@ export default function CoverLetterPage() {
     setLoading(true);
     setOutput("");
 
-    const prompt = `Redacta una carta de presentación formal y profesional para una solicitud de empleo en España. 
-Debe estar en español, personalizada para la siguiente persona:
+    const prompt = `Redacta una carta de presentación en español para el mercado laboral de España.
+Debe ser personalizada, convincente, bien estructurada y adaptada al formato "${format}".
 
 Nombre: ${name}
 Puesto deseado: ${position}
-Experiencia previa: ${experience}
-
-Haz que la carta sea convincente, bien estructurada y adecuada para destacar al candidato.`;
+Experiencia previa: ${experience}`;
 
     try {
       const response = await fetch("/api/generate", {
@@ -76,6 +75,16 @@ Haz que la carta sea convincente, bien estructurada y adecuada para destacar al 
           placeholder="Describe tu experiencia o habilidades relevantes..."
           style={{ width: "100%", padding: "0.5rem", marginBottom: "1rem" }}
         />
+
+        <label><strong>Formato de carta:</strong></label>
+        <select
+          value={format}
+          onChange={(e) => setFormat(e.target.value)}
+          style={{ width: "100%", padding: "0.5rem", marginBottom: "1rem" }}
+        >
+          <option value="formal">Formal / Tradicional</option>
+          <option value="moderno">Moderno / Actual</option>
+        </select>
 
         <button
           onClick={handleSubmit}
