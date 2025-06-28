@@ -9,10 +9,12 @@ export default function CoverLetterPage() {
   const [format, setFormat] = useState("formal");
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState<null | "up" | "down">(null);
 
   async function handleSubmit() {
     setLoading(true);
     setOutput("");
+    setFeedback(null);
 
     const styleInstruction =
       format === "moderno"
@@ -66,8 +68,17 @@ Haz que la carta sea convincente, clara y adecuada para destacar al candidato.`;
     html2pdf().set(opt).from(element).save();
   }
 
+  function resetForm() {
+    setName("");
+    setPosition("");
+    setExperience("");
+    setFormat("formal");
+    setOutput("");
+    setFeedback(null);
+  }
+
   return (
-    <main style={{ maxWidth: "600px", margin: "2rem auto", padding: "1rem" }}>
+    <main style={{ maxWidth: "650px", margin: "2rem auto", padding: "1rem" }}>
       <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>
         Generador de Cartas de Presentación
       </h1>
@@ -113,55 +124,118 @@ Haz que la carta sea convincente, clara y adecuada para destacar al candidato.`;
           <option value="moderno">Moderno / Actual</option>
         </select>
 
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          style={{
-            padding: "0.75rem 1.5rem",
-            backgroundColor: "#0070f3",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer"
-          }}
-        >
-          {loading ? "✍️ Generando tu carta con IA..." : "Generar Carta"}
-        </button>
+        <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            style={{
+              flex: 1,
+              padding: "0.75rem",
+              backgroundColor: "#0070f3",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer"
+            }}
+          >
+            {loading ? "✍️ Generando tu carta..." : "Generar Carta"}
+          </button>
+          <button
+            onClick={resetForm}
+            style={{
+              padding: "0.75rem",
+              backgroundColor: "#999",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer"
+            }}
+          >
+            Limpiar
+          </button>
+        </div>
 
         {loading && (
           <p style={{ color: "#888", marginTop: "0.5rem" }}>
-            Esto puede tardar unos segundos... tu carta está siendo escrita por IA.
+            ⏳ Esto puede tardar unos segundos... tu carta está siendo escrita por IA.
           </p>
         )}
       </div>
 
       {output && (
-        <div
-          id="generated-letter"
-          style={{
-            marginTop: "2rem",
-            background: "#ffffff",
-            padding: "1rem",
-            borderRadius: "0px",
-            whiteSpace: "pre-wrap"
-          }}
-        >
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Carta Generada</h2>
-          <p>{output}</p>
-          <button
-            onClick={downloadPDF}
+        <div style={{ marginTop: "2rem" }}>
+          <div
+            id="generated-letter"
             style={{
-              marginTop: "1rem",
-              padding: "0.5rem 1rem",
-              backgroundColor: "#333",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer"
+              background: "#ffffff",
+              padding: "1rem",
+              borderRadius: "6px",
+              whiteSpace: "pre-wrap",
+              border: "1px solid #ccc"
             }}
           >
-            Descargar PDF
-          </button>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
+              ✅ Carta Generada
+            </h2>
+            <div
+              style={{
+                fontFamily: "inherit",
+                whiteSpace: "pre-wrap",
+                wordWrap: "break-word"
+              }}
+            >
+              {output}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+            <button
+              onClick={downloadPDF}
+              style={{
+                flex: 1,
+                padding: "0.5rem",
+                backgroundColor: "#333",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              Descargar PDF
+            </button>
+            <button
+              onClick={handleSubmit}
+              style={{
+                flex: 1,
+                padding: "0.5rem",
+                backgroundColor: "#0070f3",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              Regenerar
+            </button>
+          </div>
+
+          <div style={{ marginTop: "1rem", textAlign: "center", color: "#666" }}>
+            <p>¿Te fue útil?</p>
+            <div style={{ fontSize: "1.5rem", cursor: "pointer" }}>
+              <span
+                onClick={() => setFeedback("up")}
+                style={{ marginRight: "1rem", opacity: feedback === "up" ? 1 : 0.4 }}
+              >
+                👍
+              </span>
+              <span
+                onClick={() => setFeedback("down")}
+                style={{ opacity: feedback === "down" ? 1 : 0.4 }}
+              >
+                👎
+              </span>
+            </div>
+          </div>
         </div>
       )}
     </main>
