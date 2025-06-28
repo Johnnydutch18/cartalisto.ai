@@ -1,3 +1,10 @@
-// 🧹 Disabled old login logic temporarily until Supabase setup is complete
+// 🔒 Temporarily disabled to fix build errors
 
-// You can safely delete this file later if we don’t rebuild login
+// import { eq } from 'drizzle-orm';
+// import { db } from '@/lib/db/drizzle';
+// import { users, teams, teamMembers } from '@/lib/db/schema';
+// import { setSession } from '@/lib/auth/session';
+
+// export async function POST(req: Request) {
+//   // original logic here
+// }
