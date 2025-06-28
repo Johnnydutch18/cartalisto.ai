@@ -47,58 +47,64 @@ Tipo de empleo (si se indicó): ${jobType}
   }
 
   return (
-    <main style={{ maxWidth: "600px", margin: "2rem auto", padding: "1rem" }}>
-      <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>Mejora tu Currículum con IA</h1>
-      <p style={{ color: "#555" }}>
-        Optimiza tu CV automáticamente con inteligencia artificial para destacar entre los demás postulantes.
-      </p>
+  <main style={{ maxWidth: "600px", margin: "2rem auto", padding: "1rem" }}>
+    <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>Arregla Mi Currículum</h1>
+    <p style={{ color: "#555" }}>
+      Mejora tu CV para destacar en tus postulaciones laborales.
+    </p>
 
-      <div style={{ marginTop: "1rem" }}>
-        <label htmlFor="resume"><strong>Pega aquí tu currículum:</strong></label>
-        <textarea
-          id="resume"
-          rows={8}
-          value={resume}
-          onChange={(e) => setResume(e.target.value)}
-          placeholder="Ejemplo: Experiencia laboral, educación, habilidades..."
-          style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
-        />
+    <div style={{ marginTop: "1rem" }}>
+      <label htmlFor="resume"><strong>Currículum actual:</strong></label>
+      <textarea
+        id="resume"
+        rows={8}
+        value={resume}
+        onChange={(e) => setResume(e.target.value)}
+        placeholder="Ejemplo: Experiencia laboral, educación, habilidades..."
+        style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
+      />
 
-        <label htmlFor="jobType" style={{ marginTop: "1rem", display: "block" }}>
-          <strong>Sector o tipo de puesto (opcional):</strong>
-        </label>
-        <textarea
-          id="jobType"
-          rows={2}
-          value={jobType}
-          onChange={(e) => setJobType(e.target.value)}
-          placeholder="Ejemplo: Administrativo, Ventas, Atención al cliente..."
-          style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
-        />
+      <label htmlFor="jobType" style={{ marginTop: "1rem", display: "block" }}>
+        <strong>Tipo de empleo (opcional):</strong>
+      </label>
+      <textarea
+        id="jobType"
+        rows={2}
+        value={jobType}
+        onChange={(e) => setJobType(e.target.value)}
+        placeholder="Ejemplo: Administrativo, Marketing, Atención al cliente..."
+        style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
+      />
 
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          style={{
-            marginTop: "1rem",
-            padding: "0.75rem 1.5rem",
-            backgroundColor: "#0070f3",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer"
-          }}
-        >
-          {loading ? "Generando versión mejorada…" : "Generar Versión Mejorada"}
-        </button>
-      </div>
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        style={{
+          marginTop: "1rem",
+          padding: "0.75rem 1.5rem",
+          backgroundColor: "#0070f3",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer"
+        }}
+      >
+        {loading ? "✍️ Mejorando tu CV con IA..." : "Mejorar con IA"}
+      </button>
 
-      {output && (
-        <div style={{ marginTop: "2rem", background: "#f9f9f9", padding: "1rem", borderRadius: "6px", whiteSpace: "pre-wrap" }}>
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Resultado Mejorado</h2>
-          <p>{output}</p>
-        </div>
+      {loading && (
+        <p style={{ color: "#888", marginTop: "0.5rem" }}>
+          Esto puede tardar unos segundos... tu CV está siendo mejorado por IA.
+        </p>
       )}
-    </main>
-  );
-}
+    </div>
+
+    {output && (
+      <div style={{ marginTop: "2rem", background: "#f9f9f9", padding: "1rem", borderRadius: "6px", whiteSpace: "pre-wrap" }}>
+        <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Versión Mejorada</h2>
+        <p>{output}</p>
+      </div>
+    )}
+  </main>
+);
+
