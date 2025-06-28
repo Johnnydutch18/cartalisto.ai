@@ -54,7 +54,7 @@ export default function Planes() {
       "Soporte prioritario",
     ],
     highlight: false,
-    url: "https://buy.stripe.com/test_pro_plan_urlhttps://buy.stripe.com/test_28E9AVbYVdTq7zD2i9frW01", // Replace with your live Stripe Checkout link
+    url: "https://buy.stripe.com/test_28E9AVbYVdTq7zD2i9frW01", // Replace with your live Stripe Checkout link
   },
 ];
 
