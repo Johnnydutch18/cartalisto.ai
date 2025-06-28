@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import FixMyResume from './ClientForm'; // direct import – no dynamic()
+import FixMyResume from './ClientForm';
 
 export const metadata: Metadata = {
   title: 'Arregla tu CV con IA | CartaListo',
@@ -19,3 +19,4 @@ export const metadata: Metadata = {
 export default function Page() {
   return <FixMyResume />;
 }
+
