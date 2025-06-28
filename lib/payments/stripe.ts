@@ -27,3 +27,9 @@ export async function createCustomerPortalSession(customerId: string, returnUrl:
     return_url: returnUrl,
   });
 }
+
+// ✅ Handle Subscription Change
+export async function handleSubscriptionChange(subscription: Stripe.Subscription) {
+  // TODO: Replace this with actual logic to update your database
+  console.log("📦 Subscription updated:", subscription.id);
+}
