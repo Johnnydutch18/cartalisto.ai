@@ -69,10 +69,10 @@ export default function Planes() {
             className={`relative rounded-xl border shadow-sm p-6 flex flex-col items-center ${plan.highlight ? "bg-blue-50 border-blue-500" : "bg-white"}`}
           >
             {plan.highlight && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-semibold shadow">
-                Recomendado
-              </div>
-            )}
+  <div className="pulse-glow absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-semibold shadow">
+    Recomendado
+  </div>
+)}
             <h2 className="text-2xl font-semibold mb-2">{plan.name}</h2>
             <p className="text-xl font-bold text-blue-600 mb-4">{plan.price}</p>
             <ul className="mb-6 space-y-2 text-center">
