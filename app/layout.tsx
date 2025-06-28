@@ -1,7 +1,6 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Manrope } from 'next/font/google';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
 import Link from 'next/link';
 
@@ -29,10 +28,6 @@ export default function RootLayout({
       <body className="min-h-[100dvh] bg-gray-50">
         <SWRConfig
           value={{
-            fallback: {
-              '/api/user': getUser(),
-              '/api/team': getTeamForUser()
-            }
           }}
         >
           {/* ✅ Header Nav */}
