@@ -1,6 +1,22 @@
-import Head from 'next/head';
 import Link from 'next/link';
 import { Sparkles, FileText, Download, ArrowRight } from 'lucide-react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'CartaListo | Optimiza tu CV y Carta de Presentación con IA',
+  description: 'Optimiza tu currículum y crea cartas personalizadas con IA en minutos. Herramientas en español para destacar en tus postulaciones.',
+  openGraph: {
+    title: 'CartaListo - Currículum y Cartas con IA',
+    description: 'Herramientas en español para mejorar tu CV y redactar cartas de presentación profesionales en segundos.',
+    url: 'https://cartalisto.com/',
+    images: ['/og-image.jpg'],
+    type: 'website',
+  },
+  alternates: {
+    canonical: 'https://cartalisto.com/',
+  },
+};
+
 
 export default function Home() {
   return (
