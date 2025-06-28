@@ -129,7 +129,18 @@ Tipo de empleo (si se indicó): ${jobType}
       }}
     >
       <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Versión Mejorada</h2>
-      <pre style={{ fontFamily: "inherit", margin: 0 }}lang="es">{output}</pre>
+    <div
+  style={{
+    fontFamily: "inherit",
+    margin: 0,
+    whiteSpace: "pre-wrap",
+    wordWrap: "break-word"
+  }}
+  lang="es"
+>
+  {output}
+</div>
+
     </div>
         <button
       onClick={downloadPDF}
