@@ -1,0 +1,7 @@
+// 🔧 Temporary placeholder to fix build error
+
+export async function GET(req: Request) {
+  return new Response(JSON.stringify({ message: "Team placeholder" }), {
+    status: 200,
+  });
+}
