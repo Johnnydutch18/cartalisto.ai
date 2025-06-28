@@ -80,8 +80,7 @@ export default function Planes() {
                 <li key={i} className="text-sm text-gray-700">✔️ {f}</li>
               ))}
             </ul>
-            <button
-{plan.url ? (
+            {plan.url ? (
   <a
     href={plan.url}
     target="_blank"
@@ -98,10 +97,7 @@ export default function Planes() {
     Próximamente
   </button>
 )}
-              disabled
-            >
-              Próximamente
-            </button>
+
           </div>
         ))}
       </div>
