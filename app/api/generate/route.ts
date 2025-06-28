@@ -8,12 +8,17 @@ const openai = new OpenAI({
 });
 
 export async function POST(req: Request) {
-  const cookieStore = await nextCookies(); // ✅ Await here
+  const cookieStore = await nextCookies(); // ✅ FIXED: await added here
 
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
-    getAll: () =>
-      cookieStore.getAll().map(({ name, value }) => ({ name, value })),
+    getAll: () => {
+      const all = [];
+      for (const { name, value } of cookieStore.getAll()) {
+        all.push({ name, value });
+      }
+      return all;
+    },
     set: () => {},
     remove: () => {},
   } as const;
@@ -88,8 +93,9 @@ export async function POST(req: Request) {
     ]);
 
     return NextResponse.json({ result });
-  } catch (error: any) {
-    console.error("❌ Error generating with OpenAI:", error.message || error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("❌ Error generating with OpenAI:", err.message || err);
     return NextResponse.json(
       { result: "❌ Error al generar. Inténtalo de nuevo más tarde." },
       { status: 500 }
