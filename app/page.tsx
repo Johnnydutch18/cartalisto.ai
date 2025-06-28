@@ -27,7 +27,10 @@ export default function Home() {
           Optimiza tu CV y Carta de Presentación con IA
         </h1>
         <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-          Usa nuestras herramientas gratuitas para mejorar tu currículum y crear cartas personalizadas en minutos. Rápido, sencillo y en español.
+          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+  Optimiza tu currículum y crea cartas personalizadas en minutos con inteligencia artificial. Fácil, rápido y en español.
+</p>
+
         </p>
         <div className="flex flex-col md:flex-row justify-center gap-4">
           <Link href="/arregla-mi-curriculum" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl flex items-center justify-center gap-2">
