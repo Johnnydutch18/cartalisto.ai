@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import FixMyResume from './ClientForm';
+import { requireSessionOrRedirect } from '@/lib/supabase/require-session';
 
 export const metadata: Metadata = {
   title: 'Arregla tu CV con IA | CartaListo',
@@ -16,7 +17,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
+export default async function Page() {
+  await requireSessionOrRedirect();
+
   return <FixMyResume />;
 }
-
