@@ -1,7 +1,7 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Manrope } from 'next/font/google';
-import { RootLayoutClient } from './_components/RootLayoutClient';
+import RootLayoutClient from './_components/RootLayoutClient';
 
 const manrope = Manrope({ subsets: ['latin'] });
 
