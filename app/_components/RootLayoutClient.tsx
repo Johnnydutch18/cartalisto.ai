@@ -1,31 +1,30 @@
+// ✅ Updated RootLayoutClient.tsx
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
-import { SupabaseProvider } from './SupabaseProvider'; // ✅ NEW import
+import { createBrowserClient } from '@supabase/ssr';
+
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function RootLayoutClient({ children }: { children: React.ReactNode }) {
-  return (
-    <SupabaseProvider>
-      <RootLayoutContent>{children}</RootLayoutContent>
-    </SupabaseProvider>
-  );
+  return <RootLayoutContent>{children}</RootLayoutContent>;
 }
 
 function RootLayoutContent({ children }: { children: React.ReactNode }) {
-  const user = useUser();
-  const supabase = useSupabaseClient();
   const router = useRouter();
-
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<any>(null); // You can replace 'any' with your user type later
 
   const handleLogout = async () => {
     setLoading(true);
     await supabase.auth.signOut();
     setLoading(false);
-    router.refresh(); // refresh UI
+    router.refresh();
   };
 
   return (

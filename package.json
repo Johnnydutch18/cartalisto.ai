@@ -11,8 +11,6 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@supabase/auth-helpers-nextjs": "^0.10.0",
-    "@supabase/auth-helpers-react": "^0.5.0",
     "@supabase/ssr": "^0.6.1",
     "@tailwindcss/postcss": "4.1.7",
     "@types/node": "^22.15.18",

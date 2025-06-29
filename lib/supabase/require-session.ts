@@ -3,17 +3,16 @@ import { cookies as nextCookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 
 export async function requireSessionOrRedirect() {
-  const cookieStore = nextCookies(); // ✅ DO NOT await — treat as sync here
+  const cookieStore = await nextCookies(); // ✅ Must await this in recent Next.js versions
 
+  // ✅ Adapter to match Supabase's expected format
   const cookieAdapter = {
-    get: (name: string) => cookieStore.get(name)?.value ?? undefined,
+    get: (name: string) => cookieStore.get(name)?.value,
     getAll: () =>
       cookieStore.getAll().map((c) => ({
         name: c.name,
         value: c.value,
       })),
-    set: () => {},
-    remove: () => {},
   };
 
   const supabase = createServerClient(
