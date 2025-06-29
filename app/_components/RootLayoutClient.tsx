@@ -4,8 +4,17 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { SupabaseProvider } from './SupabaseProvider'; // ✅ NEW import
 
 export default function RootLayoutClient({ children }: { children: React.ReactNode }) {
+  return (
+    <SupabaseProvider>
+      <RootLayoutContent>{children}</RootLayoutContent>
+    </SupabaseProvider>
+  );
+}
+
+function RootLayoutContent({ children }: { children: React.ReactNode }) {
   const user = useUser();
   const supabase = useSupabaseClient();
   const router = useRouter();
