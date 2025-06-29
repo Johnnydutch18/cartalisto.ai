@@ -18,7 +18,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  await requireSessionOrRedirect();
-
+  await requireSessionOrRedirect(); // 🔒 Redirects if not logged in
   return <CoverLetterForm />;
 }

@@ -1,12 +1,9 @@
-// lib/supabase/require-session.ts
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerComponentClient } from '@supabase/ssr';
 
 export async function requireSessionOrRedirect() {
-  const supabase = createServerComponentClient({
-    cookies,
-  });
+  const supabase = createServerComponentClient({ cookies });
 
   const {
     data: { session },
@@ -15,4 +12,6 @@ export async function requireSessionOrRedirect() {
   if (!session) {
     redirect('/login');
   }
+
+  return session;
 }
