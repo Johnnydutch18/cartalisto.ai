@@ -1,11 +1,10 @@
 import { redirect } from 'next/navigation';
-import { cookies as nextCookies } from 'next/headers';
+import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 
 export async function requireSessionOrRedirect() {
-  const cookieStore = nextCookies(); // ✅ this is synchronous
+  const cookieStore = await cookies(); // ✅ FIXED: wait for the Promise to resolve
 
-  // Adapter required by Supabase
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
     getAll: () =>
