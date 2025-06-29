@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
@@ -34,8 +34,8 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
 
             {!user ? (
               <>
-                <Link href="/login" className="hover:underline">Login</Link>
-                <Link href="/sign-up" className="hover:underline">Sign Up</Link>
+                <Link href="/login" className="hover:underline">Iniciar sesión</Link>
+                <Link href="/sign-up" className="hover:underline">Crear cuenta</Link>
               </>
             ) : (
               <button
@@ -43,7 +43,7 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
                 disabled={loading}
                 className="hover:underline text-red-600"
               >
-                {loading ? 'Logging out...' : 'Logout'}
+                {loading ? 'Cerrando sesión...' : 'Cerrar sesión'}
               </button>
             )}
           </div>
