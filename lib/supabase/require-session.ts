@@ -1,9 +1,15 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { createServerComponentClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 
 export async function requireSessionOrRedirect() {
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies, // ← Pass cookie utility, not a function
+    }
+  );
 
   const {
     data: { session },
