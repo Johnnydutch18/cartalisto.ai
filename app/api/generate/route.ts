@@ -8,7 +8,9 @@ const openai = new OpenAI({
 });
 
 export async function POST(req: Request) {
-  const cookieStore = await nextCookies(); // ✅ FIXED: await added here
+  console.log("✅ /api/generate route hit");
+
+  const cookieStore = await nextCookies();
 
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
@@ -31,7 +33,11 @@ export async function POST(req: Request) {
 
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
+
+  console.log("🧪 User:", user);
+  if (userError) console.error("❌ Supabase auth error:", userError);
 
   if (!user) {
     return NextResponse.json({ result: "No estás autenticado." }, { status: 401 });
@@ -43,7 +49,7 @@ export async function POST(req: Request) {
 
   const { data: generationsToday, error: countError } = await supabase
     .from("generations")
-    .select("*", { count: "exact" })
+    .select("*")
     .eq("user_id", userId)
     .gte("created_at", today.toISOString());
 
@@ -61,10 +67,21 @@ export async function POST(req: Request) {
     );
   }
 
-  const { prompt, type = "cv" } = await req.json();
+  let prompt: string;
+  let type: string;
 
-  if (!prompt) {
-    return NextResponse.json({ result: "No se proporcionó el prompt." }, { status: 400 });
+  try {
+    const body = await req.json();
+    console.log("📥 Body received:", body);
+    prompt = body.prompt;
+    type = body.type || "cv";
+
+    if (!prompt) {
+      return NextResponse.json({ result: "No se proporcionó el prompt." }, { status: 400 });
+    }
+  } catch (err) {
+    console.error("❌ Error parsing JSON body:", err);
+    return NextResponse.json({ result: "Error al procesar la solicitud." }, { status: 400 });
   }
 
   try {
@@ -84,13 +101,18 @@ export async function POST(req: Request) {
     });
 
     const result = chat.choices[0].message.content;
+    console.log("✅ OpenAI result received");
 
-    await supabase.from("generations").insert([
+    const { error: insertError } = await supabase.from("generations").insert([
       {
         user_id: userId,
         type: type === "cover" ? "cover" : "cv",
       },
     ]);
+
+    if (insertError) {
+      console.error("❌ Error logging generation to Supabase:", insertError);
+    }
 
     return NextResponse.json({ result });
   } catch (error: unknown) {
