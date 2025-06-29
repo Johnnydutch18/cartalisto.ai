@@ -12,21 +12,21 @@ export default function SignUpPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(false);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
       setError(error.message);
     } else {
-      router.push('/');
+      setSuccess(true);
+      setTimeout(() => router.push('/'), 2000); // redirect after success
     }
 
     setLoading(false);
@@ -42,7 +42,7 @@ export default function SignUpPage() {
 
         <input
           type="email"
-          placeholder="Correo electrónico"
+          placeholder="Email"
           className="w-full px-4 py-2 border rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -59,13 +59,18 @@ export default function SignUpPage() {
         />
 
         {error && <p className="text-sm text-red-600">{error}</p>}
+        {success && (
+          <p className="text-sm text-green-600">
+            ✅ Cuenta creada. Redirigiendo...
+          </p>
+        )}
 
         <button
           type="submit"
           disabled={loading}
           className="bg-orange-600 text-white px-4 py-2 rounded w-full"
         >
-          {loading ? 'Creando cuenta...' : 'Registrarse'}
+          {loading ? 'Creando cuenta...' : 'Crear cuenta'}
         </button>
       </form>
     </main>
