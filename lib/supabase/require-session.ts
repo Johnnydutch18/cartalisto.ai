@@ -1,15 +1,16 @@
 import { redirect } from 'next/navigation';
-import { cookies as nextCookies } from 'next/headers';
+import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 
 export async function requireSessionOrRedirect() {
-  const cookieStore = nextCookies(); // ⛔ This returns a ReadonlyRequestCookies, not what Supabase wants
+  const cookieStore = cookies(); // ✅ this is sync and returns ReadonlyRequestCookies
 
+  // Create cookie adapter expected by Supabase
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
     getAll: () => cookieStore.getAll().map((c) => ({ name: c.name, value: c.value })),
-    set: () => {},
-    remove: () => {},
+    set: () => {}, // No-op
+    remove: () => {}, // No-op
   };
 
   const supabase = createServerClient(
