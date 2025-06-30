@@ -11,6 +11,7 @@ export default function CoverLetterForm() {
   const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<null | 'up' | 'down'>(null);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const router = useRouter();
 
@@ -24,7 +25,8 @@ export default function CoverLetterForm() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      router.push('/login?next=/carta-de-presentacion');
+      setShowLoginPrompt(true);
+      setLoading(false);
       return;
     }
 
@@ -87,6 +89,7 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
         Crea una carta profesional para acompañar tu solicitud de empleo.
       </p>
 
+      {/* Form */}
       <div style={{ marginTop: '1rem' }}>
         <label><strong>Nombre:</strong></label>
         <input
@@ -143,13 +146,13 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
             Limpiar
           </button>
         </div>
-
-        {loading && (
-          <p style={{ color: '#888', marginTop: '0.5rem' }}>
-            ⏳ Esto puede tardar unos segundos... generando carta con IA.
-          </p>
-        )}
       </div>
+
+      {loading && (
+        <p style={{ color: '#888', marginTop: '0.5rem' }}>
+          ⏳ Esto puede tardar unos segundos... generando carta con IA.
+        </p>
+      )}
 
       {output && (
         <div style={{ marginTop: '2rem' }}>
@@ -226,6 +229,45 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
                 👎
               </span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 👇 Modal if not logged in */}
+      {showLoginPrompt && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+        }}>
+          <div style={{
+            background: 'white',
+            padding: '2rem',
+            borderRadius: '8px',
+            textAlign: 'center',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
+          }}>
+            <h2 style={{ marginBottom: '1rem' }}>🔐 Acceso necesario</h2>
+            <p style={{ marginBottom: '1.5rem' }}>
+              Por favor inicia sesión para continuar.
+            </p>
+            <button
+              onClick={() => router.push('/login')}
+              style={{
+                padding: '0.75rem 1.5rem',
+                backgroundColor: '#0070f3',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+              }}
+            >
+              Iniciar Sesión
+            </button>
           </div>
         </div>
       )}
