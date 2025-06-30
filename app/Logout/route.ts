@@ -2,8 +2,8 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies as nextCookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-export async function POST() {
-  const cookieStore = await nextCookies(); // ✅ Await this
+async function handleLogout() {
+  const cookieStore = await nextCookies();
 
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
@@ -26,3 +26,6 @@ export async function POST() {
 
   return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_SITE_URL));
 }
+
+export const GET = handleLogout;
+export const POST = handleLogout;
