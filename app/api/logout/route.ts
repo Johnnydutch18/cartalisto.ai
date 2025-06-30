@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies as nextCookies } from "next/headers";
-import type { CookieOptions } from "@supabase/ssr";
 
-export async function GET() {
-  const cookieStore = await nextCookies(); // ✅ Must await in App Router API route
+export async function POST(req: Request) {
+  const cookieStore = await nextCookies();
 
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value,
@@ -13,31 +12,27 @@ export async function GET() {
         name: cookie.name,
         value: cookie.value,
       })),
-    set: (name: string, value: string, options?: CookieOptions) => {
-      cookieStore.set({
-        name,
-        value,
-        ...options,
-      });
+    set: (name: string, value: string, options?: any) => {
+      cookieStore.set({ name, value, ...options });
     },
-    delete: (name: string, options?: CookieOptions) => {
-      cookieStore.set({
-        name,
-        value: "",
-        ...options,
-      });
+    delete: (name: string, options?: any) => {
+      cookieStore.set({ name, value: "", ...options });
     },
   };
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_ANON_KEY!,
-    {
-      cookies: cookieAdapter,
-    }
+    { cookies: cookieAdapter }
   );
 
-  await supabase.auth.signOut();
+  const { data: user } = await supabase.auth.getUser();
 
-  return NextResponse.redirect(new URL("/", process.env.NEXT_PUBLIC_SITE_URL!));
+  if (!user?.user) {
+    return NextResponse.json({ error: "No estás autenticado." }, { status: 401 });
+  }
+
+  // ✅ Your generation logic goes here
+
+  return NextResponse.json({ success: true, message: "Carta generada ✅" });
 }
