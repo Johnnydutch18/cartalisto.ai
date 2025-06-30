@@ -2,18 +2,20 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function CoverLetterForm() {
   const [name, setName] = useState('');
   const [experience, setExperience] = useState('');
   const [jobTitle, setJobTitle] = useState('');
+  const [tone, setTone] = useState('Formal');
   const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<null | 'up' | 'down'>(null);
   const [showPopup, setShowPopup] = useState(false);
 
   const router = useRouter();
+  const pathname = usePathname();
 
   async function handleSubmit() {
     setLoading(true);
@@ -30,7 +32,7 @@ export default function CoverLetterForm() {
       return;
     }
 
-    const prompt = `Eres un experto redactor de cartas de presentación para el mercado laboral español. Con la información siguiente, redacta una carta formal, concisa y profesional, dirigida a un reclutador, para acompañar una solicitud de empleo al puesto de "${jobTitle}". Utiliza un tono respetuoso, evita repetir el currículum, y enfócate en cómo el candidato puede aportar valor.
+    const prompt = `Eres un experto redactor de cartas de presentación para el mercado laboral español. Con la información siguiente, redacta una carta profesional, concisa y con tono ${tone}, dirigida a un reclutador, para acompañar una solicitud de empleo al puesto de "${jobTitle}". Evita repetir el currículum y enfócate en cómo el candidato puede aportar valor.
 
 Información:
 - Nombre: ${name}
@@ -45,7 +47,6 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
         body: JSON.stringify({ prompt }),
       });
 
-      if (!response.ok) throw new Error('OpenAI API failed');
       const data = await response.json();
       setOutput(data.result);
     } catch (error) {
@@ -78,6 +79,7 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
     setName('');
     setExperience('');
     setJobTitle('');
+    setTone('Formal');
     setOutput('');
     setFeedback(null);
   }
@@ -95,14 +97,7 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Tu nombre completo"
-          style={{
-            width: '100%',
-            padding: '0.5rem',
-            marginTop: '0.5rem',
-            marginBottom: '1rem',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-          }}
+          style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem', marginBottom: '1rem' }}
         />
 
         <label><strong>Puesto deseado:</strong></label>
@@ -110,14 +105,7 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
           value={jobTitle}
           onChange={(e) => setJobTitle(e.target.value)}
           placeholder="Ejemplo: Gerente de Marketing"
-          style={{
-            width: '100%',
-            padding: '0.5rem',
-            marginTop: '0.5rem',
-            marginBottom: '1rem',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-          }}
+          style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem' }}
         />
 
         <label><strong>Tu experiencia relevante:</strong></label>
@@ -126,14 +114,19 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
           value={experience}
           onChange={(e) => setExperience(e.target.value)}
           placeholder="Ejemplo: 5 años liderando campañas digitales en España..."
-          style={{
-            width: '100%',
-            padding: '0.5rem',
-            marginTop: '0.5rem',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-          }}
+          style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem' }}
         />
+
+        <label><strong>Tono preferido:</strong></label>
+        <select
+          value={tone}
+          onChange={(e) => setTone(e.target.value)}
+          style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem' }}
+        >
+          <option value="Formal">Formal</option>
+          <option value="Neutral">Neutral</option>
+          <option value="Casual">Casual</option>
+        </select>
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
           <button
@@ -269,7 +262,7 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
         >
           Por favor inicia sesión para continuar.
           <button
-            onClick={() => router.push('/login')}
+            onClick={() => router.push(`/login?next=${pathname}`)}
             style={{
               marginLeft: '1rem',
               backgroundColor: 'white',
@@ -281,6 +274,20 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
             }}
           >
             Iniciar sesión
+          </button>
+          <button
+            onClick={() => router.push(`/signup?next=${pathname}`)}
+            style={{
+              marginLeft: '0.5rem',
+              backgroundColor: '#ffffff',
+              color: '#f44336',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '0.25rem 0.75rem',
+              cursor: 'pointer',
+            }}
+          >
+            Crear cuenta
           </button>
         </div>
       )}
