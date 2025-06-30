@@ -1,17 +1,15 @@
+// app/api/logout/route.ts
 import { createServerClient } from '@supabase/ssr';
 import { cookies as nextCookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-async function handleLogout() {
+export async function GET() {
   const cookieStore = await nextCookies();
 
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
     getAll: () =>
-      cookieStore.getAll().map((cookie: { name: string; value: string }) => ({
-        name: cookie.name,
-        value: cookie.value,
-      })),
+      cookieStore.getAll().map(({ name, value }) => ({ name, value })),
     set: () => {},
     remove: () => {},
   } as const;
@@ -26,6 +24,3 @@ async function handleLogout() {
 
   return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_SITE_URL));
 }
-
-export const GET = handleLogout;
-export const POST = handleLogout;
