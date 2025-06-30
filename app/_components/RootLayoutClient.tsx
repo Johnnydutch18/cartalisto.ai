@@ -36,7 +36,7 @@ function RootLayoutContent({ children }: { children: React.ReactNode }) {
           </Link>
 
           <div className="flex gap-4 text-sm text-gray-700">
-            <Link href="/arregla-mi-curriculum" className="hover:underline">CV</Link>
+            <Link href="/arregla-mi-curriculum" className="hover:underline">Curriculum</Link>
             <Link href="/carta-de-presentacion" className="hover:underline">Carta</Link>
             <Link href="/planes" className="hover:underline font-semibold text-blue-600">Planes</Link>
 
