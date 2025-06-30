@@ -25,8 +25,8 @@ export default function CoverLetterForm() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      setLoading(false);
       setShowPopup(true);
+      setLoading(false);
       return;
     }
 
@@ -45,36 +45,18 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
         body: JSON.stringify({ prompt }),
       });
 
-      if (!response.ok) throw new Error('OpenAI API failed');
       const data = await response.json();
       setOutput(data.result);
     } catch (error) {
       setOutput('Hubo un problema al generar tu carta. Intenta de nuevo más tarde.');
-      console.error('❌ Error calling API:', error);
     }
 
     setLoading(false);
   }
 
-  async function downloadPDF() {
-    const element = document.getElementById('pdf-content');
-    if (!element) return;
-    const html2pdf = (await import('html2pdf.js')).default;
-    html2pdf().set({
-      margin: 0.5,
-      filename: 'carta-presentacion.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-    }).from(element).save();
-  }
-
-  function resetForm() {
-    setName('');
-    setExperience('');
-    setJobTitle('');
-    setOutput('');
-    setFeedback(null);
+  function handleRedirect(path: string) {
+    const returnTo = '/carta-de-presentacion';
+    router.push(`${path}?next=${encodeURIComponent(returnTo)}`);
   }
 
   return (
@@ -84,88 +66,28 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
 
       {/* Form Inputs */}
       <div style={{ marginTop: '1rem' }}>
-        <label><strong>Nombre:</strong></label>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre completo"
-          style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem', marginBottom: '1rem' }} />
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre completo" />
+        <input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="Puesto deseado" />
+        <textarea value={experience} onChange={(e) => setExperience(e.target.value)} placeholder="Tu experiencia relevante" />
 
-        <label><strong>Puesto deseado:</strong></label>
-        <input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="Ejemplo: Gerente de Marketing"
-          style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem', marginBottom: '1rem' }} />
-
-        <label><strong>Tu experiencia relevante:</strong></label>
-        <textarea rows={4} value={experience} onChange={(e) => setExperience(e.target.value)}
-          placeholder="Ejemplo: 5 años liderando campañas digitales en España..."
-          style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }} />
-
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-          <button onClick={handleSubmit} disabled={loading}
-            style={{ flex: 1, padding: '0.75rem', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-            {loading ? '✍️ Generando...' : 'Crear Carta'}
-          </button>
-          <button onClick={resetForm}
-            style={{ padding: '0.75rem', backgroundColor: '#999', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-            Limpiar
-          </button>
-        </div>
-
-        {loading && <p style={{ color: '#888', marginTop: '0.5rem' }}>⏳ Esto puede tardar unos segundos... generando carta con IA.</p>}
+        <button onClick={handleSubmit} disabled={loading}>
+          {loading ? '✍️ Generando...' : 'Crear Carta'}
+        </button>
+        <button onClick={() => { setName(''); setJobTitle(''); setExperience(''); setOutput(''); }}>
+          Limpiar
+        </button>
       </div>
 
       {/* Output */}
-      {output && (
-        <div style={{ marginTop: '2rem' }}>
-          <div id="pdf-content" style={{ background: '#fff', padding: '1rem', borderRadius: '6px', whiteSpace: 'pre-wrap', border: '1px solid #ccc' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>✅ Carta Generada</h2>
-            <div style={{ fontFamily: 'inherit', margin: 0, whiteSpace: 'pre-wrap', wordWrap: 'break-word' }} lang="es">
-              {output}
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-            <button onClick={downloadPDF}
-              style={{ flex: 1, padding: '0.5rem', backgroundColor: '#333', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              Descargar PDF
-            </button>
-            <button onClick={handleSubmit}
-              style={{ flex: 1, padding: '0.5rem', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              Regenerar
-            </button>
-          </div>
-          <div style={{ marginTop: '1rem', textAlign: 'center', color: '#666' }}>
-            <p>¿Te fue útil?</p>
-            <div style={{ fontSize: '1.5rem', cursor: 'pointer' }}>
-              <span onClick={() => setFeedback('up')} style={{ marginRight: '1rem', opacity: feedback === 'up' ? 1 : 0.4 }}>👍</span>
-              <span onClick={() => setFeedback('down')} style={{ opacity: feedback === 'down' ? 1 : 0.4 }}>👎</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {output && <div id="pdf-content">{output}</div>}
 
-      {/* Popup */}
+      {/* Login/Signup Popup */}
       {showPopup && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: '#f44336',
-          color: 'white',
-          padding: '1rem 2rem',
-          borderRadius: '6px',
-          zIndex: 1000,
-          boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
-          textAlign: 'center',
-          maxWidth: '90%',
-        }}>
-          <p style={{ marginBottom: '1rem' }}>Necesitas iniciar sesión o registrarte para continuar.</p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button onClick={() => router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname)}`)}
-              style={{ backgroundColor: 'white', color: '#f44336', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', cursor: 'pointer' }}>
-              Iniciar sesión
-            </button>
-            <button onClick={() => router.push(`/signup?redirectTo=${encodeURIComponent(window.location.pathname)}`)}
-              style={{ backgroundColor: 'white', color: '#f44336', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', cursor: 'pointer' }}>
-              Registrarse
-            </button>
+        <div style={{ background: '#fff', padding: '1rem', border: '1px solid #ccc', position: 'fixed', top: 50, left: '50%', transform: 'translateX(-50%)', zIndex: 9999 }}>
+          <p>🔒 Por favor inicia sesión o crea una cuenta para usar esta función.</p>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <button onClick={() => handleRedirect('/login')}>Iniciar sesión</button>
+            <button onClick={() => handleRedirect('/signup')}>Crear cuenta</button>
           </div>
         </div>
       )}
