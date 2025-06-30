@@ -42,14 +42,12 @@ export default async function Header() {
         {user ? (
           <>
             <span className="text-sm text-gray-700">👋 {user.email}</span>
-            <form action="/logout" method="POST">
-              <button
-                type="submit"
-                className="text-red-600 hover:underline text-sm"
-              >
-                Cerrar sesión
-              </button>
-            </form>
+            <a
+              href="/logout"
+              className="text-sm text-red-600 hover:underline"
+            >
+              Cerrar sesión
+            </a>
           </>
         ) : (
           <>
