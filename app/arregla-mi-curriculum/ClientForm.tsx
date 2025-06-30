@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createBrowserClient } from "@supabase/ssr";
+import { supabase } from '@/lib/supabase/client';
 import { useRouter } from "next/navigation";
 
 export default function FixMyResume() {
@@ -11,7 +11,6 @@ export default function FixMyResume() {
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<null | "up" | "down" | "limit">(null);
 
-  const supabase = createBrowserClient();
   const router = useRouter();
 
   async function handleSubmit() {
