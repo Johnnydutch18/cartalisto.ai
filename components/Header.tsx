@@ -1,4 +1,3 @@
-// components/Header.tsx
 import Link from 'next/link';
 import { createServerClient } from '@supabase/ssr';
 import { cookies as nextCookies } from 'next/headers';
@@ -43,7 +42,7 @@ export default async function Header() {
           <>
             <span className="text-sm text-gray-700">👋 {user.email}</span>
             <a
-              href="/logout"
+              href="/api/logout"
               className="text-sm text-red-600 hover:underline"
             >
               Cerrar sesión
