@@ -12,6 +12,7 @@ export async function POST(req: Request) {
 
   const cookieStore = await nextCookies();
 
+
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
     getAll: () => {
@@ -36,8 +37,8 @@ export async function POST(req: Request) {
     error: userError,
   } = await supabase.auth.getUser();
 
-  console.log("🧪 User:", user);
   if (userError) console.error("❌ Supabase auth error:", userError);
+  console.log("🧪 User:", user);
 
   if (!user) {
     return NextResponse.json({ result: "No estás autenticado." }, { status: 401 });
@@ -84,18 +85,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al procesar la solicitud." }, { status: 400 });
   }
 
+  const systemPrompt =
+    type === "cover"
+      ? "Eres un experto en cartas de presentación para el mercado laboral español. Responde solo con la carta generada."
+      : "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado.";
+
   try {
     const chat = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        {
-          role: "system",
-          content: "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt },
       ],
       temperature: 0.7,
     });
