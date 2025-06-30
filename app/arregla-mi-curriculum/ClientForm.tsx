@@ -1,22 +1,29 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 import { supabase } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 export default function FixMyResume() {
-  const [resume, setResume] = useState('');
-  const [jobType, setJobType] = useState('');
-  const [output, setOutput] = useState('');
+  const [resume, setResume] = useState("");
+  const [jobType, setJobType] = useState("");
+  const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<null | 'up' | 'down' | 'limit'>(null);
+  const [feedback, setFeedback] = useState<null | "up" | "down" | "limit">(null);
   const [showPopup, setShowPopup] = useState(false);
 
   const router = useRouter();
 
+  useEffect(() => {
+    if (showPopup) {
+      const timer = setTimeout(() => setShowPopup(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showPopup]);
+
   async function handleSubmit() {
     setLoading(true);
-    setOutput('');
+    setOutput("");
     setFeedback(null);
 
     const {
@@ -25,7 +32,6 @@ export default function FixMyResume() {
 
     if (!session) {
       setShowPopup(true);
-      setLoading(false);
       return;
     }
 
@@ -44,213 +50,57 @@ ${resume}
 Tipo de empleo (si se indicó): ${jobType}`;
 
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, type: 'cv' }),
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, type: "cv" }),
       });
 
       const data = await response.json();
 
       if (response.status === 429) {
-        setFeedback('limit');
+        setFeedback("limit");
         setOutput(data.result);
       } else {
         setOutput(data.result);
       }
     } catch (error) {
-      setOutput('Hubo un problema al generar tu currículum. Intenta de nuevo más tarde.');
-      console.error('❌ Error calling API:', error);
+      setOutput(
+        "Hubo un problema al generar tu currículum. Intenta de nuevo más tarde."
+      );
+      console.error("❌ Error calling API:", error);
     }
 
     setLoading(false);
   }
 
   async function downloadPDF() {
-    const element = document.getElementById('pdf-content');
+    const element = document.getElementById("pdf-content");
     if (!element) return;
 
-    const html2pdfModule = await import('html2pdf.js');
+    const html2pdfModule = await import("html2pdf.js");
     const html2pdf = html2pdfModule.default;
 
     const opt = {
       margin: 0.5,
-      filename: 'curriculum-mejorado.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
+      filename: "curriculum-mejorado.pdf",
+      image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
     };
 
     html2pdf().set(opt).from(element).save();
   }
 
   function resetForm() {
-    setResume('');
-    setJobType('');
-    setOutput('');
+    setResume("");
+    setJobType("");
+    setOutput("");
     setFeedback(null);
   }
 
   return (
-    <main style={{ maxWidth: '650px', margin: '2rem auto', padding: '1rem' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Arregla Mi Currículum</h1>
-      <p style={{ color: '#555' }}>
-        Mejora tu CV para destacar en tus postulaciones laborales.
-      </p>
-
-      <div style={{ marginTop: '1rem' }}>
-        <label htmlFor="resume"><strong>Currículum actual:</strong></label>
-        <textarea
-          id="resume"
-          rows={8}
-          value={resume}
-          onChange={(e) => setResume(e.target.value)}
-          placeholder="Ejemplo: Experiencia laboral, educación, habilidades..."
-          style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }}
-        />
-
-        <label htmlFor="jobType" style={{ marginTop: '1rem', display: 'block' }}>
-          <strong>Tipo de empleo (opcional):</strong>
-        </label>
-        <textarea
-          id="jobType"
-          rows={2}
-          value={jobType}
-          onChange={(e) => setJobType(e.target.value)}
-          placeholder="Ejemplo: Administrativo, Marketing, Atención al cliente..."
-          style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }}
-        />
-
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            style={{
-              flex: 1,
-              padding: '0.75rem',
-              backgroundColor: '#0070f3',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer'
-            }}
-          >
-            {loading ? '✍️ Generando con IA...' : 'Mejorar con IA'}
-          </button>
-          <button
-            onClick={resetForm}
-            style={{
-              padding: '0.75rem',
-              backgroundColor: '#999',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer'
-            }}
-          >
-            Limpiar
-          </button>
-        </div>
-
-        {loading && (
-          <p style={{ color: '#888', marginTop: '0.5rem' }}>
-            ⏳ Esto puede tardar unos segundos... tu CV está siendo mejorado por IA.
-          </p>
-        )}
-      </div>
-
-      {output && (
-        <div style={{ marginTop: '2rem' }}>
-          <div
-            id="pdf-content"
-            style={{
-              background: '#ffffff',
-              padding: '1rem',
-              borderRadius: '6px',
-              whiteSpace: 'pre-wrap',
-              border: '1px solid #ccc'
-            }}
-          >
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-              ✅ Versión Mejorada
-            </h2>
-            <div
-              style={{
-                fontFamily: 'inherit',
-                margin: 0,
-                whiteSpace: 'pre-wrap',
-                wordWrap: 'break-word'
-              }}
-              lang="es"
-            >
-              {output}
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-            <button
-              onClick={downloadPDF}
-              style={{
-                flex: 1,
-                padding: '0.5rem',
-                backgroundColor: '#333',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Descargar PDF
-            </button>
-            <button
-              onClick={handleSubmit}
-              style={{
-                flex: 1,
-                padding: '0.5rem',
-                backgroundColor: '#0070f3',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Regenerar
-            </button>
-          </div>
-
-          <div style={{ marginTop: '1rem', textAlign: 'center', color: '#666' }}>
-            {feedback === 'limit' ? (
-              <>
-                <p><strong>⚠️ Has alcanzado el límite diario.</strong></p>
-                <p>
-                  <a href="/planes" style={{ color: '#0070f3', textDecoration: 'underline' }}>
-                    Mejora tu plan aquí
-                  </a>
-                </p>
-              </>
-            ) : (
-              <>
-                <p>¿Te fue útil?</p>
-                <div style={{ fontSize: '1.5rem', cursor: 'pointer' }}>
-                  <span
-                    onClick={() => setFeedback('up')}
-                    style={{ marginRight: '1rem', opacity: feedback === 'up' ? 1 : 0.4 }}
-                  >
-                    👍
-                  </span>
-                  <span
-                    onClick={() => setFeedback('down')}
-                    style={{ opacity: feedback === 'down' ? 1 : 0.4 }}
-                  >
-                    👎
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
+    <main style={{ maxWidth: "650px", margin: "2rem auto", padding: "1rem" }}>
       {showPopup && (
         <div
           style={{
@@ -266,21 +116,199 @@ Tipo de empleo (si se indicó): ${jobType}`;
             boxShadow: '0px 2px 10px rgba(0,0,0,0.3)',
           }}
         >
-          Por favor inicia sesión para continuar.
+          Por favor inicia sesión o regístrate para continuar.
+          <div style={{ marginTop: '0.5rem', display: 'flex', gap: '1rem' }}>
+            <button
+              onClick={() => {
+                const currentPath = window.location.pathname;
+                router.push(`/login?redirectTo=${encodeURIComponent(currentPath)}`);
+              }}
+              style={{
+                backgroundColor: 'white',
+                color: '#f44336',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '0.25rem 0.75rem',
+                cursor: 'pointer',
+              }}
+            >
+              Iniciar sesión
+            </button>
+            <button
+              onClick={() => {
+                const currentPath = window.location.pathname;
+                router.push(`/signup?redirectTo=${encodeURIComponent(currentPath)}`);
+              }}
+              style={{
+                backgroundColor: 'white',
+                color: '#f44336',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '0.25rem 0.75rem',
+                cursor: 'pointer',
+              }}
+            >
+              Registrarse
+            </button>
+          </div>
+        </div>
+      )}
+
+      <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>Arregla Mi Currículum</h1>
+      <p style={{ color: "#555" }}>
+        Mejora tu CV para destacar en tus postulaciones laborales.
+      </p>
+
+      <div style={{ marginTop: "1rem" }}>
+        <label htmlFor="resume"><strong>Currículum actual:</strong></label>
+        <textarea
+          id="resume"
+          rows={8}
+          value={resume}
+          onChange={(e) => setResume(e.target.value)}
+          placeholder="Ejemplo: Experiencia laboral, educación, habilidades..."
+          style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
+        />
+
+        <label htmlFor="jobType" style={{ marginTop: "1rem", display: "block" }}>
+          <strong>Tipo de empleo (opcional):</strong>
+        </label>
+        <textarea
+          id="jobType"
+          rows={2}
+          value={jobType}
+          onChange={(e) => setJobType(e.target.value)}
+          placeholder="Ejemplo: Administrativo, Marketing, Atención al cliente..."
+          style={{ width: "100%", padding: "0.5rem", marginTop: "0.5rem" }}
+        />
+
+        <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
           <button
-            onClick={() => router.push('/login')}
+            onClick={handleSubmit}
+            disabled={loading}
             style={{
-              marginLeft: '1rem',
-              backgroundColor: 'white',
-              color: '#f44336',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '0.25rem 0.75rem',
-              cursor: 'pointer',
+              flex: 1,
+              padding: "0.75rem",
+              backgroundColor: "#0070f3",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer"
             }}
           >
-            Iniciar sesión
+            {loading ? "✍️ Generando con IA..." : "Mejorar con IA"}
           </button>
+          <button
+            onClick={resetForm}
+            style={{
+              padding: "0.75rem",
+              backgroundColor: "#999",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer"
+            }}
+          >
+            Limpiar
+          </button>
+        </div>
+
+        {loading && (
+          <p style={{ color: "#888", marginTop: "0.5rem" }}>
+            ⏳ Esto puede tardar unos segundos... tu CV está siendo mejorado por IA.
+          </p>
+        )}
+      </div>
+
+      {output && (
+        <div style={{ marginTop: "2rem" }}>
+          <div
+            id="pdf-content"
+            style={{
+              background: "#ffffff",
+              padding: "1rem",
+              borderRadius: "6px",
+              whiteSpace: "pre-wrap",
+              border: "1px solid #ccc"
+            }}
+          >
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
+              ✅ Versión Mejorada
+            </h2>
+            <div
+              style={{
+                fontFamily: "inherit",
+                margin: 0,
+                whiteSpace: "pre-wrap",
+                wordWrap: "break-word"
+              }}
+              lang="es"
+            >
+              {output}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+            <button
+              onClick={downloadPDF}
+              style={{
+                flex: 1,
+                padding: "0.5rem",
+                backgroundColor: "#333",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              Descargar PDF
+            </button>
+            <button
+              onClick={handleSubmit}
+              style={{
+                flex: 1,
+                padding: "0.5rem",
+                backgroundColor: "#0070f3",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              Regenerar
+            </button>
+          </div>
+
+          <div style={{ marginTop: "1rem", textAlign: "center", color: "#666" }}>
+            {feedback === "limit" ? (
+              <>
+                <p><strong>⚠️ Has alcanzado el límite diario.</strong></p>
+                <p>
+                  <a href="/planes" style={{ color: "#0070f3", textDecoration: "underline" }}>
+                    Mejora tu plan aquí
+                  </a>
+                </p>
+              </>
+            ) : (
+              <>
+                <p>¿Te fue útil?</p>
+                <div style={{ fontSize: "1.5rem", cursor: "pointer" }}>
+                  <span
+                    onClick={() => setFeedback("up")}
+                    style={{ marginRight: "1rem", opacity: feedback === "up" ? 1 : 0.4 }}
+                  >
+                    👍
+                  </span>
+                  <span
+                    onClick={() => setFeedback("down")}
+                    style={{ opacity: feedback === "down" ? 1 : 0.4 }}
+                  >
+                    👎
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </main>

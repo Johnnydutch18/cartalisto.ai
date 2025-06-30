@@ -247,21 +247,37 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
             boxShadow: '0px 2px 10px rgba(0,0,0,0.3)',
           }}
         >
-          Por favor inicia sesión para continuar.
-          <button
-            onClick={() => router.push('/login')}
-            style={{
-              marginLeft: '1rem',
-              backgroundColor: 'white',
-              color: '#f44336',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '0.25rem 0.75rem',
-              cursor: 'pointer',
-            }}
-          >
-            Iniciar sesión
-          </button>
+          <div style={{ marginBottom: '0.5rem' }}>
+            Por favor inicia sesión o regístrate para continuar.
+          </div>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <button
+              onClick={() => router.push(`/login?redirectTo=/carta-de-presentacion`)}
+              style={{
+                backgroundColor: 'white',
+                color: '#f44336',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '0.25rem 0.75rem',
+                cursor: 'pointer',
+              }}
+            >
+              Iniciar sesión
+            </button>
+            <button
+              onClick={() => router.push(`/signup?redirectTo=/carta-de-presentacion`)}
+              style={{
+                backgroundColor: 'white',
+                color: '#f44336',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '0.25rem 0.75rem',
+                cursor: 'pointer',
+              }}
+            >
+              Registrarse
+            </button>
+          </div>
         </div>
       )}
     </main>
