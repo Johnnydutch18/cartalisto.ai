@@ -1,26 +1,17 @@
 // app/api/logout/route.ts
-import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies as nextCookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const cookieStore = await nextCookies(); // ✅ await added here
-
-  const cookieAdapter = {
-    get: (name: string) => cookieStore.get(name)?.value ?? undefined,
-    getAll: () =>
-      cookieStore.getAll().map((cookie: any) => ({
-        name: cookie.name,
-        value: cookie.value,
-      })),
-    set: () => {},
-    remove: () => {},
-  } as const;
+  const cookieStore = await nextCookies(); // ✅ await it!
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: cookieAdapter }
+    {
+      cookies: cookieStore, // ✅ pass raw cookies, NOT a function
+    }
   );
 
   await supabase.auth.signOut();
