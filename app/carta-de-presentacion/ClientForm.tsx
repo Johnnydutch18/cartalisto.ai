@@ -24,7 +24,7 @@ export default function CoverLetterForm() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      router.push('/login');
+      router.push('/login?next=/carta-de-presentacion');
       return;
     }
 

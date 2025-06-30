@@ -19,5 +19,6 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <CoverLetterForm />; // 🔓 Page is publicly viewable
+  // ✅ This page is publicly viewable — do NOT block with requireSessionOrRedirect
+  return <CoverLetterForm />;
 }

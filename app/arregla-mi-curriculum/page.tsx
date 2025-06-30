@@ -19,5 +19,6 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <FixMyResume />; // 🔓 Now publicly accessible
+  // ✅ Public page — access to AI form preview before requiring login
+  return <FixMyResume />;
 }
