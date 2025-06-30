@@ -1,32 +1,28 @@
+'use client';
+
 import Link from 'next/link';
-import { createServerClient } from '@supabase/ssr';
-import { cookies as nextCookies } from 'next/headers';
+import { useEffect, useState } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
 
-export default async function Header() {
-  const cookieStore = await nextCookies();
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-  const cookieAdapter = {
-    get: (name: string) => cookieStore.get(name)?.value ?? undefined,
-    getAll: () =>
-      cookieStore.getAll().map((cookie) => ({
-        name: cookie.name,
-        value: cookie.value,
-      })),
-    set: () => {},
-    remove: () => {},
-  } as const;
+export default function Header() {
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: cookieAdapter }
-  );
+  useEffect(() => {
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+      setUserEmail(session?.user?.email ?? null);
+    };
 
-  const user = session?.user;
+    getSession();
+  }, []);
 
   return (
     <header className="flex justify-between items-center px-6 py-4 border-b bg-white">
@@ -38,9 +34,9 @@ export default async function Header() {
         <Link href="/arregla-mi-curriculum">Currículum</Link>
         <Link href="/carta-de-presentacion">Carta</Link>
 
-        {user ? (
+        {userEmail ? (
           <>
-            <span className="text-sm text-gray-700">👋 {user.email}</span>
+            <span className="text-sm text-gray-700">👋 {userEmail}</span>
             <a
               href="/api/logout"
               className="text-sm text-red-600 hover:underline"
