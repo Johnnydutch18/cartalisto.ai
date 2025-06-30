@@ -1,9 +1,10 @@
+// app/api/logout/route.ts
+import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies as nextCookies } from 'next/headers';
-import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const cookieStore = await nextCookies(); // ✅ Await this
+  const cookieStore = await nextCookies(); // ✅ await added here
 
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
