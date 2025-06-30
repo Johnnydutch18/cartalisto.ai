@@ -1,20 +1,32 @@
 "use client";
 
 import { useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
+import { useRouter } from "next/navigation";
 
 export default function FixMyResume() {
   const [resume, setResume] = useState("");
   const [jobType, setJobType] = useState("");
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<null | "up" | "down" | "limit">(
-    null
-  );
+  const [feedback, setFeedback] = useState<null | "up" | "down" | "limit">(null);
+
+  const supabase = createBrowserClient();
+  const router = useRouter();
 
   async function handleSubmit() {
     setLoading(true);
     setOutput("");
     setFeedback(null);
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      router.push("/login");
+      return;
+    }
 
     const prompt = `Actúa como un experto redactor de currículums con experiencia en el mercado laboral español. Tu tarea es:
 

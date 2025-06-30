@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
+import { useRouter } from 'next/navigation';
 
 export default function CoverLetterForm() {
   const [name, setName] = useState('');
@@ -10,10 +12,22 @@ export default function CoverLetterForm() {
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<null | 'up' | 'down'>(null);
 
+  const supabase = createBrowserClient();
+  const router = useRouter();
+
   async function handleSubmit() {
     setLoading(true);
     setOutput('');
     setFeedback(null);
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      router.push('/login');
+      return;
+    }
 
     const prompt = `Eres un experto redactor de cartas de presentación para el mercado laboral español. Con la información siguiente, redacta una carta formal, concisa y profesional, dirigida a un reclutador, para acompañar una solicitud de empleo al puesto de "${jobTitle}". Utiliza un tono respetuoso, evita repetir el currículum, y enfócate en cómo el candidato puede aportar valor.
 
