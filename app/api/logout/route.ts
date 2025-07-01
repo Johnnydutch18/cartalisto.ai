@@ -1,29 +1,31 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function POST() {
-  const cookieStore = await cookies(); // MUST await
+  const cookieStore = await cookies();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get: (key: string) => cookieStore.get(key)?.value,
-        set: (key: string, value: string, options) => {
-          // @ts-ignore
-          cookieStore.set({ name: key, value, ...options });
-        },
-        remove: (key: string, options) => {
-          // @ts-ignore
-          cookieStore.set({ name: key, value: "", ...options });
-        },
-      },
-    }
-  );
+  // Manually nuke Supabase SSR cookies
+  cookieStore.set({
+    name: "sb-access-token",
+    value: "",
+    path: "/",
+    expires: new Date(0),
+  });
 
-  await supabase.auth.signOut();
+  cookieStore.set({
+    name: "sb-refresh-token",
+    value: "",
+    path: "/",
+    expires: new Date(0),
+  });
+
+  // Manually nuke Supabase SSR helper cookie (if exists)
+  cookieStore.set({
+    name: "__Host-next-auth.session-token",
+    value: "",
+    path: "/",
+    expires: new Date(0),
+  });
 
   return NextResponse.json({ success: true });
 }
