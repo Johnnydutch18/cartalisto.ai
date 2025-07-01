@@ -30,27 +30,27 @@ export default function Header() {
   }, []);
 
   const handleLogout = async () => {
-    const res = await fetch("/api/logout", { method: "POST" });
-
-    if (res.ok) {
-      setSession(null);
-      router.refresh();     // 🔄 force layout to re-fetch session
-      router.push("/");     // redirect home after
-    }
+    await fetch("/api/logout", { method: "POST" });
+    setSession(null);            // clear local state
+    router.refresh();            // refresh layout to clear session
+    router.push("/");            // redirect home
   };
 
   return (
     <header className="w-full p-4 flex justify-between items-center border-b">
+      {/* Left: Brand title */}
       <div className="w-1/3">
         <Link href="/" className="text-lg font-bold">CartaListo</Link>
       </div>
 
-      <nav className="flex gap-6 justify-center w-1/3 text-sm">
+      {/* Center navigation menu */}
+      <nav className="flex justify-center gap-6 w-1/3 text-sm">
         <Link href="/arregla-mi-curriculum" className="hover:underline">Currículum</Link>
         <Link href="/carta-de-presentacion" className="hover:underline">Carta</Link>
         <Link href="/planes" className="hover:underline">Planes</Link>
       </nav>
 
+      {/* Right: Login/Logout */}
       <div className="w-1/3 flex justify-end items-center gap-4">
         {session?.user ? (
           <>
@@ -63,7 +63,9 @@ export default function Header() {
             </button>
           </>
         ) : (
-          <Link href="/login" className="text-blue-600 hover:underline">Iniciar sesión</Link>
+          <Link href="/login" className="text-blue-600 hover:underline">
+            Iniciar sesión
+          </Link>
         )}
       </div>
     </header>
