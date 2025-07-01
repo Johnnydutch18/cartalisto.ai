@@ -1,33 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 export default function Header() {
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [hasMounted, setHasMounted] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    setHasMounted(true);
-
     const fetchUser = async () => {
       const supabase = createClient();
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      setUserEmail(session?.user?.email ?? null);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        setUserEmail(session?.user?.email ?? null);
-      });
+      setUser(user); // ✅ Now correctly typed
     };
 
     fetchUser();
   }, []);
-
-  if (!hasMounted) return null; // Fix hydration issue
 
   return (
     <header className="w-full border-b bg-white shadow-sm">
@@ -43,9 +35,9 @@ export default function Header() {
         </nav>
 
         <div className="text-sm">
-          {userEmail ? (
+          {user ? (
             <div className="flex items-center gap-4">
-              <span className="text-gray-600">{userEmail}</span>
+              <span className="text-gray-600">{user.email}</span>
               <form action="/api/logout" method="post">
                 <button type="submit" className="text-red-500 hover:text-red-700 font-medium">
                   Logout
