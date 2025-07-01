@@ -1,21 +1,12 @@
-'use client';
-
+// components/Header.tsx
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/server';
 
-export default function Header() {
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const supabase = createClient();
-      const { data } = await supabase.auth.getUser();
-      setUserEmail(data.user?.email ?? null);
-    };
-
-    getUser();
-  }, []);
+export default async function Header() {
+  const supabase = createClient(); // ✅ No arguments needed
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   return (
     <header className="w-full border-b bg-white shadow-sm">
@@ -27,34 +18,22 @@ export default function Header() {
 
         {/* Nav Links */}
         <nav className="flex items-center gap-6 text-sm font-medium text-gray-700">
-          <Link href="/planes" className="hover:text-black">
-            Planes
-          </Link>
-          <Link href="/arregla-mi-curriculum" className="hover:text-black">
-            Currículum
-          </Link>
-          <Link href="/carta-de-presentacion" className="hover:text-black">
-            Carta
-          </Link>
+          <Link href="/planes" className="hover:text-black">Planes</Link>
+          <Link href="/arregla-mi-curriculum" className="hover:text-black">Currículum</Link>
+          <Link href="/carta-de-presentacion" className="hover:text-black">Carta</Link>
         </nav>
 
         {/* Auth */}
         <div className="text-sm">
-          {userEmail ? (
+          {user ? (
             <div className="flex items-center gap-4">
-              <span className="text-gray-600">{userEmail}</span>
-              <Link
-                href="/logout"
-                className="text-red-500 hover:text-red-700 font-medium"
-              >
+              <span className="text-gray-600">{user.email}</span>
+              <Link href="/logout" className="text-red-500 hover:text-red-700 font-medium">
                 Logout
               </Link>
             </div>
           ) : (
-            <Link
-              href="/login"
-              className="text-blue-600 hover:text-blue-800 font-medium"
-            >
+            <Link href="/login" className="text-blue-600 hover:text-blue-800 font-medium">
               Login
             </Link>
           )}
