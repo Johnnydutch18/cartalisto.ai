@@ -2,9 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies as nextCookies } from "next/headers";
 
 export const createClient = () => {
-  const cookieStore = nextCookies(); // ✅ DO NOT await this
+  const cookieStore = nextCookies(); // ✅ DO NOT await
 
-  // ✅ This cookie adapter must use async functions (as cookies() is async)
   const cookieAdapter = {
     get: async (name: string) => {
       const cookies = await cookieStore;
