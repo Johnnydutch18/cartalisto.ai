@@ -12,17 +12,16 @@ export async function POST() {
       cookies: {
         get: (key) => cookieStore.get(key)?.value,
         set: (key, value, options) => {
-          // @ts-ignore
           cookieStore.set({ name: key, value, ...options });
         },
         remove: (key, options) => {
-          // @ts-ignore
           cookieStore.set({ name: key, value: "", ...options });
         },
       },
     }
   );
 
-  await supabase.auth.signOut();
-  return NextResponse.json({ success: true });
+  const { error } = await supabase.auth.signOut();
+
+  return NextResponse.json({ success: !error });
 }

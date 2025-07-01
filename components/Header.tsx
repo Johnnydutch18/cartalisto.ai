@@ -29,27 +29,28 @@ export default function Header() {
     };
   }, []);
 
-  // ✅ Reverted to last-known working logout handler
   const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/";
+    const res = await fetch("/api/logout", { method: "POST" });
+
+    if (res.ok) {
+      setSession(null);
+      router.refresh();     // 🔄 force layout to re-fetch session
+      router.push("/");     // redirect home after
+    }
   };
 
   return (
     <header className="w-full p-4 flex justify-between items-center border-b">
-      {/* Left: Brand title */}
       <div className="w-1/3">
         <Link href="/" className="text-lg font-bold">CartaListo</Link>
       </div>
 
-      {/* Center nav */}
       <nav className="flex gap-6 justify-center w-1/3 text-sm">
         <Link href="/arregla-mi-curriculum" className="hover:underline">Currículum</Link>
         <Link href="/carta-de-presentacion" className="hover:underline">Carta</Link>
         <Link href="/planes" className="hover:underline">Planes</Link>
       </nav>
 
-      {/* Right: Session controls */}
       <div className="w-1/3 flex justify-end items-center gap-4">
         {session?.user ? (
           <>
