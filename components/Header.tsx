@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { Session } from "@supabase/supabase-js";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,6 +13,7 @@ const supabase = createBrowserClient(
 
 export default function Header() {
   const [session, setSession] = useState<Session | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -27,11 +29,12 @@ export default function Header() {
     };
   }, []);
 
-  // ✅ REVERTED to working-only logout via API route
   const handleLogout = async () => {
     try {
       await fetch("/api/logout", { method: "POST" });
-      window.location.href = "/";
+      setSession(null);
+      router.refresh();      // 🔁 Force Next.js to re-fetch data/layout
+      router.push("/");      // ⏩ Redirect to homepage
     } catch (err) {
       console.error("Logout error:", err);
     }

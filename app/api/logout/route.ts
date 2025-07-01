@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST() {
-  const cookieStore = await cookies(); // ✅ FIXED: use await!
+  const cookieStore = await cookies(); // MUST await
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,11 +12,11 @@ export async function POST() {
       cookies: {
         get: (key: string) => cookieStore.get(key)?.value,
         set: (key: string, value: string, options) => {
-          // @ts-ignore next/headers typing bug
+          // @ts-ignore
           cookieStore.set({ name: key, value, ...options });
         },
         remove: (key: string, options) => {
-          // @ts-ignore next/headers typing bug
+          // @ts-ignore
           cookieStore.set({ name: key, value: "", ...options });
         },
       },
