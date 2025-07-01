@@ -1,60 +1,48 @@
-'use client';
+// /components/Header.tsx
+import { cookies as getCookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import type { CookieOptions } from "@supabase/ssr";
+import Link from "next/link";
+import AccountMenu from "./AccountMenu";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+export default async function Header() {
+  const cookieStore = await getCookies();
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+  const cookieAdapter = {
+    get: (name: string) => cookieStore.get(name)?.value,
+    getAll: () =>
+      cookieStore.getAll().map((cookie) => ({
+        name: cookie.name,
+        value: cookie.value,
+      })),
+    set: (name: string, value: string, options?: CookieOptions) =>
+      cookieStore.set({ name, value, ...options }),
+    delete: (name: string, options?: CookieOptions) =>
+      cookieStore.set({ name, value: "", ...options }),
+  };
 
-export default function Header() {
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!,
+    { cookies: cookieAdapter }
+  );
 
-  useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      setUserEmail(session?.user?.email ?? null);
-    };
-
-    getSession();
-  }, []);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   return (
-    <header className="flex justify-between items-center px-6 py-4 border-b bg-white">
-      <Link href="/" className="text-xl font-bold">
+    <header className="flex justify-between items-center px-4 py-2 border-b">
+      <Link href="/" className="text-lg font-semibold">
         CartaListo
       </Link>
-
-      <nav className="flex items-center gap-4">
-        <Link href="/arregla-mi-curriculum">Currículum</Link>
-        <Link href="/carta-de-presentacion">Carta</Link>
-
-        {userEmail ? (
-          <>
-            <span className="text-sm text-gray-700">👋 {userEmail}</span>
-            <a
-              href="/api/logout"
-              className="text-sm text-red-600 hover:underline"
-            >
-              Cerrar sesión
-            </a>
-          </>
-        ) : (
-          <>
-            <Link href="/login" className="text-sm text-blue-600">
-              Iniciar sesión
-            </Link>
-            <Link href="/signup" className="text-sm text-blue-600">
-              Crear cuenta
-            </Link>
-          </>
-        )}
-      </nav>
+      {user ? (
+        <AccountMenu email={user.email ?? "Cuenta"} />
+      ) : (
+        <Link href="/login" className="text-sm hover:underline">
+          Iniciar sesión
+        </Link>
+      )}
     </header>
   );
 }
