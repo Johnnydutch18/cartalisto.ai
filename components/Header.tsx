@@ -6,8 +6,11 @@ import { createClient } from '@/utils/supabase/client';
 
 export default function Header() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
+    setHasMounted(true);
+
     const fetchUser = async () => {
       const supabase = createClient();
       const {
@@ -16,7 +19,6 @@ export default function Header() {
 
       setUserEmail(session?.user?.email ?? null);
 
-      // Optional: Listen to session changes
       supabase.auth.onAuthStateChange((_event, session) => {
         setUserEmail(session?.user?.email ?? null);
       });
@@ -24,6 +26,8 @@ export default function Header() {
 
     fetchUser();
   }, []);
+
+  if (!hasMounted) return null; // Fix hydration issue
 
   return (
     <header className="w-full border-b bg-white shadow-sm">
