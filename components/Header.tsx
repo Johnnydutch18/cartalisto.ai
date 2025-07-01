@@ -14,12 +14,10 @@ export default function Header() {
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    // Get session on mount
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
     });
 
-    // Listen for auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -38,7 +36,7 @@ export default function Header() {
           <span className="text-sm">{session.user.email}</span>
           <button
             onClick={async () => {
-              await fetch("/api/logout", { method: "POST" });
+              await supabase.auth.signOut(); // ✅ Logs out immediately
               window.location.href = "/";
             }}
             className="text-blue-600 hover:underline"
