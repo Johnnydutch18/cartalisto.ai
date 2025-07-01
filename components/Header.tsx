@@ -1,4 +1,3 @@
-// components/Header.tsx
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 
@@ -28,9 +27,11 @@ export default async function Header() {
           {user ? (
             <div className="flex items-center gap-4">
               <span className="text-gray-600">{user.email}</span>
-              <Link href="/logout" className="text-red-500 hover:text-red-700 font-medium">
-                Logout
-              </Link>
+              <form action="/logout" method="get">
+                <button type="submit" className="text-red-500 hover:text-red-700 font-medium">
+                  Logout
+                </button>
+              </form>
             </div>
           ) : (
             <Link href="/login" className="text-blue-600 hover:text-blue-800 font-medium">
