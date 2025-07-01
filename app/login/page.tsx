@@ -1,4 +1,3 @@
-// app/login/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -9,7 +8,7 @@ import LoginForm from './LoginForm';
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [shouldShowLogin, setShouldShowLogin] = useState(false);
+  const [sessionExists, setSessionExists] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -19,9 +18,10 @@ export default function LoginPage() {
       } = await supabase.auth.getSession();
 
       if (session) {
-        router.replace('/'); // Already logged in → redirect
+        setSessionExists(true);
+        router.replace('/'); // 🔁 Redirect client-side
       } else {
-        setShouldShowLogin(true); // Show login form
+        setSessionExists(false);
       }
 
       setLoading(false);
@@ -30,8 +30,7 @@ export default function LoginPage() {
     checkSession();
   }, [router]);
 
-  if (loading) return null; // Or a spinner/loading state
-  if (!shouldShowLogin) return null;
+  if (loading || sessionExists) return null; // Avoid flash of content
 
   return <LoginForm />;
 }
