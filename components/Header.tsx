@@ -1,8 +1,10 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 
 export default async function Header() {
-  const supabase = createClient(); // ✅ No arguments needed
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -10,19 +12,16 @@ export default async function Header() {
   return (
     <header className="w-full border-b bg-white shadow-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        {/* Logo / Title */}
         <Link href="/" className="text-xl font-semibold text-gray-800 hover:text-black">
           CartaListo
         </Link>
 
-        {/* Nav Links */}
         <nav className="flex items-center gap-6 text-sm font-medium text-gray-700">
           <Link href="/planes" className="hover:text-black">Planes</Link>
           <Link href="/arregla-mi-curriculum" className="hover:text-black">Currículum</Link>
           <Link href="/carta-de-presentacion" className="hover:text-black">Carta</Link>
         </nav>
 
-        {/* Auth */}
         <div className="text-sm">
           {user ? (
             <div className="flex items-center gap-4">
