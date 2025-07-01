@@ -1,4 +1,3 @@
-// components/Header.tsx
 'use client';
 
 import Link from 'next/link';
@@ -31,7 +30,7 @@ export default function Header() {
           <Link href="/planes" className="hover:text-black">
             Planes
           </Link>
-          <Link href="/curriculum" className="hover:text-black">
+          <Link href="/arregla-mi-curriculum" className="hover:text-black">
             Currículum
           </Link>
           <Link href="/carta-de-presentacion" className="hover:text-black">
