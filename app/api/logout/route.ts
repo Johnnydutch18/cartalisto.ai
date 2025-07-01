@@ -1,8 +1,10 @@
+// /app/logout/route.ts
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies as nextCookies } from "next/headers";
+import type { CookieOptions } from "@supabase/ssr";
 
-export async function POST(req: Request) {
+export async function GET() {
   const cookieStore = await nextCookies();
 
   const cookieAdapter = {
@@ -12,12 +14,10 @@ export async function POST(req: Request) {
         name: cookie.name,
         value: cookie.value,
       })),
-    set: (name: string, value: string, options?: any) => {
-      cookieStore.set({ name, value, ...options });
-    },
-    delete: (name: string, options?: any) => {
-      cookieStore.set({ name, value: "", ...options });
-    },
+    set: (name: string, value: string, options?: CookieOptions) =>
+      cookieStore.set({ name, value, ...options }),
+    delete: (name: string, options?: CookieOptions) =>
+      cookieStore.set({ name, value: "", ...options }),
   };
 
   const supabase = createServerClient(
@@ -26,13 +26,7 @@ export async function POST(req: Request) {
     { cookies: cookieAdapter }
   );
 
-  const { data: user } = await supabase.auth.getUser();
+  await supabase.auth.signOut();
 
-  if (!user?.user) {
-    return NextResponse.json({ error: "No estás autenticado." }, { status: 401 });
-  }
-
-  // ✅ Your generation logic goes here
-
-  return NextResponse.json({ success: true, message: "Carta generada ✅" });
+  return NextResponse.redirect(new URL("/", process.env.NEXT_PUBLIC_SITE_URL!));
 }
