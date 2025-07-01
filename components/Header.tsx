@@ -13,7 +13,7 @@ const supabase = createBrowserClient(
 export default function Header() {
   const [session, setSession] = useState<Session | null>(null);
 
-  // ✅ Get session on load & listen for changes
+  // Get session & update on auth state change
   useEffect(() => {
     let mounted = true;
 
@@ -31,30 +31,32 @@ export default function Header() {
     };
   }, []);
 
+  // ✅ Use only the API route for logout (which we know worked)
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut(); // ✅ client-side
-      await fetch("/api/logout", { method: "POST" }); // ✅ server-side cookie
-      setSession(null); // ✅ clear local session
-      window.location.href = "/"; // ✅ redirect
-    } catch (err) {
-      console.error("Logout failed:", err);
+      await fetch("/api/logout", { method: "POST" });
+      setSession(null);
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Logout failed:", error);
     }
   };
 
   return (
     <header className="w-full p-4 flex justify-between items-center border-b">
-      {/* Left spacer */}
-      <div className="w-1/3" />
+      {/* Left: Site title restored */}
+      <div className="w-1/3">
+        <Link href="/" className="text-lg font-bold">CartaListo</Link>
+      </div>
 
-      {/* Center nav */}
+      {/* Centered Nav */}
       <nav className="flex gap-6 justify-center w-1/3 text-sm">
         <Link href="/arregla-mi-curriculum" className="hover:underline">Currículum</Link>
         <Link href="/carta-de-presentacion" className="hover:underline">Carta</Link>
         <Link href="/planes" className="hover:underline">Planes</Link>
       </nav>
 
-      {/* Right: login or session */}
+      {/* Right: login/logout */}
       <div className="w-1/3 flex justify-end items-center gap-4">
         {session?.user ? (
           <>
