@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 
 export default async function Header() {
-  const supabase = createClient();
+  const supabase = createClient(); // ✅ No arguments here
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -16,14 +16,14 @@ export default async function Header() {
           CartaListo
         </Link>
 
-        {/* Nav Links */}
+        {/* Navigation Links */}
         <nav className="flex items-center gap-6 text-sm font-medium text-gray-700">
           <Link href="/planes" className="hover:text-black">Planes</Link>
           <Link href="/arregla-mi-curriculum" className="hover:text-black">Currículum</Link>
           <Link href="/carta-de-presentacion" className="hover:text-black">Carta</Link>
         </nav>
 
-        {/* Auth */}
+        {/* Auth Section */}
         <div className="text-sm">
           {user ? (
             <div className="flex items-center gap-4">
