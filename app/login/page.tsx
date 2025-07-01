@@ -1,39 +1,28 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies as nextCookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+// app/login/page.tsx
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 import LoginForm from './LoginForm';
 
-export default async function LoginPage() {
-  // ✅ Await cookie store
-  const cookieStore = await nextCookies();
+export default function LoginPage() {
+  const router = useRouter();
 
-  // ✅ Create adapter manually
-  const cookieAdapter = {
-    get: (name: string) => cookieStore.get(name)?.value ?? undefined,
-    getAll: () =>
-      cookieStore.getAll().map((cookie) => ({
-        name: cookie.name,
-        value: cookie.value,
-      })),
-    set: () => {},
-    remove: () => {},
-  } as const;
+  useEffect(() => {
+    const checkSession = async () => {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: cookieAdapter,
-    }
-  );
+      if (session) {
+        router.replace('/'); // ✅ Only redirect if logged in
+      }
+    };
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (session) {
-    redirect('/');
-  }
+    checkSession();
+  }, [router]);
 
   return <LoginForm />;
 }
