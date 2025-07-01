@@ -1,93 +1,56 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
-import { User } from '@supabase/supabase-js';
 import Link from 'next/link';
+import { cookies as nextCookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
 
-export default function Header() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+export default async function Header() {
+  const cookieStore = await nextCookies();
 
-  useEffect(() => {
-    const supabase = createClient();
-
-    // Get initial session
-    const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setLoading(false);
-    };
-
-    getInitialSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event);
-        setUser(session?.user ?? null);
-        
-        // Redirect after successful login
-        if (event === 'SIGNED_IN' && session) {
-          window.location.href = '/';
-        }
-        
-        // Redirect after logout
-        if (event === 'SIGNED_OUT') {
-          window.location.href = '/login';
-        }
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+  const cookieAdapter = {
+    get: (name: string) => cookieStore.get(name)?.value,
+    getAll: () =>
+      cookieStore.getAll().map((c) => ({ name: c.name, value: c.value })),
+    set: () => {},
+    remove: () => {},
   };
 
-  if (loading) {
-    return (
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div>Loading...</div>
-          </div>
-        </div>
-      </header>
-    );
-  }
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: cookieAdapter }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   return (
-    <header className="bg-white shadow">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          <div>
-            <h1 className="text-xl font-bold">Your App</h1>
-          </div>
-          <div>
-            {user ? (
-              <div className="flex items-center space-x-4">
-                <span>Welcome, {user.email}</span>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                >
+    <header className="w-full border-b bg-white shadow-sm">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <Link href="/" className="text-xl font-semibold text-gray-800 hover:text-black">
+          CartaListo
+        </Link>
+
+        <nav className="flex items-center gap-6 text-sm font-medium text-gray-700">
+          <Link href="/planes" className="hover:text-black">Planes</Link>
+          <Link href="/arregla-mi-curriculum" className="hover:text-black">Currículum</Link>
+          <Link href="/carta-de-presentacion" className="hover:text-black">Carta</Link>
+        </nav>
+
+        <div className="text-sm">
+          {user ? (
+            <div className="flex items-center gap-4">
+              <span className="text-gray-600">{user.email}</span>
+              <form action="/api/logout" method="post">
+                <button type="submit" className="text-red-500 hover:text-red-700 font-medium">
                   Logout
                 </button>
-              </div>
-            ) : (
-              <Link
-                href="/login"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Login
-              </Link>
-            )}
-          </div>
+              </form>
+            </div>
+          ) : (
+            <Link href="/login" className="text-blue-600 hover:text-blue-800 font-medium">
+              Login
+            </Link>
+          )}
         </div>
       </div>
     </header>
