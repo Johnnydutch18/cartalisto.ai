@@ -29,10 +29,15 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut(); // client session
-      await fetch("/api/logout", { method: "POST" }); // clear cookie
-      setSession(null); // local session clear
-      window.location.href = "/"; // redirect
+      await supabase.auth.signOut(); // Client-side session clear
+      await fetch("/api/logout", { method: "POST" }); // Server-side cookie clear
+
+      // 💣 Force remove Supabase cookies in browser (extra safety)
+      document.cookie = "sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = "sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+      setSession(null); // Local state clear
+      window.location.href = "/"; // Redirect to homepage
     } catch (err) {
       console.error("Logout error:", err);
     }
