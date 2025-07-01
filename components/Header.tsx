@@ -33,8 +33,7 @@ export default function Header() {
     try {
       await fetch("/api/logout", { method: "POST" });
       setSession(null);
-      router.refresh();      // 🔁 Force Next.js to re-fetch data/layout
-      router.push("/");      // ⏩ Redirect to homepage
+      router.push("/"); // ✅ Only push — no refresh
     } catch (err) {
       console.error("Logout error:", err);
     }
