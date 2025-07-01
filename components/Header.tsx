@@ -29,14 +29,10 @@ export default function Header() {
     };
   }, []);
 
+  // ✅ Reverted to last-known working logout handler
   const handleLogout = async () => {
-    try {
-      await fetch("/api/logout", { method: "POST" });
-      setSession(null);
-      router.push("/"); // ✅ Only push — no refresh
-    } catch (err) {
-      console.error("Logout error:", err);
-    }
+    await fetch("/api/logout", { method: "POST" });
+    window.location.href = "/";
   };
 
   return (
