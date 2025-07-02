@@ -12,7 +12,6 @@ export async function POST(req: Request) {
 
   const cookieStore = await nextCookies();
 
-
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
     getAll: () => {
@@ -38,42 +37,37 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
 
   if (userError) console.error("❌ Supabase auth error:", userError);
-  console.log("🧪 User:", user);
-
   if (!user) {
     return NextResponse.json({ result: "No estás autenticado." }, { status: 401 });
   }
 
   const userId = user.id;
+
+  // Get user's plan and usage
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("plan, cvCount, letterCount, lastGeneratedAt")
+    .eq("id", userId)
+    .single();
+
+  if (profileError || !profile) {
+    console.error("❌ Error fetching profile:", profileError);
+    return NextResponse.json({ result: "Error al cargar tu perfil." }, { status: 500 });
+  }
+
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
+  const lastGenerated = new Date(profile.lastGeneratedAt);
+  const shouldReset = lastGenerated < today;
 
-  const { data: generationsToday, error: countError } = await supabase
-    .from("generations")
-    .select("*")
-    .eq("user_id", userId)
-    .gte("created_at", today.toISOString());
-
-  if (countError) {
-    console.error("❌ Error counting generations:", countError);
-  }
-
-  const usageCount = generationsToday?.length ?? 0;
-  const isPaidUser = false;
-
-  if (usageCount >= 1 && !isPaidUser) {
-    return NextResponse.json(
-      { result: "⚠️ Límite alcanzado. Actualiza tu plan para más usos diarios." },
-      { status: 429 }
-    );
-  }
+  const plan = profile.plan || "free";
+  const maxPerDay = plan === "pro" ? Infinity : plan === "estandar" ? 5 : 1;
 
   let prompt: string;
   let type: string;
 
   try {
     const body = await req.json();
-    console.log("📥 Body received:", body);
     prompt = body.prompt;
     type = body.type || "cv";
 
@@ -83,6 +77,19 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("❌ Error parsing JSON body:", err);
     return NextResponse.json({ result: "Error al procesar la solicitud." }, { status: 400 });
+  }
+
+  let cvCount = shouldReset ? 0 : profile.cvCount || 0;
+  let letterCount = shouldReset ? 0 : profile.letterCount || 0;
+
+  const isCV = type !== "cover";
+  const currentCount = isCV ? cvCount : letterCount;
+
+  if (currentCount >= maxPerDay) {
+    return NextResponse.json(
+      { result: "⚠️ Has alcanzado tu límite diario. Actualiza tu plan para más usos." },
+      { status: 429 }
+    );
   }
 
   const systemPrompt =
@@ -101,17 +108,36 @@ export async function POST(req: Request) {
     });
 
     const result = chat.choices[0].message.content;
-    console.log("✅ OpenAI result received");
 
+    // Log generation
     const { error: insertError } = await supabase.from("generations").insert([
       {
         user_id: userId,
-        type: type === "cover" ? "cover" : "cv",
+        type: isCV ? "cv" : "cover",
       },
     ]);
 
     if (insertError) {
-      console.error("❌ Error logging generation to Supabase:", insertError);
+      console.error("❌ Error logging generation:", insertError);
+    }
+
+    // Update counters in profiles table
+    const updates: any = {
+      lastGeneratedAt: new Date().toISOString(),
+    };
+    if (isCV) {
+      updates.cvCount = cvCount + 1;
+    } else {
+      updates.letterCount = letterCount + 1;
+    }
+
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update(updates)
+      .eq("id", userId);
+
+    if (updateError) {
+      console.error("❌ Error updating usage counts:", updateError);
     }
 
     return NextResponse.json({ result });
