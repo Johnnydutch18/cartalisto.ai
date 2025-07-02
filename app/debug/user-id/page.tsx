@@ -1,6 +1,6 @@
 'use client';
 
-import { createBrowserClient } from "@supabase/ssr";
+import { createBrowserClient } from '@supabase/ssr';
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,8 +9,8 @@ const supabase = createBrowserClient(
 
 export default function Page() {
   supabase.auth.getUser().then(({ data }) => {
-    console.log("🧑‍💻 Supabase User ID:", data.user?.id);
+    console.log('🧑‍💻 Supabase User ID:', data.user?.id);
   });
 
-  return <div className="p-10">Check console for User ID</div>;
+  return <div className="p-10">✅ Check console for User ID</div>;
 }

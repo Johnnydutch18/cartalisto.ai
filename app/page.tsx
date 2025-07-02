@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Sparkles, FileText, Download, ArrowRight } from 'lucide-react';
 import type { Metadata } from 'next';
-import ShowUserId from './debug/user-id'; // ✅ TEMP DEBUG
 
 export const metadata: Metadata = {
   title: 'CartaListo | Optimiza tu CV y Carta de Presentación con IA',
@@ -21,7 +20,6 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50 text-gray-800 font-sans">
-      <ShowUserId /> {/* ✅ TEMPORARY: Logs user ID in console */}
 
       {/* Hero Section */}
       <section className="text-center py-20 px-6">
