@@ -15,11 +15,7 @@ export async function POST(req: Request) {
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
     getAll: () => {
-      const all = [];
-      for (const { name, value } of cookieStore.getAll()) {
-        all.push({ name, value });
-      }
-      return all;
+      return cookieStore.getAll().map(({ name, value }) => ({ name, value }));
     },
     set: () => {},
     remove: () => {},
@@ -43,7 +39,7 @@ export async function POST(req: Request) {
 
   const userId = user.id;
 
-  // Get user's plan and usage
+  // Fetch profile
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("plan, cvCount, letterCount, lastGeneratedAt")
@@ -55,14 +51,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al cargar tu perfil." }, { status: 500 });
   }
 
+  const plan = profile.plan ?? "free";
+  const maxPerDay = plan === "pro" ? Infinity : plan === "estandar" ? 5 : 1;
+
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
   const lastGenerated = new Date(profile.lastGeneratedAt);
   const shouldReset = lastGenerated < today;
 
-  const plan = profile.plan || "free";
-  const maxPerDay = plan === "pro" ? Infinity : plan === "estandar" ? 5 : 1;
+  const cvCount = shouldReset ? 0 : profile.cvCount ?? 0;
+  const letterCount = shouldReset ? 0 : profile.letterCount ?? 0;
 
+  // Parse body
   let prompt: string;
   let type: string;
 
@@ -79,9 +79,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al procesar la solicitud." }, { status: 400 });
   }
 
-  let cvCount = shouldReset ? 0 : profile.cvCount || 0;
-  let letterCount = shouldReset ? 0 : profile.letterCount || 0;
-
   const isCV = type !== "cover";
   const currentCount = isCV ? cvCount : letterCount;
 
@@ -93,9 +90,9 @@ export async function POST(req: Request) {
   }
 
   const systemPrompt =
-    type === "cover"
-      ? "Eres un experto en cartas de presentación para el mercado laboral español. Responde solo con la carta generada."
-      : "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado.";
+    isCV
+      ? "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado."
+      : "Eres un experto en cartas de presentación para el mercado laboral español. Responde solo con la carta generada.";
 
   try {
     const chat = await openai.chat.completions.create({
@@ -109,27 +106,19 @@ export async function POST(req: Request) {
 
     const result = chat.choices[0].message.content;
 
-    // Log generation
-    const { error: insertError } = await supabase.from("generations").insert([
+    // Log usage
+    await supabase.from("generations").insert([
       {
         user_id: userId,
         type: isCV ? "cv" : "cover",
       },
     ]);
 
-    if (insertError) {
-      console.error("❌ Error logging generation:", insertError);
-    }
-
-    // Update counters in profiles table
     const updates: any = {
       lastGeneratedAt: new Date().toISOString(),
+      cvCount: isCV ? currentCount + 1 : cvCount,
+      letterCount: !isCV ? currentCount + 1 : letterCount,
     };
-    if (isCV) {
-      updates.cvCount = cvCount + 1;
-    } else {
-      updates.letterCount = letterCount + 1;
-    }
 
     const { error: updateError } = await supabase
       .from("profiles")
@@ -137,13 +126,12 @@ export async function POST(req: Request) {
       .eq("id", userId);
 
     if (updateError) {
-      console.error("❌ Error updating usage counts:", updateError);
+      console.error("❌ Error updating profile counts:", updateError);
     }
 
     return NextResponse.json({ result });
-  } catch (error: unknown) {
-    const err = error as Error;
-    console.error("❌ Error generating with OpenAI:", err.message || err);
+  } catch (error: any) {
+    console.error("❌ Error generating with OpenAI:", error.message || error);
     return NextResponse.json(
       { result: "❌ Error al generar. Inténtalo de nuevo más tarde." },
       { status: 500 }
