@@ -14,9 +14,7 @@ export async function POST(req: Request) {
 
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
-    getAll: () => {
-      return cookieStore.getAll().map(({ name, value }) => ({ name, value }));
-    },
+    getAll: () => cookieStore.getAll().map(({ name, value }) => ({ name, value })),
     set: () => {},
     remove: () => {},
   } as const;
@@ -39,7 +37,6 @@ export async function POST(req: Request) {
 
   const userId = user.id;
 
-  // Fetch profile
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("plan, cvCount, letterCount, lastGeneratedAt")
@@ -62,7 +59,6 @@ export async function POST(req: Request) {
   const cvCount = shouldReset ? 0 : profile.cvCount ?? 0;
   const letterCount = shouldReset ? 0 : profile.letterCount ?? 0;
 
-  // Parse body
   let prompt: string;
   let type: string;
 
@@ -105,7 +101,6 @@ export async function POST(req: Request) {
 
     const result = chat.choices[0].message.content;
 
-    // Log usage
     await supabase.from("generations").insert([
       {
         user_id: userId,
