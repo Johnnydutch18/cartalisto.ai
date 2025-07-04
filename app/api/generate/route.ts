@@ -39,6 +39,7 @@ export async function POST(req: Request) {
 
   const userId = user.id;
 
+  // Fetch profile
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("plan, cvCount, letterCount, lastGeneratedAt")
@@ -55,17 +56,13 @@ export async function POST(req: Request) {
 
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
-
-  const lastGenerated = profile.lastGeneratedAt
-    ? new Date(profile.lastGeneratedAt)
-    : new Date(0); // fallback if null
-
+  const lastGenerated = new Date(profile.lastGeneratedAt);
   const shouldReset = lastGenerated < today;
 
   const cvCount = shouldReset ? 0 : profile.cvCount ?? 0;
   const letterCount = shouldReset ? 0 : profile.letterCount ?? 0;
 
-  // Parse prompt
+  // Parse body
   let prompt: string;
   let type: string;
 
@@ -92,10 +89,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const systemPrompt =
-    isCV
-      ? "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado."
-      : "Eres un experto en cartas de presentación para el mercado laboral español. Responde solo con la carta generada.";
+  const systemPrompt = isCV
+    ? "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado."
+    : "Eres un experto en cartas de presentación para el mercado laboral español. Responde solo con la carta generada.";
 
   try {
     const chat = await openai.chat.completions.create({
@@ -117,11 +113,15 @@ export async function POST(req: Request) {
       },
     ]);
 
-    const updates: any = {
+    const updates: Record<string, any> = {
       lastGeneratedAt: new Date().toISOString(),
-      cvCount: isCV ? currentCount + 1 : cvCount,
-      letterCount: !isCV ? currentCount + 1 : letterCount,
     };
+
+    if (isCV) {
+      updates.cvCount = cvCount + 1;
+    } else {
+      updates.letterCount = letterCount + 1;
+    }
 
     const { error: updateError } = await supabase
       .from("profiles")
