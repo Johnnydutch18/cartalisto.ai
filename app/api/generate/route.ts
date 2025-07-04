@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al cargar tu perfil." }, { status: 500 });
   }
 
-  // ✅ Normalize and type `type`
+  // ✅ Normalize type
   let type: "cv" | "cover" = "cv";
   let prompt: string;
 
@@ -65,13 +65,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al procesar la solicitud." }, { status: 400 });
   }
 
-  // ✅ Plan limits: 1 total per day for free users
+  // ✅ Limit logic
   const plan = (profile.plan ?? "free") as "free" | "estandar" | "pro";
-  const limits: Record<"free" | "estandar" | "pro", number> = {
-    free: 1,
-    estandar: 5,
-    pro: Infinity,
-  };
+  const isFree = plan === "free";
 
   const now = new Date();
   now.setUTCHours(0, 0, 0, 0);
@@ -82,9 +78,8 @@ export async function POST(req: Request) {
   const letterCount = resetToday ? 0 : profile.letterCount ?? 0;
 
   const totalCount = cvCount + letterCount;
-  const maxAllowed = limits[plan];
 
-  if (totalCount >= maxAllowed) {
+  if (isFree && totalCount >= 1) {
     return NextResponse.json(
       { result: "⚠️ Has alcanzado tu límite diario. Actualiza tu plan para más usos." },
       { status: 429 }
@@ -108,7 +103,7 @@ export async function POST(req: Request) {
 
     const result = chat.choices[0].message.content;
 
-    // ✅ Log usage
+    // Log usage
     await supabase.from("generations").insert([
       {
         user_id: userId,
@@ -116,17 +111,17 @@ export async function POST(req: Request) {
       },
     ]);
 
-    // ✅ Only update the count that's relevant
+    // ✅ Update only correct field + reset logic
     const updates: Record<string, any> = {
       lastGeneratedAt: new Date().toISOString(),
     };
 
     if (type === "cv") {
-      updates.cvCount = cvCount + 1;
-    }
-
-    if (type === "cover") {
-      updates.letterCount = letterCount + 1;
+      updates.cvCount = resetToday ? 1 : cvCount + 1;
+      updates.letterCount = resetToday ? 0 : letterCount;
+    } else {
+      updates.cvCount = resetToday ? 0 : cvCount;
+      updates.letterCount = resetToday ? 1 : letterCount + 1;
     }
 
     const { error: updateError } = await supabase
