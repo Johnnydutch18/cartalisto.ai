@@ -11,8 +11,9 @@ export default function CoverLetterForm() {
   const [tone, setTone] = useState('Formal');
   const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<null | 'up' | 'down'>(null);
+  const [feedback, setFeedback] = useState<null | 'up' | 'down' | 'limit'>(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [usageInfo, setUsageInfo] = useState<{ total: number; limit: number } | null>(null);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -44,11 +45,30 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, type: 'letter' }),
       });
 
       const data = await response.json();
+
+      if (!response.ok) {
+        if (data?.error === 'Daily usage limit reached.') {
+          setFeedback('limit');
+          alert('🚫 Has alcanzado tu límite diario. Intenta mañana o mejora tu plan.');
+        } else {
+          alert('❌ Hubo un problema. Intenta de nuevo más tarde.');
+        }
+        setLoading(false);
+        return;
+      }
+
       setOutput(data.result);
+
+      if (data?.usage) {
+        setUsageInfo({
+          total: data.usage.cvCount + data.usage.letterCount,
+          limit: data.usage.limit,
+        });
+      }
     } catch (error) {
       setOutput('Hubo un problema al generar tu carta. Intenta de nuevo más tarde.');
       console.error('❌ Error calling API:', error);
@@ -82,6 +102,7 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
     setTone('Formal');
     setOutput('');
     setFeedback(null);
+    setUsageInfo(null);
   }
 
   return (
@@ -164,6 +185,13 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
             ⏳ Esto puede tardar unos segundos... generando carta con IA.
           </p>
         )}
+
+        {usageInfo && (
+          <p style={{ marginTop: '1rem', color: '#777' }}>
+            📊 Usado hoy: {usageInfo.total} / {usageInfo.limit}
+          </p>
+        )}
+        <p style={{ color: '#777', fontSize: '0.9rem' }}>🕒 El límite se reinicia cada día a medianoche.</p>
       </div>
 
       {output && (
@@ -226,21 +254,34 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
           </div>
 
           <div style={{ marginTop: '1rem', textAlign: 'center', color: '#666' }}>
-            <p>¿Te fue útil?</p>
-            <div style={{ fontSize: '1.5rem', cursor: 'pointer' }}>
-              <span
-                onClick={() => setFeedback('up')}
-                style={{ marginRight: '1rem', opacity: feedback === 'up' ? 1 : 0.4 }}
-              >
-                👍
-              </span>
-              <span
-                onClick={() => setFeedback('down')}
-                style={{ opacity: feedback === 'down' ? 1 : 0.4 }}
-              >
-                👎
-              </span>
-            </div>
+            {feedback === 'limit' ? (
+              <>
+                <p><strong>⚠️ Has alcanzado el límite diario.</strong></p>
+                <p>
+                  <a href="/planes" style={{ color: '#0070f3', textDecoration: 'underline' }}>
+                    Mejora tu plan aquí
+                  </a>
+                </p>
+              </>
+            ) : (
+              <>
+                <p>¿Te fue útil?</p>
+                <div style={{ fontSize: '1.5rem', cursor: 'pointer' }}>
+                  <span
+                    onClick={() => setFeedback('up')}
+                    style={{ marginRight: '1rem', opacity: feedback === 'up' ? 1 : 0.4 }}
+                  >
+                    👍
+                  </span>
+                  <span
+                    onClick={() => setFeedback('down')}
+                    style={{ opacity: feedback === 'down' ? 1 : 0.4 }}
+                  >
+                    👎
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

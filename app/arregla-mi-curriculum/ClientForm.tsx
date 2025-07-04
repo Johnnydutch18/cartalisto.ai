@@ -12,6 +12,7 @@ export default function FixMyResume() {
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<null | 'up' | 'down' | 'limit'>(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [usageInfo, setUsageInfo] = useState<{ total: number; limit: number } | null>(null);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -54,11 +55,25 @@ Tipo de empleo (si se indicó): ${jobType}`;
 
       const data = await response.json();
 
-      if (response.status === 429) {
-        setFeedback('limit');
-        setOutput(data.result);
-      } else {
-        setOutput(data.result);
+      if (!response.ok) {
+        if (data?.error === 'Daily usage limit reached.') {
+          setFeedback('limit');
+          alert('🚫 Has alcanzado tu límite diario. Intenta mañana o mejora tu plan.');
+        } else {
+          alert('❌ Hubo un problema. Intenta de nuevo más tarde.');
+        }
+        setLoading(false);
+        return;
+      }
+
+      setOutput(data.result);
+
+      // Optional: capture usage info
+      if (data?.usage) {
+        setUsageInfo({
+          total: data.usage.cvCount + data.usage.letterCount,
+          limit: data.usage.limit,
+        });
       }
     } catch (error) {
       setOutput('Hubo un problema al generar tu currículum. Intenta de nuevo más tarde.');
@@ -92,6 +107,7 @@ Tipo de empleo (si se indicó): ${jobType}`;
     setFormat('Tradicional');
     setOutput('');
     setFeedback(null);
+    setUsageInfo(null);
   }
 
   return (
@@ -174,6 +190,13 @@ Tipo de empleo (si se indicó): ${jobType}`;
             ⏳ Esto puede tardar unos segundos... tu CV está siendo mejorado por IA.
           </p>
         )}
+
+        {usageInfo && (
+          <p style={{ marginTop: '1rem', color: '#777' }}>
+            📊 Usado hoy: {usageInfo.total} / {usageInfo.limit}
+          </p>
+        )}
+        <p style={{ color: '#777', fontSize: '0.9rem' }}>🕒 El límite se reinicia cada día a medianoche.</p>
       </div>
 
       {output && (
