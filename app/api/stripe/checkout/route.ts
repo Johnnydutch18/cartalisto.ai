@@ -1,53 +1,37 @@
-import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+// /app/api/stripe/checkout/route.ts
+import Stripe from 'stripe'
+import { NextResponse } from 'next/server'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!) // ✅ no apiVersion
 
 export async function POST(req: Request) {
-  const { plan } = await req.json();
-
-  if (!['standard', 'pro'].includes(plan)) {
-    return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
-  }
-
-  const supabase = createRouteHandlerClient({ cookies });
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user || !user.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const priceId =
-    plan === 'standard'
-      ? process.env.STRIPE_PRICE_STANDARD
-      : process.env.STRIPE_PRICE_PRO;
-
   try {
-    const stripeSession = await stripe.checkout.sessions.create({
-      mode: 'subscription',
+    const { tier, user_id } = await req.json()
+
+    if (!tier || !user_id) {
+      return NextResponse.json({ error: 'Missing tier or user ID' }, { status: 400 })
+    }
+
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      customer_email: user.email,
+      mode: 'subscription',
       line_items: [
         {
-          price: priceId,
+          price: process.env[`STRIPE_PRICE_${tier.toUpperCase()}`],
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/planes?canceled=true`,
       metadata: {
-        price_id: priceId!,
+        user_id,
+        tier,
       },
-    });
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/planes?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/planes?cancelled=true`,
+    })
 
-    return NextResponse.json({ url: stripeSession.url });
-  } catch (err: any) {
-    console.error('❌ Stripe session creation failed:', err);
-    return NextResponse.json({ error: 'Stripe error' }, { status: 500 });
+    return NextResponse.redirect(session.url!, 303)
+  } catch (error: any) {
+    console.error('Stripe Checkout error:', error)
+    return NextResponse.json({ error: 'Stripe error' }, { status: 500 })
   }
 }
