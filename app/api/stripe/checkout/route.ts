@@ -4,7 +4,7 @@ import Stripe from 'stripe'
 import { createServerClient } from '@supabase/ssr'
 import { cookies as getCookies } from 'next/headers'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!) // ✅ Removed API version for compatibility
 
 export async function POST(req: Request) {
   const body = await req.json()
@@ -14,8 +14,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
   }
 
-  // ✅ Await the cookies() promise to access its methods
-  const cookieStore = await getCookies()
+  const cookieStore = await getCookies() // ✅ await this
 
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value,
@@ -43,7 +42,9 @@ export async function POST(req: Request) {
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: cookieAdapter }
+    {
+      cookies: cookieAdapter,
+    }
   )
 
   const {
@@ -81,7 +82,7 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error('Stripe error:', err)
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Stripe error' },
+      { error: err instanceof Error ? err.message : 'Payment failed' },
       { status: 500 }
     )
   }
