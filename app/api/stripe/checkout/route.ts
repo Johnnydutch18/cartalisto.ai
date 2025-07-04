@@ -1,37 +1,88 @@
-// /app/api/stripe/checkout/route.ts
-import Stripe from 'stripe'
+// app/api/stripe/checkout/route.ts
 import { NextResponse } from 'next/server'
+import Stripe from 'stripe'
+import { createServerClient } from '@supabase/ssr'
+import { cookies as getCookies } from 'next/headers'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!) // ✅ no apiVersion
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export async function POST(req: Request) {
+  const body = await req.json()
+  const { plan } = body
+
+  if (!['standard', 'pro'].includes(plan)) {
+    return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
+  }
+
+  // ✅ Await the cookies() promise to access its methods
+  const cookieStore = await getCookies()
+
+  const cookieAdapter = {
+    get: (name: string) => cookieStore.get(name)?.value,
+    set: (name: string, value: string, options: any) => {
+      cookieStore.set({
+        name,
+        value,
+        ...options,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+      })
+    },
+    remove: (name: string, options: any) => {
+      cookieStore.set({
+        name,
+        value: '',
+        ...options,
+        maxAge: 0,
+      })
+    },
+  }
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: cookieAdapter }
+  )
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user || !user.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
-    const { tier, user_id } = await req.json()
-
-    if (!tier || !user_id) {
-      return NextResponse.json({ error: 'Missing tier or user ID' }, { status: 400 })
-    }
-
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
       mode: 'subscription',
+      payment_method_types: ['card'],
+      customer_email: user.email,
       line_items: [
         {
-          price: process.env[`STRIPE_PRICE_${tier.toUpperCase()}`],
+          price:
+            plan === 'standard'
+              ? process.env.STRIPE_PRICE_STANDARD!
+              : process.env.STRIPE_PRICE_PRO!,
           quantity: 1,
         },
       ],
       metadata: {
-        user_id,
-        tier,
+        user_id: user.id,
+        plan,
       },
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/planes?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/planes?cancelled=true`,
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/account?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/account?canceled=true`,
     })
 
-    return NextResponse.redirect(session.url!, 303)
-  } catch (error: any) {
-    console.error('Stripe Checkout error:', error)
-    return NextResponse.json({ error: 'Stripe error' }, { status: 500 })
+    return NextResponse.json({ url: session.url })
+  } catch (err) {
+    console.error('Stripe error:', err)
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Stripe error' },
+      { status: 500 }
+    )
   }
 }
