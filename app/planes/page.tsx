@@ -1,62 +1,50 @@
-// app/planes/page.tsx
 'use server'
 
 import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { cookies as getCookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-// Type-safe cookie adapter using bracket notation
-function createCookieAdapter() {
-  return {
+export default async function PlansPage() {
+  // ✅ Await cookies() once
+  const cookieStore = await getCookies()
+
+  const cookieAdapter = {
     get: (name: string) => {
-      return (cookies() as unknown as { get: (name: string) => { value: string } | undefined }).get(name)?.value
+      const allCookies = cookieStore.getAll()
+      const found = allCookies.find((c: any) => c.name === name)
+      return found?.value
     },
     set: (name: string, value: string, options: any) => {
-      try {
-        (cookies() as unknown as { set: (options: any) => void }).set({
-          name,
-          value,
-          ...options,
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-        })
-      } catch (error) {
-        console.error('Cookie set error:', error)
-      }
+      cookieStore.set({
+        name,
+        value,
+        ...options,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+      })
     },
     remove: (name: string, options: any) => {
-      try {
-        (cookies() as unknown as { set: (options: any) => void }).set({
-          name,
-          value: '',
-          ...options,
-          maxAge: 0,
-        })
-      } catch (error) {
-        console.error('Cookie remove error:', error)
-      }
+      cookieStore.set({
+        name,
+        value: '',
+        ...options,
+        maxAge: 0,
+      })
     }
   }
-}
-
-export default async function PlansPage() {
-  const cookieAdapter = createCookieAdapter()
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get: (name) => cookieAdapter.get(name),
-        set: (name, value, options) => cookieAdapter.set(name, value, options),
-        remove: (name, options) => cookieAdapter.remove(name, options),
-      },
-    }
+    { cookies: cookieAdapter }
   )
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
 
   if (authError || !user) {
     redirect('/login')
@@ -69,7 +57,7 @@ export default async function PlansPage() {
     .single()
 
   if (profileError) {
-    console.error('Error fetching profile:', profileError)
+    console.error('Error fetching plan:', profileError)
     redirect('/error')
   }
 
@@ -88,15 +76,15 @@ export default async function PlansPage() {
             description: '1 generation/day using GPT‑4o‑mini.',
             features: ['PDF download'],
             disabled: true,
-            highlight: currentPlan === 'free'
+            highlight: currentPlan === 'free',
           },
           {
-            name: 'Standard',
+            name: 'Estándar',
             id: 'standard',
             description: 'Unlimited generations with GPT‑4o.',
             features: ['Tone selector', 'PDF + copy'],
             disabled: currentPlan === 'standard',
-            highlight: currentPlan === 'standard'
+            highlight: currentPlan === 'standard',
           },
           {
             name: 'Pro',
@@ -104,8 +92,8 @@ export default async function PlansPage() {
             description: 'All Standard features plus extras.',
             features: ['GPT‑4.1', 'Inline editor (soon)', 'Priority support'],
             disabled: currentPlan === 'pro',
-            highlight: currentPlan === 'pro'
-          }
+            highlight: currentPlan === 'pro',
+          },
         ].map(plan => (
           <div
             key={plan.id}
@@ -125,15 +113,21 @@ export default async function PlansPage() {
                 Current Plan
               </span>
             ) : (
-              <form method="POST" action="/api/stripe/checkout">
-                <input type="hidden" name="plan" value={plan.id} />
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 text-sm rounded hover:bg-blue-700 transition"
-                >
-                  Upgrade to {plan.name}
-                </button>
-              </form>
+              <button
+                onClick={async () => {
+                  const res = await fetch('/api/stripe/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ plan: plan.id }),
+                  })
+                  const data = await res.json()
+                  if (data?.url) window.location.href = data.url
+                  else alert('Something went wrong!')
+                }}
+                className="bg-blue-600 text-white px-4 py-2 text-sm rounded hover:bg-blue-700 transition"
+              >
+                Upgrade to {plan.name}
+              </button>
             )}
           </div>
         ))}
