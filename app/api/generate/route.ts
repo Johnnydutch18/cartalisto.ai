@@ -65,12 +65,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al procesar la solicitud." }, { status: 400 });
   }
 
-  // ✅ Define limits with proper types
+  // ✅ Plan limits: 1 total per day for free users
   const plan = (profile.plan ?? "free") as "free" | "estandar" | "pro";
-  const limits: Record<"free" | "estandar" | "pro", Record<"cv" | "cover", number>> = {
-    free: { cv: 1, cover: 1 },
-    estandar: { cv: 5, cover: 5 },
-    pro: { cv: Infinity, cover: Infinity },
+  const limits: Record<"free" | "estandar" | "pro", number> = {
+    free: 1,
+    estandar: 5,
+    pro: Infinity,
   };
 
   const now = new Date();
@@ -81,10 +81,10 @@ export async function POST(req: Request) {
   const cvCount = resetToday ? 0 : profile.cvCount ?? 0;
   const letterCount = resetToday ? 0 : profile.letterCount ?? 0;
 
-  const usageCount = type === "cv" ? cvCount : letterCount;
-  const maxAllowed = limits[plan][type];
+  const totalCount = cvCount + letterCount;
+  const maxAllowed = limits[plan];
 
-  if (usageCount >= maxAllowed) {
+  if (totalCount >= maxAllowed) {
     return NextResponse.json(
       { result: "⚠️ Has alcanzado tu límite diario. Actualiza tu plan para más usos." },
       { status: 429 }
@@ -108,7 +108,7 @@ export async function POST(req: Request) {
 
     const result = chat.choices[0].message.content;
 
-    // Log usage
+    // ✅ Log usage
     await supabase.from("generations").insert([
       {
         user_id: userId,
@@ -116,7 +116,7 @@ export async function POST(req: Request) {
       },
     ]);
 
-    // ✅ Only increment the right field
+    // ✅ Only update the count that's relevant
     const updates: Record<string, any> = {
       lastGeneratedAt: new Date().toISOString(),
     };
