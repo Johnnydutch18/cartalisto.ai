@@ -1,106 +1,143 @@
 // app/planes/page.tsx
-import type { Metadata } from "next";
-import Link from "next/link";
+'use server'
 
-export const metadata: Metadata = {
-  title: "Planes de Precios | CartaListo",
-  description: "Elige el plan que más te convenga. Desde gratis hasta opciones premium para optimizar tu currículum y carta de presentación con IA.",
-  alternates: {
-    canonical: "https://cartalisto.com/planes",
-  },
-  openGraph: {
-    title: "Planes de Precios | CartaListo",
-    description: "Desde gratis hasta opciones premium para mejorar tu CV y carta con IA.",
-    url: "https://cartalisto.com/planes",
-    images: ["/og-image.jpg"],
-    type: "website",
-  },
-};
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 
-export default function Planes() {
- const plans = [
-  {
-    name: "Gratis",
-    price: "0€",
-    features: [
-      "1 generación al día",
-      "GPT‑4o‑mini",
-      "Descarga en PDF",
-    ],
-    highlight: false,
-    url: null,
-  },
-  {
-    name: "Estándar",
-    price: "6,95€/mes",
-    features: [
-      "Generaciones ilimitadas",
-      "GPT‑4o",
-      "PDF + Copiar",
-      "Selector de tono",
-    ],
-    highlight: true,
-    url: "https://buy.stripe.com/test_7sY28t9QN5mU8DH0a1frW00", 
-  },
-  {
-    name: "Pro",
-    price: "8,95€/mes",
-    features: [
-      "GPT‑4.1 (alta calidad)",
-      "Inglés y Español",
-      "Todo de Estándar",
-      "Editor inline (próx.)",
-      "Historial de documentos (próx.)",
-      "Soporte prioritario",
-    ],
-    highlight: false,
-    url: "https://buy.stripe.com/test_28E9AVbYVdTq7zD2i9frW01", // Replace with your live Stripe Checkout link
-  },
-];
+// Type-safe cookie adapter using bracket notation
+function createCookieAdapter() {
+  return {
+    get: (name: string) => {
+      return (cookies() as unknown as { get: (name: string) => { value: string } | undefined }).get(name)?.value
+    },
+    set: (name: string, value: string, options: any) => {
+      try {
+        (cookies() as unknown as { set: (options: any) => void }).set({
+          name,
+          value,
+          ...options,
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+        })
+      } catch (error) {
+        console.error('Cookie set error:', error)
+      }
+    },
+    remove: (name: string, options: any) => {
+      try {
+        (cookies() as unknown as { set: (options: any) => void }).set({
+          name,
+          value: '',
+          ...options,
+          maxAge: 0,
+        })
+      } catch (error) {
+        console.error('Cookie remove error:', error)
+      }
+    }
+  }
+}
 
+export default async function PlansPage() {
+  const cookieAdapter = createCookieAdapter()
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get: (name) => cookieAdapter.get(name),
+        set: (name, value, options) => cookieAdapter.set(name, value, options),
+        remove: (name, options) => cookieAdapter.remove(name, options),
+      },
+    }
+  )
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect('/login')
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('plan')
+    .eq('id', user.id)
+    .single()
+
+  if (profileError) {
+    console.error('Error fetching profile:', profileError)
+    redirect('/error')
+  }
+
+  const currentPlan = profile?.plan ?? 'free'
 
   return (
-    <main className="min-h-screen px-4 py-12 bg-gray-50 text-gray-800">
-      <h1 className="text-4xl font-bold text-center mb-10">Planes de Precios</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {plans.map((plan, idx) => (
+    <div className="max-w-3xl mx-auto py-12 px-6">
+      <h1 className="text-3xl font-bold mb-6">Choose Your Plan</h1>
+      <p className="mb-6">Your current plan: <strong>{currentPlan}</strong></p>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          {
+            name: 'Free',
+            id: 'free',
+            description: '1 generation/day using GPT‑4o‑mini.',
+            features: ['PDF download'],
+            disabled: true,
+            highlight: currentPlan === 'free'
+          },
+          {
+            name: 'Standard',
+            id: 'standard',
+            description: 'Unlimited generations with GPT‑4o.',
+            features: ['Tone selector', 'PDF + copy'],
+            disabled: currentPlan === 'standard',
+            highlight: currentPlan === 'standard'
+          },
+          {
+            name: 'Pro',
+            id: 'pro',
+            description: 'All Standard features plus extras.',
+            features: ['GPT‑4.1', 'Inline editor (soon)', 'Priority support'],
+            disabled: currentPlan === 'pro',
+            highlight: currentPlan === 'pro'
+          }
+        ].map(plan => (
           <div
-            key={idx}
-            className={`relative rounded-xl border shadow-sm p-6 flex flex-col items-center ${plan.highlight ? "bg-blue-50 border-blue-500" : "bg-white"}`}
+            key={plan.id}
+            className={`border p-6 rounded shadow-sm ${
+              plan.highlight ? 'border-blue-600 bg-blue-50' : 'border-gray-200'
+            }`}
           >
-            {plan.highlight && (
-  <div className="pulse-glow absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-semibold shadow">
-    Recomendado
-  </div>
-)}
-            <h2 className="text-2xl font-semibold mb-2">{plan.name}</h2>
-            <p className="text-xl font-bold text-blue-600 mb-4">{plan.price}</p>
-            <ul className="mb-6 space-y-2 text-center">
+            <h2 className="text-xl font-semibold mb-2">{plan.name}</h2>
+            <p className="text-sm mb-4">{plan.description}</p>
+            <ul className="text-sm mb-4 list-disc pl-5">
               {plan.features.map((f, i) => (
-                <li key={i} className="text-sm text-gray-700">✔️ {f}</li>
+                <li key={i}>{f}</li>
               ))}
             </ul>
-            {plan.url ? (
-  <a
-    href={plan.url}
-    target="_blank"
-    rel="noopener noreferrer"
-    className={`mt-auto px-4 py-2 rounded-xl font-semibold text-white ${plan.highlight ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600 hover:bg-gray-700"}`}
-  >
-    Elegir plan
-  </a>
-) : (
-  <button
-    className="mt-auto px-4 py-2 rounded-xl font-semibold text-white bg-gray-400 cursor-not-allowed"
-    disabled
-  >
-    Próximamente
-  </button>
-)}
-
+            {plan.disabled ? (
+              <span className="inline-block px-4 py-2 text-sm bg-gray-300 text-gray-700 rounded cursor-default">
+                Current Plan
+              </span>
+            ) : (
+              <form method="POST" action="/api/stripe/checkout">
+                <input type="hidden" name="plan" value={plan.id} />
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 text-sm rounded hover:bg-blue-700 transition"
+                >
+                  Upgrade to {plan.name}
+                </button>
+              </form>
+            )}
           </div>
         ))}
       </div>
-    </main>
-  );
+    </div>
+  )
 }
