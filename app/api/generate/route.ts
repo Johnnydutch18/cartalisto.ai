@@ -116,11 +116,18 @@ export async function POST(req: Request) {
       },
     ]);
 
+    // ✅ Only increment the right field
     const updates: Record<string, any> = {
       lastGeneratedAt: new Date().toISOString(),
-      cvCount: type === "cv" ? cvCount + 1 : cvCount,
-      letterCount: type === "cover" ? letterCount + 1 : letterCount,
     };
+
+    if (type === "cv") {
+      updates.cvCount = cvCount + 1;
+    }
+
+    if (type === "cover") {
+      updates.letterCount = letterCount + 1;
+    }
 
     const { error: updateError } = await supabase
       .from("profiles")
