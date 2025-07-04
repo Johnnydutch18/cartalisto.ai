@@ -39,7 +39,6 @@ export async function POST(req: Request) {
 
   const userId = user.id;
 
-  // Fetch profile
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("plan, cvCount, letterCount, lastGeneratedAt")
@@ -56,13 +55,17 @@ export async function POST(req: Request) {
 
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
-  const lastGenerated = new Date(profile.lastGeneratedAt);
+
+  const lastGenerated = profile.lastGeneratedAt
+    ? new Date(profile.lastGeneratedAt)
+    : new Date(0); // fallback if null
+
   const shouldReset = lastGenerated < today;
 
   const cvCount = shouldReset ? 0 : profile.cvCount ?? 0;
   const letterCount = shouldReset ? 0 : profile.letterCount ?? 0;
 
-  // Parse body
+  // Parse prompt
   let prompt: string;
   let type: string;
 
