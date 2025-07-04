@@ -1,12 +1,13 @@
-// app/api/stripe/checkout/route.ts
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createServerClient } from '@supabase/ssr'
 import { cookies as getCookies } from 'next/headers'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!) // ✅ Removed API version for compatibility
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export async function POST(req: Request) {
+  console.log('🔁 Stripe checkout route hit')
+
   const body = await req.json()
   const { plan } = body
 
@@ -14,36 +15,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
   }
 
-  const cookieStore = await getCookies() // ✅ await this
+  // ✅ Await cookies() before using
+  const cookieStore = await getCookies()
 
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value,
-    set: (name: string, value: string, options: any) => {
-      cookieStore.set({
-        name,
-        value,
-        ...options,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      })
-    },
-    remove: (name: string, options: any) => {
-      cookieStore.set({
-        name,
-        value: '',
-        ...options,
-        maxAge: 0,
-      })
-    },
+    set: () => {},
+    remove: () => {},
   }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookies: cookieAdapter,
+      cookies: {
+        get: cookieAdapter.get,
+        set: cookieAdapter.set,
+        remove: cookieAdapter.remove,
+      },
     }
   )
 
@@ -53,6 +42,7 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser()
 
   if (authError || !user || !user.email) {
+    console.error('❌ Auth error:', authError)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -78,11 +68,12 @@ export async function POST(req: Request) {
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/account?canceled=true`,
     })
 
+    console.log('✅ Stripe session created:', session.id)
     return NextResponse.json({ url: session.url })
   } catch (err) {
-    console.error('Stripe error:', err)
+    console.error('❌ Stripe session error:', err)
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Payment failed' },
+      { error: err instanceof Error ? err.message : 'Stripe error' },
       { status: 500 }
     )
   }
