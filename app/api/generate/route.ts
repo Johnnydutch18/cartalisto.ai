@@ -48,24 +48,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al cargar tu perfil." }, { status: 500 });
   }
 
-  const plan = profile.plan ?? "free";
-  const maxPerDay = plan === "pro" ? Infinity : plan === "estandar" ? 5 : 1;
-
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  const lastGenerated = new Date(profile.lastGeneratedAt);
-  const shouldReset = lastGenerated < today;
-
-  const cvCount = shouldReset ? 0 : profile.cvCount ?? 0;
-  const letterCount = shouldReset ? 0 : profile.letterCount ?? 0;
-
+  // ✅ Normalize and type `type`
+  let type: "cv" | "cover" = "cv";
   let prompt: string;
-  let type: string;
 
   try {
     const body = await req.json();
     prompt = body.prompt;
-    type = body.type || "cv";
+    type = ((body.type || "cv").toLowerCase() === "cover" ? "cover" : "cv") as "cv" | "cover";
 
     if (!prompt) {
       return NextResponse.json({ result: "No se proporcionó el prompt." }, { status: 400 });
@@ -75,19 +65,36 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al procesar la solicitud." }, { status: 400 });
   }
 
-  const isCV = type !== "cover";
-  const currentCount = isCV ? cvCount : letterCount;
+  // ✅ Define limits with proper types
+  const plan = (profile.plan ?? "free") as "free" | "estandar" | "pro";
+  const limits: Record<"free" | "estandar" | "pro", Record<"cv" | "cover", number>> = {
+    free: { cv: 1, cover: 1 },
+    estandar: { cv: 5, cover: 5 },
+    pro: { cv: Infinity, cover: Infinity },
+  };
 
-  if (currentCount >= maxPerDay) {
+  const now = new Date();
+  now.setUTCHours(0, 0, 0, 0);
+  const last = profile.lastGeneratedAt ? new Date(profile.lastGeneratedAt) : null;
+  const resetToday = !last || last < now;
+
+  const cvCount = resetToday ? 0 : profile.cvCount ?? 0;
+  const letterCount = resetToday ? 0 : profile.letterCount ?? 0;
+
+  const usageCount = type === "cv" ? cvCount : letterCount;
+  const maxAllowed = limits[plan][type];
+
+  if (usageCount >= maxAllowed) {
     return NextResponse.json(
       { result: "⚠️ Has alcanzado tu límite diario. Actualiza tu plan para más usos." },
       { status: 429 }
     );
   }
 
-  const systemPrompt = isCV
-    ? "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado."
-    : "Eres un experto en cartas de presentación para el mercado laboral español. Responde solo con la carta generada.";
+  const systemPrompt =
+    type === "cover"
+      ? "Eres un experto en cartas de presentación para el mercado laboral español. Responde solo con la carta generada."
+      : "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado.";
 
   try {
     const chat = await openai.chat.completions.create({
@@ -101,22 +108,19 @@ export async function POST(req: Request) {
 
     const result = chat.choices[0].message.content;
 
+    // Log usage
     await supabase.from("generations").insert([
       {
         user_id: userId,
-        type: isCV ? "cv" : "cover",
+        type,
       },
     ]);
 
     const updates: Record<string, any> = {
       lastGeneratedAt: new Date().toISOString(),
+      cvCount: type === "cv" ? cvCount + 1 : cvCount,
+      letterCount: type === "cover" ? letterCount + 1 : letterCount,
     };
-
-    if (isCV) {
-      updates.cvCount = cvCount + 1;
-    } else {
-      updates.letterCount = letterCount + 1;
-    }
 
     const { error: updateError } = await supabase
       .from("profiles")
