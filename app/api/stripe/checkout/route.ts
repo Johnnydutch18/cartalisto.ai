@@ -88,5 +88,5 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.redirect(checkoutSession.url!, 303);
+return NextResponse.json({ url: checkoutSession.url }, { status: 200 });
 }

@@ -1,44 +1,42 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function UpgradeButton({ plan }: { plan: 'standard' | 'pro' }) {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleClick = async () => {
-    setLoading(true);
+    setLoading(true)
 
-    const formData = new FormData();
-    formData.append('plan', plan);
+    const formData = new FormData()
+    formData.append('plan', plan)
 
     const res = await fetch('/api/stripe/checkout', {
       method: 'POST',
       body: formData,
-      redirect: 'manual', // ⚠️ Important: prevent automatic redirect
-    });
+    })
 
     if (res.status === 401) {
-      router.push(`/login?redirect=/planes&mode=signup`);
-      return;
+      router.push(`/login?redirect=/planes&mode=signup`)
+      return
     }
 
-    if (res.status === 303) {
-      const redirectUrl = res.headers.get('Location');
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
-        return;
-      } else {
-        alert('Stripe redirect URL not found.');
-        setLoading(false);
-        return;
-      }
+    if (!res.ok) {
+      alert('Something went wrong.')
+      setLoading(false)
+      return
     }
 
-    alert('Something went wrong.');
-    setLoading(false);
-  };
+    const data = await res.json()
+    if (data?.url) {
+      window.location.href = data.url
+    } else {
+      alert('Failed to get Stripe URL.')
+      setLoading(false)
+    }
+  }
 
   return (
     <button
@@ -52,5 +50,5 @@ export default function UpgradeButton({ plan }: { plan: 'standard' | 'pro' }) {
     >
       {loading ? 'Redirigiendo…' : `Elegir ${plan === 'pro' ? 'Pro' : 'Estándar'}`}
     </button>
-  );
+  )
 }
