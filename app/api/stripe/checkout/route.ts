@@ -50,18 +50,26 @@ export async function POST(req: NextRequest) {
 
   const priceId = prices[plan as string];
 
+  // 🛑 Validate input
   if (!plan || typeof plan !== "string" || !priceId) {
+    console.log("❌ Invalid plan or priceId");
+    console.log("Plan received:", plan);
+    console.log("Resolved priceId:", priceId);
     return NextResponse.json({ error: "Missing or invalid plan" }, { status: 400 });
   }
 
-  // 🔍 DEBUG LOGGING
+  // 🔍 FULL DEBUG LOGGING
   console.log("🧪 Creating Stripe session:");
-  console.log("Plan:", plan);
-  console.log("Price ID:", priceId);
-  console.log("User email:", user.email);
-  console.log("User ID:", user.id);
-  console.log("Success URL:", `${process.env.NEXT_PUBLIC_SITE_URL}/success`);
-  console.log("Cancel URL:", `${process.env.NEXT_PUBLIC_SITE_URL}/planes`);
+  console.log("➡️ Plan:", plan);
+  console.log("➡️ Price ID:", priceId);
+  console.log("➡️ User Email:", user.email);
+  console.log("➡️ User ID:", user.id);
+  console.log("➡️ Success URL:", `${process.env.NEXT_PUBLIC_SITE_URL}/success`);
+  console.log("➡️ Cancel URL:", `${process.env.NEXT_PUBLIC_SITE_URL}/planes`);
+  console.log("🧾 ENV STRIPE_SECRET_KEY:", process.env.STRIPE_SECRET_KEY?.slice(0, 10));
+  console.log("🧾 ENV STRIPE_STANDARD_PRICE_ID:", process.env.STRIPE_STANDARD_PRICE_ID);
+  console.log("🧾 ENV STRIPE_PRO_PRICE_ID:", process.env.STRIPE_PRO_PRICE_ID);
+  console.log("🧾 ENV NEXT_PUBLIC_SITE_URL:", process.env.NEXT_PUBLIC_SITE_URL);
 
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "subscription",
