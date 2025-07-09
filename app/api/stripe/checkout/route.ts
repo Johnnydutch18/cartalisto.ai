@@ -8,7 +8,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 export async function POST(req: NextRequest) {
-  // ✅ Properly await the cookies
   const cookieStore = await nextCookies();
 
   const cookieAdapter = {
@@ -54,6 +53,15 @@ export async function POST(req: NextRequest) {
   if (!plan || typeof plan !== "string" || !priceId) {
     return NextResponse.json({ error: "Missing or invalid plan" }, { status: 400 });
   }
+
+  // 🔍 DEBUG LOGGING
+  console.log("🧪 Creating Stripe session:");
+  console.log("Plan:", plan);
+  console.log("Price ID:", priceId);
+  console.log("User email:", user.email);
+  console.log("User ID:", user.id);
+  console.log("Success URL:", `${process.env.NEXT_PUBLIC_SITE_URL}/success`);
+  console.log("Cancel URL:", `${process.env.NEXT_PUBLIC_SITE_URL}/planes`);
 
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "subscription",
