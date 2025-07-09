@@ -1,9 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies as nextCookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 
 export default async function PlansPage() {
-  const cookieStore = await nextCookies() // ✅ FIXED: added await
+  const cookieStore = await nextCookies()
 
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
@@ -26,14 +25,10 @@ export default async function PlansPage() {
     }
   )
 
+  // optional: keep for future use if you want to show "current plan"
   const {
     data: { user },
-    error: authError,
   } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    redirect('/login')
-  }
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
