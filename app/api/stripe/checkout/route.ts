@@ -1,80 +1,79 @@
-import { NextResponse } from 'next/server'
-import Stripe from 'stripe'
-import { createServerClient } from '@supabase/ssr'
-import { cookies as getCookies } from 'next/headers'
+// app/api/stripe/checkout/route.ts
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-export async function POST(req: Request) {
-  console.log('🔁 Stripe checkout route hit')
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-04-30.basil",
+});
 
-  const body = await req.json()
-  const { plan } = body
+export async function POST(req: NextRequest) {
+  const cookieStore = await cookies();
 
-  if (!['standard', 'pro'].includes(plan)) {
-    return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
-  }
-
-  // ✅ Await cookies() before using
-  const cookieStore = await getCookies()
 
   const cookieAdapter = {
-    get: (name: string) => cookieStore.get(name)?.value,
+    get: (name: string) => cookieStore.get(name)?.value ?? undefined,
+    getAll: () => {
+      const all: { name: string; value: string }[] = [];
+      for (const c of cookieStore.getAll()) {
+        all.push({ name: c.name, value: c.value });
+      }
+      return all;
+    },
     set: () => {},
     remove: () => {},
-  }
+  };
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
-      cookies: {
-        get: cookieAdapter.get,
-        set: cookieAdapter.set,
-        remove: cookieAdapter.remove,
-      },
+      cookies: cookieAdapter,
     }
-  )
+  );
+
+  const body = await req.formData();
+  const plan = body.get("plan");
+
+  if (!plan || typeof plan !== "string") {
+    return NextResponse.json({ error: "Missing or invalid plan" }, { status: 400 });
+  }
 
   const {
     data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
+    error,
+  } = await supabase.auth.getUser();
 
-  if (authError || !user || !user.email) {
-    console.error('❌ Auth error:', authError)
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (error || !user) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  try {
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      customer_email: user.email,
-      line_items: [
-        {
-          price:
-            plan === 'standard'
-              ? process.env.STRIPE_PRICE_STANDARD!
-              : process.env.STRIPE_PRICE_PRO!,
-          quantity: 1,
-        },
-      ],
-      metadata: {
-        user_id: user.id,
-        plan,
-      },
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/account?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/account?canceled=true`,
-    })
+  const email = user.email;
 
-    console.log('✅ Stripe session created:', session.id)
-    return NextResponse.json({ url: session.url })
-  } catch (err) {
-    console.error('❌ Stripe session error:', err)
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Stripe error' },
-      { status: 500 }
-    )
+  const prices: Record<string, string> = {
+    standard: process.env.STRIPE_STANDARD_PRICE_ID!,
+    pro: process.env.STRIPE_PRO_PRICE_ID!,
+  };
+
+  const priceId = prices[plan];
+
+  if (!priceId) {
+    return NextResponse.json({ error: "Invalid price ID" }, { status: 400 });
   }
+
+  const checkoutSession = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    customer_email: email!,
+    line_items: [{ price: priceId, quantity: 1 }],
+    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/success`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/planes`,
+    metadata: {
+      user_id: user.id,
+      plan,
+    },
+  });
+
+  return NextResponse.redirect(checkoutSession.url!, 303);
 }
