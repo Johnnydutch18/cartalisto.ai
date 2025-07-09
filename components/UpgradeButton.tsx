@@ -1,33 +1,33 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function UpgradeButton({ plan }: { plan: 'standard' | 'pro' }) {
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleClick = async () => {
-    setLoading(true)
+    setLoading(true);
     const res = await fetch('/api/stripe/checkout', {
       method: 'POST',
       body: new URLSearchParams({ plan }),
-    })
+    });
 
     if (res.status === 401) {
-      router.push('/login')
-      return
+      router.push(`/login?redirect=/planes&mode=signup`); // Redirect with mode param
+      return;
     }
 
     if (!res.ok) {
-      alert('Something went wrong.')
-      setLoading(false)
-      return
+      alert('Something went wrong.');
+      setLoading(false);
+      return;
     }
 
-    const redirectUrl = res.url
-    window.location.href = redirectUrl
-  }
+    const redirectUrl = res.url;
+    window.location.href = redirectUrl;
+  };
 
   return (
     <button
@@ -41,5 +41,5 @@ export default function UpgradeButton({ plan }: { plan: 'standard' | 'pro' }) {
     >
       {loading ? 'Redirigiendo…' : `Elegir ${plan === 'pro' ? 'Pro' : 'Estándar'}`}
     </button>
-  )
+  );
 }

@@ -51,10 +51,10 @@ export default function Header() {
       </nav>
 
       {/* Right: Login/Logout */}
-      <div className="w-1/3 flex justify-end items-center gap-4">
+      <div className="w-1/3 flex justify-end items-center gap-4 text-sm">
         {session?.user ? (
           <>
-            <span className="text-sm">{session.user.email}</span>
+            <span>{session.user.email}</span>
             <button
               onClick={handleLogout}
               className="text-blue-600 hover:underline"
@@ -63,9 +63,14 @@ export default function Header() {
             </button>
           </>
         ) : (
-          <Link href="/login" className="text-blue-600 hover:underline">
-            Iniciar sesión
-          </Link>
+          <>
+            <Link href="/login?mode=signin" className="text-blue-600 hover:underline">
+              Iniciar sesión
+            </Link>
+            <Link href="/login?mode=signup" className="text-blue-600 hover:underline">
+              Crear cuenta
+            </Link>
+          </>
         )}
       </div>
     </header>

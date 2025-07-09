@@ -1,18 +1,26 @@
 'use client';
 
-import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CircleIcon } from 'lucide-react';
 
-function LoginForm() {
+export default function LoginPage() {
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect');
-  const priceId = searchParams.get('priceId');
-  const inviteId = searchParams.get('inviteId');
-
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+
+  const redirect = searchParams.get('redirect') || '';
+  const priceId = searchParams.get('priceId') || '';
+  const inviteId = searchParams.get('inviteId') || '';
+
+  // Read mode from URL on first load
+  useEffect(() => {
+    const urlMode = searchParams.get('mode');
+    if (urlMode === 'signup') {
+      setMode('signup');
+    }
+  }, [searchParams]);
 
   return (
     <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
@@ -45,9 +53,9 @@ function LoginForm() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <form className="space-y-6">
-          <input type="hidden" name="redirect" value={redirect || ''} />
-          <input type="hidden" name="priceId" value={priceId || ''} />
-          <input type="hidden" name="inviteId" value={inviteId || ''} />
+          <input type="hidden" name="redirect" value={redirect} />
+          <input type="hidden" name="priceId" value={priceId} />
+          <input type="hidden" name="inviteId" value={inviteId} />
 
           <div>
             <Label htmlFor="email">Email</Label>
@@ -70,13 +78,5 @@ function LoginForm() {
         </form>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
   );
 }
