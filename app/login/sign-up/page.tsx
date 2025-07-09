@@ -1,18 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+export const dynamic = 'force-dynamic';
+
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CircleIcon } from 'lucide-react';
 
-export default function LoginPage() {
+export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect');
   const priceId = searchParams.get('priceId');
   const inviteId = searchParams.get('inviteId');
-
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
 
   return (
     <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
@@ -21,26 +21,8 @@ export default function LoginPage() {
           <CircleIcon className="h-12 w-12 text-orange-500" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          {mode === 'signin' ? 'Iniciar sesión' : 'Crear una cuenta'}
+          {mode === 'signin' ? 'Sign in to your account' : 'Create your account'}
         </h2>
-        <div className="mt-4 flex justify-center gap-4">
-          <button
-            onClick={() => setMode('signin')}
-            className={`px-4 py-2 rounded ${
-              mode === 'signin' ? 'bg-orange-600 text-white' : 'bg-white border'
-            }`}
-          >
-            Iniciar sesión
-          </button>
-          <button
-            onClick={() => setMode('signup')}
-            className={`px-4 py-2 rounded ${
-              mode === 'signup' ? 'bg-orange-600 text-white' : 'bg-white border'
-            }`}
-          >
-            Crear cuenta
-          </button>
-        </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -55,7 +37,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="password">Password</Label>
             <Input id="password" name="password" type="password" required />
           </div>
 
@@ -64,10 +46,19 @@ export default function LoginPage() {
               type="submit"
               className="w-full py-2 px-4 rounded bg-orange-600 text-white font-medium"
             >
-              {mode === 'signin' ? 'Iniciar sesión' : 'Registrarse'}
+              {mode === 'signin' ? 'Sign in' : 'Sign up'}
             </button>
           </div>
         </form>
+
+        <div className="mt-6 text-sm text-center">
+          <Link
+            href={mode === 'signin' ? '/sign-up' : '/sign-in'}
+            className="text-blue-600 hover:underline"
+          >
+            {mode === 'signin' ? 'Create an account' : 'Sign in to existing account'}
+          </Link>
+        </div>
       </div>
     </div>
   );
