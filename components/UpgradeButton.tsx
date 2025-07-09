@@ -9,13 +9,17 @@ export default function UpgradeButton({ plan }: { plan: 'standard' | 'pro' }) {
 
   const handleClick = async () => {
     setLoading(true);
+
+    const formData = new FormData();
+    formData.append('plan', plan);
+
     const res = await fetch('/api/stripe/checkout', {
       method: 'POST',
-      body: new URLSearchParams({ plan }),
+      body: formData,
     });
 
     if (res.status === 401) {
-      router.push(`/login?redirect=/planes&mode=signup`); // Redirect with mode param
+      router.push(`/login?redirect=/planes&mode=signup`);
       return;
     }
 
