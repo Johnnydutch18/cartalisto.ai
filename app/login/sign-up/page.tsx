@@ -1,73 +1,74 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { useSearchParams } from 'next/navigation';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { CircleIcon } from 'lucide-react';
 
-export default function SignUpPage() {
-  const router = useRouter();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect');
+  const priceId = searchParams.get('priceId');
+  const inviteId = searchParams.get('inviteId');
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const { error } = await supabase.auth.signUp({ email, password });
-
-    if (error) {
-      setError(error.message);
-    } else {
-      router.push('/');
-    }
-
-    setLoading(false);
-  };
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-md w-full bg-white p-6 rounded shadow space-y-4"
-      >
-        <h1 className="text-xl font-bold">Create Account</h1>
+    <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="flex justify-center">
+          <CircleIcon className="h-12 w-12 text-orange-500" />
+        </div>
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          {mode === 'signin' ? 'Iniciar sesión' : 'Crear una cuenta'}
+        </h2>
+        <div className="mt-4 flex justify-center gap-4">
+          <button
+            onClick={() => setMode('signin')}
+            className={`px-4 py-2 rounded ${
+              mode === 'signin' ? 'bg-orange-600 text-white' : 'bg-white border'
+            }`}
+          >
+            Iniciar sesión
+          </button>
+          <button
+            onClick={() => setMode('signup')}
+            className={`px-4 py-2 rounded ${
+              mode === 'signup' ? 'bg-orange-600 text-white' : 'bg-white border'
+            }`}
+          >
+            Crear cuenta
+          </button>
+        </div>
+      </div>
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full px-4 py-2 border rounded"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <form className="space-y-6">
+          <input type="hidden" name="redirect" value={redirect || ''} />
+          <input type="hidden" name="priceId" value={priceId || ''} />
+          <input type="hidden" name="inviteId" value={inviteId || ''} />
 
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full px-4 py-2 border rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" name="email" type="email" required />
+          </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+          <div>
+            <Label htmlFor="password">Contraseña</Label>
+            <Input id="password" name="password" type="password" required />
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-orange-600 text-white px-4 py-2 rounded w-full"
-        >
-          {loading ? 'Signing up...' : 'Sign up'}
-        </button>
-      </form>
-    </main>
+          <div>
+            <button
+              type="submit"
+              className="w-full py-2 px-4 rounded bg-orange-600 text-white font-medium"
+            >
+              {mode === 'signin' ? 'Iniciar sesión' : 'Registrarse'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
