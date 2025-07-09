@@ -31,47 +31,52 @@ export default function Header() {
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
-    setSession(null);            // clear local state
-    router.refresh();            // refresh layout to clear session
-    router.push("/");            // redirect home
+    setSession(null);
+    router.refresh();
+    router.push("/");
   };
 
   return (
-    <header className="w-full p-4 flex justify-between items-center border-b">
-      {/* Left: Brand title */}
-      <div className="w-1/3">
-        <Link href="/" className="text-lg font-bold">CartaListo</Link>
-      </div>
+    <header className="w-full px-4 py-3 border-b">
+      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
+        {/* Left: Brand */}
+        <Link href="/" className="text-lg font-bold">
+          CartaListo
+        </Link>
 
-      {/* Center navigation menu */}
-      <nav className="flex justify-center gap-6 w-1/3 text-sm">
-        <Link href="/arregla-mi-curriculum" className="hover:underline">Currículum</Link>
-        <Link href="/carta-de-presentacion" className="hover:underline">Carta</Link>
-        <Link href="/planes" className="hover:underline">Planes</Link>
-      </nav>
+        {/* Center Nav */}
+        <nav className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-sm">
+          <Link href="/arregla-mi-curriculum" className="hover:underline">
+            Currículum
+          </Link>
+          <Link href="/carta-de-presentacion" className="hover:underline">
+            Carta
+          </Link>
+          <Link href="/planes" className="hover:underline">
+            Planes
+          </Link>
+        </nav>
 
-      {/* Right: Login/Logout */}
-      <div className="w-1/3 flex justify-end items-center gap-4 text-sm">
-        {session?.user ? (
-          <>
-            <span>{session.user.email}</span>
-            <button
-              onClick={handleLogout}
-              className="text-blue-600 hover:underline"
-            >
-              Cerrar sesión
-            </button>
-          </>
-        ) : (
-          <>
-            <Link href="/login?mode=signin" className="text-blue-600 hover:underline">
-              Iniciar sesión
-            </Link>
-            <Link href="/login?mode=signup" className="text-blue-600 hover:underline">
-              Crear cuenta
-            </Link>
-          </>
-        )}
+        {/* Right: Auth */}
+        <div className="flex flex-col sm:flex-row items-center gap-2 text-sm">
+          {session?.user ? (
+            <>
+              <span className="text-xs sm:text-sm truncate max-w-[150px]">{session.user.email}</span>
+              <button onClick={handleLogout} className="text-blue-600 hover:underline">
+                Cerrar sesión
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login?mode=signin" className="text-blue-600 hover:underline">
+                Iniciar sesión
+              </Link>
+              <Link href="/login?mode=signup" className="text-blue-600 hover:underline">
+                Crear cuenta
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );
