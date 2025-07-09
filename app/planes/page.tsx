@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies as nextCookies } from 'next/headers'
+import UpgradeButton from '@/components/UpgradeButton'
 
 export default async function PlansPage() {
   const cookieStore = await nextCookies()
@@ -25,7 +26,6 @@ export default async function PlansPage() {
     }
   )
 
-  // optional: keep for future use if you want to show "current plan"
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -58,15 +58,7 @@ export default async function PlansPage() {
             <li>✔️ PDF + Copiar</li>
             <li>✔️ Selector de tono</li>
           </ul>
-          <form action="/api/stripe/checkout" method="POST">
-            <input type="hidden" name="plan" value="standard" />
-            <button
-              type="submit"
-              className="bg-black text-white px-4 py-2 rounded hover:opacity-80"
-            >
-              Elegir Estándar
-            </button>
-          </form>
+          <UpgradeButton plan="standard" />
         </div>
 
         {/* Pro Plan */}
@@ -79,15 +71,7 @@ export default async function PlansPage() {
             <li>✔️ Todo lo del Estándar</li>
             <li>✔️ Historial + Editor Próximamente</li>
           </ul>
-          <form action="/api/stripe/checkout" method="POST">
-            <input type="hidden" name="plan" value="pro" />
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Elegir Pro
-            </button>
-          </form>
+          <UpgradeButton plan="pro" />
         </div>
       </div>
     </div>

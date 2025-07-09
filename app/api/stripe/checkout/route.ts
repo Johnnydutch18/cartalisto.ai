@@ -36,7 +36,6 @@ export async function POST(req: NextRequest) {
   const body = await req.formData();
   const plan = body.get("plan");
 
-  // ✅ DEBUG LOGGING HERE
   const prices: Record<string, string> = {
     standard: process.env.STRIPE_STANDARD_PRICE_ID!,
     pro: process.env.STRIPE_PRO_PRICE_ID!,
@@ -59,7 +58,7 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (error || !user) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   }
 
   const email = user.email;
