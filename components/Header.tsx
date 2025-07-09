@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { Session } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Menu } from "lucide-react";
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,6 +14,7 @@ const supabase = createBrowserClient(
 
 export default function Header() {
   const [session, setSession] = useState<Session | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -37,43 +39,53 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full px-4 py-3 border-b">
-      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
-        {/* Left: Brand */}
-        <Link href="/" className="text-lg font-bold">
-          CartaListo
-        </Link>
+    <header className="w-full px-4 py-4 border-b flex justify-between items-center relative z-50">
+      {/* Logo */}
+      <Link href="/" className="text-xl font-bold">
+        CartaListo
+      </Link>
 
-        {/* Center Nav */}
-        <nav className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-sm">
-          <Link href="/arregla-mi-curriculum" className="hover:underline">
-            Currículum
-          </Link>
-          <Link href="/carta-de-presentacion" className="hover:underline">
-            Carta
-          </Link>
-          <Link href="/planes" className="hover:underline">
-            Planes
-          </Link>
-        </nav>
+      {/* Desktop Nav */}
+      <nav className="hidden md:flex gap-6 text-sm">
+        <Link href="/arregla-mi-curriculum" className="hover:underline">Currículum</Link>
+        <Link href="/carta-de-presentacion" className="hover:underline">Carta</Link>
+        <Link href="/planes" className="hover:underline">Planes</Link>
+        {session?.user ? (
+          <>
+            <span>{session.user.email}</span>
+            <button onClick={handleLogout} className="text-blue-600 hover:underline">Cerrar sesión</button>
+          </>
+        ) : (
+          <>
+            <Link href="/login?mode=signin" className="text-blue-600 hover:underline">Iniciar sesión</Link>
+            <Link href="/login?mode=signup" className="text-blue-600 hover:underline">Crear cuenta</Link>
+          </>
+        )}
+      </nav>
 
-        {/* Right: Auth */}
-        <div className="flex flex-col sm:flex-row items-center gap-2 text-sm">
+      {/* Mobile Hamburger */}
+      <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
+        <Menu className="w-6 h-6" />
+      </button>
+
+      {/* Slide-In Mobile Menu */}
+      <div
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${menuOpen ? "translate-x-0" : "translate-x-full"}`}
+      >
+        <div className="p-4 flex flex-col gap-4 text-sm">
+          <button className="self-end" onClick={() => setMenuOpen(false)}>✕</button>
+          <Link href="/arregla-mi-curriculum" onClick={() => setMenuOpen(false)} className="hover:underline">Currículum</Link>
+          <Link href="/carta-de-presentacion" onClick={() => setMenuOpen(false)} className="hover:underline">Carta</Link>
+          <Link href="/planes" onClick={() => setMenuOpen(false)} className="hover:underline">Planes</Link>
           {session?.user ? (
             <>
-              <span className="text-xs sm:text-sm truncate max-w-[150px]">{session.user.email}</span>
-              <button onClick={handleLogout} className="text-blue-600 hover:underline">
-                Cerrar sesión
-              </button>
+              <span>{session.user.email}</span>
+              <button onClick={() => { setMenuOpen(false); handleLogout(); }} className="text-blue-600 hover:underline">Cerrar sesión</button>
             </>
           ) : (
             <>
-              <Link href="/login?mode=signin" className="text-blue-600 hover:underline">
-                Iniciar sesión
-              </Link>
-              <Link href="/login?mode=signup" className="text-blue-600 hover:underline">
-                Crear cuenta
-              </Link>
+              <Link href="/login?mode=signin" onClick={() => setMenuOpen(false)} className="text-blue-600 hover:underline">Iniciar sesión</Link>
+              <Link href="/login?mode=signup" onClick={() => setMenuOpen(false)} className="text-blue-600 hover:underline">Crear cuenta</Link>
             </>
           )}
         </div>
