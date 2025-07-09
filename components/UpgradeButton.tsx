@@ -16,6 +16,7 @@ export default function UpgradeButton({ plan }: { plan: 'standard' | 'pro' }) {
     const res = await fetch('/api/stripe/checkout', {
       method: 'POST',
       body: formData,
+      redirect: 'manual', // ⚠️ Important: prevent automatic redirect
     });
 
     if (res.status === 401) {
@@ -23,14 +24,20 @@ export default function UpgradeButton({ plan }: { plan: 'standard' | 'pro' }) {
       return;
     }
 
-    if (!res.ok) {
-      alert('Something went wrong.');
-      setLoading(false);
-      return;
+    if (res.status === 303) {
+      const redirectUrl = res.headers.get('Location');
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+        return;
+      } else {
+        alert('Stripe redirect URL not found.');
+        setLoading(false);
+        return;
+      }
     }
 
-    const redirectUrl = res.url;
-    window.location.href = redirectUrl;
+    alert('Something went wrong.');
+    setLoading(false);
   };
 
   return (
