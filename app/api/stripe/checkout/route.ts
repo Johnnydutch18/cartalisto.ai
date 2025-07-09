@@ -12,7 +12,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
 
-
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
     getAll: () => {
@@ -37,6 +36,19 @@ export async function POST(req: NextRequest) {
   const body = await req.formData();
   const plan = body.get("plan");
 
+  // ✅ DEBUG LOGGING HERE
+  const prices: Record<string, string> = {
+    standard: process.env.STRIPE_STANDARD_PRICE_ID!,
+    pro: process.env.STRIPE_PRO_PRICE_ID!,
+  };
+
+  console.log("⚠️ Received plan:", plan);
+  console.log("⚠️ Matching priceId:", prices[plan as string]);
+  console.log("✅ Available env:", {
+    STRIPE_STANDARD_PRICE_ID: process.env.STRIPE_STANDARD_PRICE_ID,
+    STRIPE_PRO_PRICE_ID: process.env.STRIPE_PRO_PRICE_ID,
+  });
+
   if (!plan || typeof plan !== "string") {
     return NextResponse.json({ error: "Missing or invalid plan" }, { status: 400 });
   }
@@ -51,12 +63,6 @@ export async function POST(req: NextRequest) {
   }
 
   const email = user.email;
-
-  const prices: Record<string, string> = {
-    standard: process.env.STRIPE_STANDARD_PRICE_ID!,
-    pro: process.env.STRIPE_PRO_PRICE_ID!,
-  };
-
   const priceId = prices[plan];
 
   if (!priceId) {
