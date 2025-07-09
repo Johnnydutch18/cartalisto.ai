@@ -16,9 +16,9 @@
     "jsx": "preserve",
     "incremental": true,
     "noUncheckedIndexedAccess": false,
-    "baseUrl": ".",
+    "baseUrl": ".",                             // 👈 root folder
     "paths": {
-      "@/*": ["app/*", "lib/*"]
+      "@/*": ["./*"]                            // 👈 allow imports from root-level folders like components/, lib/, utils/
     },
     "plugins": [
       {
