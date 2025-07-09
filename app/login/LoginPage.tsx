@@ -1,20 +1,53 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { CircleIcon } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { CircleIcon } from 'lucide-react'
+import { createBrowserClient } from '@supabase/ssr'
+
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export default function LoginPage() {
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect');
-  const priceId = searchParams.get('priceId');
-  const inviteId = searchParams.get('inviteId');
-
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get('redirect') || '/'
   const [mode, setMode] = useState<'signin' | 'signup'>(
-    (searchParams.get('mode') as 'signin' | 'signup') || 'signin'
-  );
+    searchParams.get('mode') === 'signup' ? 'signup' : 'signin'
+  )
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    try {
+      const { data, error } =
+        mode === 'signin'
+          ? await supabase.auth.signInWithPassword({ email, password })
+          : await supabase.auth.signUp({ email, password })
+
+      if (error) {
+        setError(error.message)
+      } else {
+        router.push(redirect)
+        router.refresh()
+      }
+    } catch (err: any) {
+      setError('Something went wrong.')
+    }
+
+    setLoading(false)
+  }
 
   return (
     <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
@@ -46,31 +79,46 @@ export default function LoginPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <form className="space-y-6">
-          <input type="hidden" name="redirect" value={redirect || ''} />
-          <input type="hidden" name="priceId" value={priceId || ''} />
-          <input type="hidden" name="inviteId" value={inviteId || ''} />
-
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" required />
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
           </div>
 
           <div>
             <Label htmlFor="password">Contraseña</Label>
-            <Input id="password" name="password" type="password" required />
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
           </div>
+
+          {error && <p className="text-red-600 text-sm">{error}</p>}
 
           <div>
             <button
               type="submit"
+              disabled={loading}
               className="w-full py-2 px-4 rounded bg-orange-600 text-white font-medium"
             >
-              {mode === 'signin' ? 'Iniciar sesión' : 'Registrarse'}
+              {loading
+                ? 'Cargando...'
+                : mode === 'signin'
+                ? 'Iniciar sesión'
+                : 'Registrarse'}
             </button>
           </div>
         </form>
       </div>
     </div>
-  );
+  )
 }
