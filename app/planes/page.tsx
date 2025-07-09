@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies as nextCookies } from 'next/headers'
-import UpgradeButton from '@/components/UpgradeButton'
+import UpgradeButton from '../../components/UpgradeButton' // ✅ Corrected path
 
 export default async function PlansPage() {
   const cookieStore = await nextCookies()
