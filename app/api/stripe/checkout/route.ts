@@ -50,11 +50,16 @@ export async function POST(req: NextRequest) {
 
   const priceId = prices[plan as string];
 
+  // 🛠️ Extra pre-validation debug
+  console.log("🛠️ Raw plan from formData:", plan);
+  console.log("🛠️ Available price IDs:", prices);
+  console.log("🛠️ Matched price ID:", priceId);
+
   // 🛑 Validate input
   if (!plan || typeof plan !== "string" || !priceId) {
-    console.log("❌ Invalid plan or priceId");
-    console.log("Plan received:", plan);
-    console.log("Resolved priceId:", priceId);
+    console.log("❌ INVALID PLAN OR PRICE ID");
+    console.log("🧨 plan:", plan);
+    console.log("🧨 priceId:", priceId);
     return NextResponse.json({ error: "Missing or invalid plan" }, { status: 400 });
   }
 
