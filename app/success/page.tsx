@@ -1,22 +1,47 @@
-'use client';
+"use client";
+import { useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { createBrowserClient } from "@supabase/ssr";
 
-import { useRouter } from "next/navigation";
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function SuccessPage() {
+  const searchParams = useSearchParams();
   const router = useRouter();
 
-  return (
-    <div className="max-w-xl mx-auto text-center mt-20">
-      <h1 className="text-2xl font-bold text-green-600">¡Gracias por tu compra!</h1>
-      <p className="mt-4">
-        Tu plan ha sido actualizado correctamente. Ya puedes disfrutar de todas las funciones premium.
-      </p>
-      <button
-        onClick={() => router.push("/")}
-        className="mt-6 px-4 py-2 bg-black text-white rounded hover:opacity-80"
-      >
-        Volver al inicio
-      </button>
-    </div>
-  );
+  useEffect(() => {
+    const updateProfile = async () => {
+      const stripeCustomerId = searchParams.get("customer");
+      const priceId = searchParams.get("priceId");
+
+      const plan = priceId?.includes("pro")
+        ? "pro"
+        : priceId?.includes("estandar")
+        ? "estandar"
+        : "free";
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData.session?.user;
+
+      if (user && stripeCustomerId) {
+        await supabase
+          .from("profiles")
+          .update({
+            stripe_customer_id: stripeCustomerId,
+            plan,
+            email: user.email,
+          })
+          .eq("id", user.id);
+      }
+
+      router.push("/cuenta");
+    };
+
+    updateProfile();
+  }, [searchParams, router]);
+
+  return <p className="p-6">Actualizando tu cuenta...</p>;
 }

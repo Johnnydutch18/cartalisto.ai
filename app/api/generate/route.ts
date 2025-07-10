@@ -98,13 +98,14 @@ export async function POST(req: Request) {
       temperature: 0.7,
     });
 
-    const result = chat.choices[0].message.content;
+    const result = chat.choices[0].message.content?.trim() ?? "";
 
-    // ✅ Log generation
+    // ✅ Log generation + result
     await supabase.from("generations").insert([
       {
         user_id: userId,
         type,
+        output: result, // <-- save it for later viewing
       },
     ]);
 

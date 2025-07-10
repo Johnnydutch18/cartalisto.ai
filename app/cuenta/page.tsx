@@ -1,7 +1,7 @@
-// app/cuenta/page.tsx
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 export default async function CuentaPage() {
   const cookieStore = await cookies();
@@ -32,7 +32,7 @@ export default async function CuentaPage() {
 
   const { data: generations } = await supabase
     .from('generations')
-    .select('type, created_at')
+    .select('id, type, created_at')
     .eq('user_id', session.user.id)
     .order('created_at', { ascending: false });
 
@@ -41,8 +41,8 @@ export default async function CuentaPage() {
       <h1 className="text-2xl font-bold mb-4">Mi Cuenta</h1>
 
       <div className="mb-6 p-4 bg-white rounded-xl shadow">
-        <p><strong>Email:</strong> {profile?.email}</p>
-        <p><strong>Plan actual:</strong> {profile?.plan}</p>
+        <p><strong>Email:</strong> {profile?.email ?? "No disponible"}</p>
+        <p><strong>Plan actual:</strong> {profile?.plan ?? "No disponible"}</p>
         <form action="/api/create-billing-portal-session" method="POST">
           <button
             type="submit"
@@ -60,9 +60,15 @@ export default async function CuentaPage() {
             <li>No hay generaciones todavía.</li>
           )}
           {generations?.map((gen) => (
-            <li key={gen.created_at} className="border-b pb-1">
+            <li key={gen.id} className="border-b pb-1">
               {gen.type === 'cv' ? 'Currículum' : 'Carta'} —{' '}
-              {new Date(gen.created_at).toLocaleString('es-ES')}
+              {new Date(gen.created_at).toLocaleString('es-ES')} —{' '}
+              <Link
+                href={`/ver?id=${gen.id}`}
+                className="text-blue-600 hover:underline"
+              >
+                Ver
+              </Link>
             </li>
           ))}
         </ul>
