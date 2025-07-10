@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
-import html2pdf from "html2pdf.js";
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -53,8 +52,10 @@ export default function VerPage() {
     fetchData();
   }, [searchParams, router]);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!output) return;
+
+    const html2pdf = (await import("html2pdf.js")).default;
 
     const element = document.getElementById("pdf-content");
     const opt = {
