@@ -3,9 +3,8 @@ import Stripe from "stripe";
 import { createServerClient } from "@supabase/ssr";
 import { cookies as nextCookies } from "next/headers";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-apiVersion: "2025-04-30.basil",
-});
+// ✅ Clean Stripe init — no version override
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get("session_id");
