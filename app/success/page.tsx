@@ -1,31 +1,29 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function SuccessPage() {
+function SuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [sessionId, setSessionId] = useState<string | null>(null);
 
   useEffect(() => {
-    const id = searchParams.get("session_id");
-    setSessionId(id);
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (!sessionId) return;
+    const sessionId = searchParams.get("session_id");
+    if (!sessionId) {
+      setStatus("error");
+      return;
+    }
 
     fetch(`/api/stripe/confirm?session_id=${sessionId}`)
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Failed to confirm");
         return res.json();
       })
       .then(() => setStatus("success"))
       .catch(() => setStatus("error"));
-  }, [sessionId]);
+  }, [searchParams]);
 
   if (status === "loading") {
     return <p className="text-center mt-20">⏳ Confirmando tu compra…</p>;
@@ -43,9 +41,7 @@ export default function SuccessPage() {
   return (
     <div className="max-w-xl mx-auto text-center mt-20">
       <h1 className="text-2xl font-bold text-green-600">¡Gracias por tu compra!</h1>
-      <p className="mt-4">
-        Tu plan ha sido actualizado correctamente. Ya puedes disfrutar de todas las funciones premium.
-      </p>
+      <p className="mt-4">Tu plan ha sido actualizado correctamente. Ya puedes disfrutar de todas las funciones premium.</p>
       <button
         onClick={() => router.push("/")}
         className="mt-6 px-4 py-2 bg-black text-white rounded hover:opacity-80"
@@ -56,5 +52,13 @@ export default function SuccessPage() {
   );
 }
 
-// 👇 Prevent build errors with useSearchParams
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<p className="text-center mt-20">Cargando…</p>}>
+      <SuccessContent />
+    </Suspense>
+  );
+}
+
+// ✅ Prevent prerender error
 export const dynamic = "force-dynamic";
