@@ -3,8 +3,10 @@ import Stripe from "stripe";
 import { createServerClient } from "@supabase/ssr";
 import { cookies as nextCookies } from "next/headers";
 
-// ✅ Clean Stripe init — no version override
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+// ✅ Use correct Stripe version
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-04-30.basil",
+});
 
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get("session_id");
@@ -14,19 +16,28 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    console.log("🔎 Confirming Stripe session:", sessionId);
 
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
     const email = session.customer_email;
     const plan = session.metadata?.plan;
+
+    console.log("📧 Email:", email);
+    console.log("🧾 Plan:", plan);
 
     if (!email || !plan) {
       return NextResponse.json({ error: "Missing session metadata" }, { status: 400 });
     }
 
+    // ✅ Use await for cookies
     const cookieStore = await nextCookies();
     const cookieAdapter = {
       get: (name: string) => cookieStore.get(name)?.value ?? undefined,
-      getAll: () => cookieStore.getAll().map(({ name, value }) => ({ name, value })),
+      getAll: () =>
+        cookieStore.getAll().map(({ name, value }: { name: string; value: string }) => ({
+          name,
+          value,
+        })),
       set: () => {},
       remove: () => {},
     };
@@ -44,6 +55,7 @@ export async function GET(req: NextRequest) {
       .single();
 
     if (profileError || !userProfile) {
+      console.error("❌ Supabase profile lookup error:", profileError?.message);
       return NextResponse.json({ error: "User not found in Supabase" }, { status: 404 });
     }
 
@@ -53,9 +65,11 @@ export async function GET(req: NextRequest) {
       .eq("id", userProfile.id);
 
     if (updateError) {
+      console.error("❌ Supabase update error:", updateError.message);
       return NextResponse.json({ error: "Failed to update plan" }, { status: 500 });
     }
 
+    console.log(`✅ Plan "${plan}" successfully set for ${email}`);
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error("❌ Stripe confirm error:", err.message || err);
