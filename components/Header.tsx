@@ -14,16 +14,27 @@ const supabase = createBrowserClient(
 
 export default function Header() {
   const [session, setSession] = useState<Session | null>(null);
+  const [plan, setPlan] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    // Initial session check
+    supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
+      if (data.session?.user) {
+        fetchUserPlan(data.session.user.id);
+      }
     });
 
+    // Listen for auth changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
+      if (newSession?.user) {
+        fetchUserPlan(newSession.user.id);
+      } else {
+        setPlan(null);
+      }
     });
 
     return () => {
@@ -31,9 +42,22 @@ export default function Header() {
     };
   }, []);
 
+  const fetchUserPlan = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("plan")
+      .eq("id", userId)
+      .single();
+
+    if (!error && data?.plan) {
+      setPlan(data.plan);
+    }
+  };
+
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
     setSession(null);
+    setPlan(null);
     router.refresh();
     router.push("/");
   };
@@ -52,7 +76,7 @@ export default function Header() {
         <Link href="/planes" className="hover:underline">Planes</Link>
         {session?.user ? (
           <>
-            <span>{session.user.email}</span>
+            <span>{session.user.email} {plan && <span className="text-xs text-gray-500">({plan})</span>}</span>
             <button onClick={handleLogout} className="text-blue-600 hover:underline">Cerrar sesión</button>
           </>
         ) : (
@@ -79,8 +103,19 @@ export default function Header() {
           <Link href="/planes" onClick={() => setMenuOpen(false)} className="hover:underline">Planes</Link>
           {session?.user ? (
             <>
-              <span>{session.user.email}</span>
-              <button onClick={() => { setMenuOpen(false); handleLogout(); }} className="text-blue-600 hover:underline">Cerrar sesión</button>
+              <span>
+                {session.user.email}
+                {plan && <span className="block text-xs text-gray-500">Plan: {plan}</span>}
+              </span>
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  handleLogout();
+                }}
+                className="text-blue-600 hover:underline"
+              >
+                Cerrar sesión
+              </button>
             </>
           ) : (
             <>
