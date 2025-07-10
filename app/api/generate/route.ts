@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al cargar tu perfil." }, { status: 500 });
   }
 
-  // ✅ Normalize type
+  // ✅ Parse body
   let type: "cv" | "cover" = "cv";
   let prompt: string;
 
@@ -65,21 +65,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al procesar la solicitud." }, { status: 400 });
   }
 
-  // ✅ Limit logic
+  // ✅ Limit logic by plan
   const plan = (profile.plan ?? "free") as "free" | "estandar" | "pro";
   const isFree = plan === "free";
 
-  const now = new Date();
-  now.setUTCHours(0, 0, 0, 0);
-  const last = profile.lastGeneratedAt ? new Date(profile.lastGeneratedAt) : null;
-  const resetToday = !last || last < now;
+  const today = new Date().toISOString().split("T")[0];
+  const lastDate = profile.lastGeneratedAt?.split("T")[0] ?? "";
+  const isSameDay = today === lastDate;
 
-  const cvCount = resetToday ? 0 : profile.cvCount ?? 0;
-  const letterCount = resetToday ? 0 : profile.letterCount ?? 0;
+  const cvCount = isSameDay ? profile.cvCount ?? 0 : 0;
+  const letterCount = isSameDay ? profile.letterCount ?? 0 : 0;
 
-  const totalCount = cvCount + letterCount;
-
-  if (isFree && totalCount >= 1) {
+  if (isFree && (cvCount + letterCount) >= 1) {
     return NextResponse.json(
       { result: "⚠️ Has alcanzado tu límite diario. Actualiza tu plan para más usos." },
       { status: 429 }
@@ -103,7 +100,7 @@ export async function POST(req: Request) {
 
     const result = chat.choices[0].message.content;
 
-    // Log usage
+    // Log usage to generations table
     await supabase.from("generations").insert([
       {
         user_id: userId,
@@ -111,17 +108,17 @@ export async function POST(req: Request) {
       },
     ]);
 
-    // ✅ Update only correct field + reset logic
+    // ✅ Update correct usage count
     const updates: Record<string, any> = {
       lastGeneratedAt: new Date().toISOString(),
     };
 
     if (type === "cv") {
-      updates.cvCount = resetToday ? 1 : cvCount + 1;
-      updates.letterCount = resetToday ? 0 : letterCount;
+      updates.cvCount = isSameDay ? cvCount + 1 : 1;
+      updates.letterCount = isSameDay ? letterCount : 0;
     } else {
-      updates.cvCount = resetToday ? 0 : cvCount;
-      updates.letterCount = resetToday ? 1 : letterCount + 1;
+      updates.cvCount = isSameDay ? cvCount : 0;
+      updates.letterCount = isSameDay ? letterCount + 1 : 1;
     }
 
     const { error: updateError } = await supabase
@@ -130,12 +127,12 @@ export async function POST(req: Request) {
       .eq("id", userId);
 
     if (updateError) {
-      console.error("❌ Error updating profile counts:", updateError);
+      console.error("❌ Error updating usage:", updateError);
     }
 
     return NextResponse.json({ result });
   } catch (error: any) {
-    console.error("❌ Error generating with OpenAI:", error.message || error);
+    console.error("❌ OpenAI Error:", error.message || error);
     return NextResponse.json(
       { result: "❌ Error al generar. Inténtalo de nuevo más tarde." },
       { status: 500 }
