@@ -48,15 +48,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al cargar tu perfil." }, { status: 500 });
   }
 
-  // ✅ Parse body
-  let type: "cv" | "letter" = "cv";
+  // ✅ Parse request body
+  let type: "cv" | "cover" = "cv";
   let prompt: string;
 
   try {
     const body = await req.json();
     prompt = body.prompt;
-    const rawType = (body.type || "cv").toLowerCase();
-    type = rawType === "letter" || rawType === "cover" ? "letter" : "cv";
+
+    const rawType = (body.type || "").toLowerCase().trim();
+    if (rawType.includes("letter") || rawType === "cover") {
+      type = "cover";
+    } else {
+      type = "cv";
+    }
+
+    console.log("📝 Parsed type:", type);
 
     if (!prompt) {
       return NextResponse.json({ result: "No se proporcionó el prompt." }, { status: 400 });
@@ -66,7 +73,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al procesar la solicitud." }, { status: 400 });
   }
 
-  // ✅ Limit logic by plan
+  // ✅ Plan + limits
   const plan = (profile.plan ?? "free") as "free" | "estandar" | "pro";
   const isFree = plan === "free";
 
@@ -85,7 +92,7 @@ export async function POST(req: Request) {
   }
 
   const systemPrompt =
-    type === "letter"
+    type === "cover"
       ? "Eres un experto en cartas de presentación para el mercado laboral español. Responde solo con la carta generada."
       : "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado.";
 
@@ -101,24 +108,21 @@ export async function POST(req: Request) {
 
     const result = chat.choices[0].message.content?.trim() ?? "";
 
-    // ✅ Store generation result with debug
-    const { data: inserted, error: insertError } = await supabase
-      .from("generations")
-      .insert([
-        {
-          user_id: userId,
-          type,
-          output: result,
-        },
-      ])
-      .select();
+    // ✅ Store generation in database
+    const { error: insertError } = await supabase.from("generations").insert([
+      {
+        user_id: userId,
+        type,
+        output: result,
+      },
+    ]);
 
-    console.log("🧾 Insert result:", inserted);
     if (insertError) {
       console.error("❌ Insert error:", insertError);
+      return NextResponse.json({ result: "❌ Error al guardar la generación." }, { status: 500 });
     }
 
-    // ✅ Update usage + fallback email if missing
+    // ✅ Update profile usage + email fallback
     const updates: Record<string, any> = {
       lastGeneratedAt: new Date().toISOString(),
     };
