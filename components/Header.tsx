@@ -1,3 +1,4 @@
+// app/components/Header.tsx (or wherever it's located)
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,7 +20,6 @@ export default function Header() {
   const router = useRouter();
 
   useEffect(() => {
-    // Initial session check
     supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
       if (data.session?.user) {
@@ -27,7 +27,6 @@ export default function Header() {
       }
     });
 
-    // Listen for auth changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
       if (newSession?.user) {
@@ -76,7 +75,11 @@ export default function Header() {
         <Link href="/planes" className="hover:underline">Planes</Link>
         {session?.user ? (
           <>
-            <span>{session.user.email} {plan && <span className="text-xs text-gray-500">({plan})</span>}</span>
+            <Link href="/cuenta" className="hover:underline">Mi cuenta</Link>
+            <span>
+              {session.user.email}
+              {plan && <span className="text-xs text-gray-500"> ({plan})</span>}
+            </span>
             <button onClick={handleLogout} className="text-blue-600 hover:underline">Cerrar sesión</button>
           </>
         ) : (
@@ -103,6 +106,7 @@ export default function Header() {
           <Link href="/planes" onClick={() => setMenuOpen(false)} className="hover:underline">Planes</Link>
           {session?.user ? (
             <>
+              <Link href="/cuenta" onClick={() => setMenuOpen(false)} className="hover:underline">Mi cuenta</Link>
               <span>
                 {session.user.email}
                 {plan && <span className="block text-xs text-gray-500">Plan: {plan}</span>}
