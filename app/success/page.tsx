@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -55,3 +55,6 @@ export default function SuccessPage() {
     </div>
   );
 }
+
+// 👇 Prevent build errors with useSearchParams
+export const dynamic = "force-dynamic";
