@@ -35,6 +35,7 @@ export async function POST(req: Request) {
   }
 
   const userId = user.id;
+  console.log("👤 Supabase user ID:", userId);
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -100,22 +101,24 @@ export async function POST(req: Request) {
 
     const result = chat.choices[0].message.content?.trim() ?? "";
 
-    // ✅ Log generation
-    const { error: insertError } = await supabase.from("generations").insert([
-      {
-        user_id: userId,
-        type,
-        output: result,
-      },
-    ]);
+    // ✅ Store generation result with debug
+    const { data: inserted, error: insertError } = await supabase
+      .from("generations")
+      .insert([
+        {
+          user_id: userId,
+          type,
+          output: result,
+        },
+      ])
+      .select();
 
+    console.log("🧾 Insert result:", inserted);
     if (insertError) {
-      console.error("❌ Error inserting generation:", insertError);
-    } else {
-      console.log("✅ Generation inserted successfully.");
+      console.error("❌ Insert error:", insertError);
     }
 
-    // ✅ Update usage count + email fallback
+    // ✅ Update usage + fallback email if missing
     const updates: Record<string, any> = {
       lastGeneratedAt: new Date().toISOString(),
     };
@@ -138,7 +141,7 @@ export async function POST(req: Request) {
       .eq("id", userId);
 
     if (updateError) {
-      console.error("❌ Error updating usage/email:", updateError);
+      console.error("❌ Error updating usage:", updateError);
     }
 
     return NextResponse.json({ result });
