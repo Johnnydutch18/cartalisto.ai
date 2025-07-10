@@ -38,7 +38,7 @@ export async function POST(req: Request) {
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("plan, cvCount, letterCount, lastGeneratedAt")
+    .select("plan, cvCount, letterCount, lastGeneratedAt, email")
     .eq("id", userId)
     .single();
 
@@ -100,19 +100,23 @@ export async function POST(req: Request) {
 
     const result = chat.choices[0].message.content?.trim() ?? "";
 
-    // ✅ Log generation + result
+    // ✅ Store generation result
     await supabase.from("generations").insert([
       {
         user_id: userId,
         type,
-        output: result, // <-- save it for later viewing
+        output: result,
       },
     ]);
 
-    // ✅ Update correct usage count
+    // ✅ Update usage + fallback email if missing
     const updates: Record<string, any> = {
       lastGeneratedAt: new Date().toISOString(),
     };
+
+    if (!profile.email && user.email) {
+      updates.email = user.email;
+    }
 
     if (type === "cv") {
       updates.cvCount = isSameDay ? cvCount + 1 : 1;
