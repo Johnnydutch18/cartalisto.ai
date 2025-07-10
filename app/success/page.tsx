@@ -1,5 +1,6 @@
 "use client";
-import { useEffect } from "react";
+
+import { useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 
@@ -8,7 +9,7 @@ const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function SuccessPage() {
+function SuccessHandler() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -44,4 +45,12 @@ export default function SuccessPage() {
   }, [searchParams, router]);
 
   return <p className="p-6">Actualizando tu cuenta...</p>;
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<p className="p-6">Cargando...</p>}>
+      <SuccessHandler />
+    </Suspense>
+  );
 }
