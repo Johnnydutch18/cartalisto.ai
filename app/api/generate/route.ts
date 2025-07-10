@@ -100,8 +100,8 @@ export async function POST(req: Request) {
 
     const result = chat.choices[0].message.content?.trim() ?? "";
 
-    // ✅ Store generation result
-    await supabase.from("generations").insert([
+    // ✅ Log generation
+    const { error: insertError } = await supabase.from("generations").insert([
       {
         user_id: userId,
         type,
@@ -109,7 +109,13 @@ export async function POST(req: Request) {
       },
     ]);
 
-    // ✅ Update usage + fallback email if missing
+    if (insertError) {
+      console.error("❌ Error inserting generation:", insertError);
+    } else {
+      console.log("✅ Generation inserted successfully.");
+    }
+
+    // ✅ Update usage count + email fallback
     const updates: Record<string, any> = {
       lastGeneratedAt: new Date().toISOString(),
     };
@@ -132,7 +138,7 @@ export async function POST(req: Request) {
       .eq("id", userId);
 
     if (updateError) {
-      console.error("❌ Error updating usage:", updateError);
+      console.error("❌ Error updating usage/email:", updateError);
     }
 
     return NextResponse.json({ result });
