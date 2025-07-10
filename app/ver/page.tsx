@@ -1,10 +1,14 @@
-// app/ver/page.tsx
-import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export default async function VerPage({ searchParams }: { searchParams: { id?: string } }) {
+interface Props {
+  searchParams: Record<string, string | string[] | undefined>;
+}
+
+export default async function VerPage({ searchParams }: Props) {
   const cookieStore = await cookies();
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -23,7 +27,7 @@ export default async function VerPage({ searchParams }: { searchParams: { id?: s
 
   if (!session) redirect("/login");
 
-  const { id } = searchParams;
+  const id = typeof searchParams.id === "string" ? searchParams.id : undefined;
   if (!id) return <p className="p-6">ID no proporcionado.</p>;
 
   const { data: generation } = await supabase
@@ -43,7 +47,9 @@ export default async function VerPage({ searchParams }: { searchParams: { id?: s
       <p className="text-sm text-gray-500 mb-4">
         Generado el {new Date(generation.created_at).toLocaleString("es-ES")}
       </p>
-      <pre className="whitespace-pre-wrap bg-gray-100 p-4 rounded-lg">{generation.output}</pre>
+      <pre className="whitespace-pre-wrap bg-gray-100 p-4 rounded-lg">
+        {generation.output}
+      </pre>
     </div>
   );
 }
