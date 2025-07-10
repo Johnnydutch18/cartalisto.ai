@@ -11,7 +11,6 @@ export async function POST(req: Request) {
   console.log("✅ /api/generate route hit");
 
   const cookieStore = await nextCookies();
-
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
     getAll: () => cookieStore.getAll().map(({ name, value }) => ({ name, value })),
@@ -49,13 +48,14 @@ export async function POST(req: Request) {
   }
 
   // ✅ Parse body
-  let type: "cv" | "cover" = "cv";
+  let type: "cv" | "letter" = "cv";
   let prompt: string;
 
   try {
     const body = await req.json();
     prompt = body.prompt;
-    type = ((body.type || "cv").toLowerCase() === "cover" ? "cover" : "cv") as "cv" | "cover";
+    const rawType = (body.type || "cv").toLowerCase();
+    type = rawType === "letter" || rawType === "cover" ? "letter" : "cv";
 
     if (!prompt) {
       return NextResponse.json({ result: "No se proporcionó el prompt." }, { status: 400 });
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
   }
 
   const systemPrompt =
-    type === "cover"
+    type === "letter"
       ? "Eres un experto en cartas de presentación para el mercado laboral español. Responde solo con la carta generada."
       : "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado.";
 
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
 
     const result = chat.choices[0].message.content;
 
-    // Log usage to generations table
+    // ✅ Log generation
     await supabase.from("generations").insert([
       {
         user_id: userId,
@@ -117,8 +117,8 @@ export async function POST(req: Request) {
       updates.cvCount = isSameDay ? cvCount + 1 : 1;
       updates.letterCount = isSameDay ? letterCount : 0;
     } else {
-      updates.cvCount = isSameDay ? cvCount : 0;
       updates.letterCount = isSameDay ? letterCount + 1 : 1;
+      updates.cvCount = isSameDay ? cvCount : 0;
     }
 
     const { error: updateError } = await supabase
