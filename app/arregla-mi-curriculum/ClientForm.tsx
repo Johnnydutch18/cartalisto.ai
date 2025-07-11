@@ -17,85 +17,84 @@ export default function FixMyResume() {
   const router = useRouter();
   const pathname = usePathname();
 
-  async function handleSubmit() {
-    setLoading(true);
-    setOutput('');
-    setFeedback(null);
+async function handleSubmit() {
+  setLoading(true);
+  setOutput('');
+  setFeedback(null);
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-    if (!session) {
-      setShowPopup(true);
+  if (!session) {
+    setShowPopup(true);
+    setLoading(false);
+    return;
+  }
+
+  const visualStyleMap: Record<string, string> = {
+    Tradicional: "Diseño clásico y sobrio, con encabezados claros, fuente estándar, sin colores ni adornos innecesarios.",
+    Moderno: "Diseño limpio y contemporáneo, uso de tipografía profesional, separación clara entre secciones, estructura bien organizada.",
+    Creativo: "Diseño visualmente atractivo con toques creativos, colores sutiles, íconos o emojis, y secciones estilizadas.",
+  };
+
+  const visualStyle = visualStyleMap[format] || visualStyleMap["Tradicional"];
+
+  const prompt = `
+Actúa como un redactor experto de currículums con 15 años de experiencia en el mercado laboral de habla hispana. Tu tarea es crear un currículum **completo, profesional y listo para usar**.
+
+🎯 Objetivo: Transformar el contenido proporcionado por el usuario en un CV convincente, bien redactado, visualmente claro y redactado en **español neutro**.
+
+✅ Instrucciones:
+- Si la información del usuario es breve o poco clara, interpreta y expande razonablemente el contenido.
+- Si hay secciones clave ausentes (como perfil, experiencia, educación o habilidades), **genéralas tú mismo** de forma coherente y profesional.
+- Mejora todo el lenguaje. Usa frases completas, vocabulario profesional y evita repetir exactamente lo que el usuario escribió.
+- Nunca uses valores genéricos como “Nombre del Candidato” o “Responsabilidad 1”. Siempre inventa contenido realista.
+- Devuelve solo HTML **editable** bien estructurado, usando <div>, <h1>, <h2>, <ul>, <li>, <p> y <strong>. No uses etiquetas <html> o <body>.
+- Aplica el siguiente estilo visual: ${visualStyle}
+
+🧾 Formato preferido: ${format}
+💼 Tipo de empleo (si se proporcionó): ${jobType || 'No especificado'}
+📋 CV o información del usuario:
+${resume}
+`;
+
+  try {
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, type: 'cv' }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (data?.error === 'Daily usage limit reached.') {
+        setFeedback('limit');
+        alert('🚫 Has alcanzado tu límite diario. Intenta mañana o mejora tu plan.');
+      } else {
+        alert('❌ Hubo un problema. Intenta de nuevo más tarde.');
+      }
       setLoading(false);
       return;
     }
 
-    const visualStyleMap: Record<string, string> = {
-      Tradicional: "Diseño clásico y sobrio, encabezados limpios, fuente legible (Arial o similar), sin color.",
-      Moderno: "Diseño limpio y contemporáneo, fuente profesional, líneas suaves, separación clara entre secciones.",
-      Creativo: "Diseño llamativo, colores sutiles, encabezados destacados, secciones bien espaciadas visualmente.",
-    };
+    setOutput(data.result);
 
-    const visualStyle = visualStyleMap[format] || visualStyleMap["Tradicional"];
-
-    const prompt = `
-Actúa como un redactor experto de currículums con 15 años de experiencia en el mercado laboral español. Tu trabajo es generar un currículum profesional completo y bien redactado, incluso si el contenido proporcionado por el usuario es básico o incompleto.
-
-📌 Objetivo:
-Crear un CV que el usuario pueda usar directamente o con mínimas ediciones, mostrando un perfil sólido, profesional y competitivo en el mercado español.
-
-🛠️ Tareas clave:
-- Si el contenido es breve o pobremente redactado, reescríbelo de forma clara, profesional y convincente.
-- Si hay secciones faltantes (como perfil, habilidades, o experiencia), complétalas tú mismo de forma lógica y adecuada al puesto.
-- No repitas literalmente el texto del usuario — mejóralo, amplíalo y hazlo sonar como redactado por un experto.
-- Usa un formato HTML limpio y editable, con estructura clara: encabezados visibles, saltos de línea, listas con viñetas, etc.
-- Adapta el estilo visual según el formato preferido: Tradicional, Moderno o Creativo.
-- Todo debe estar en español neutro y sin errores gramaticales o estilísticos.
-
-🎨 Estilo visual seleccionado: ${format} (${visualStyle})
-📋 Currículum proporcionado por el usuario:
-${resume}
-
-📂 Tipo de empleo (si se proporcionó): ${jobType || 'No especificado'}
-`;
-
-    try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, type: 'cv' }),
+    if (data?.usage) {
+      setUsageInfo({
+        total: data.usage.cvCount + data.usage.letterCount,
+        limit: data.usage.limit,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (data?.error === 'Daily usage limit reached.') {
-          setFeedback('limit');
-          alert('🚫 Has alcanzado tu límite diario. Intenta mañana o mejora tu plan.');
-        } else {
-          alert('❌ Hubo un problema. Intenta de nuevo más tarde.');
-        }
-        setLoading(false);
-        return;
-      }
-
-      setOutput(data.result);
-
-      if (data?.usage) {
-        setUsageInfo({
-          total: data.usage.cvCount + data.usage.letterCount,
-          limit: data.usage.limit,
-        });
-      }
-    } catch (error) {
-      setOutput('Hubo un problema al generar tu currículum. Intenta de nuevo más tarde.');
-      console.error('❌ Error calling API:', error);
     }
-
-    setLoading(false);
+  } catch (error) {
+    setOutput('Hubo un problema al generar tu currículum. Intenta de nuevo más tarde.');
+    console.error('❌ Error calling API:', error);
   }
+
+  setLoading(false);
+}
+
 
   async function downloadPDF() {
     const element = document.getElementById('pdf-content');
