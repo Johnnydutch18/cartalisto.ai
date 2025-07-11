@@ -26,7 +26,7 @@ export default async function CuentaPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('email, plan')
+    .select('email, plan, cvCount, letterCount, lastGeneratedAt')
     .eq('id', session.user.id)
     .single();
 
@@ -36,6 +36,22 @@ export default async function CuentaPage() {
     .eq('user_id', session.user.id)
     .order('created_at', { ascending: false });
 
+  // 🧠 Build usage message
+  let usageMessage = '';
+  const today = new Date().toISOString().split('T')[0];
+  const lastDate = profile?.lastGeneratedAt?.split('T')[0] ?? '';
+  const isToday = today === lastDate;
+  const cv = isToday ? profile?.cvCount ?? 0 : 0;
+  const letter = isToday ? profile?.letterCount ?? 0 : 0;
+
+  if (profile?.plan === 'free') {
+    usageMessage = `Has usado ${cv + letter}/1 generación hoy`;
+  } else if (profile?.plan === 'estandar') {
+    usageMessage = 'Generaciones ilimitadas (plan Estándar)';
+  } else if (profile?.plan === 'pro') {
+    usageMessage = 'Generaciones ilimitadas + funciones premium';
+  }
+
   return (
     <main className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Mi Cuenta</h1>
@@ -43,6 +59,9 @@ export default async function CuentaPage() {
       <div className="mb-6 p-4 bg-white rounded-xl shadow">
         <p><strong>Email:</strong> {profile?.email ?? "No disponible"}</p>
         <p><strong>Plan actual:</strong> {profile?.plan ?? "No disponible"}</p>
+        {usageMessage && (
+          <p className="mt-2 text-sm text-gray-600">{usageMessage}</p>
+        )}
         <form action="/api/create-billing-portal-session" method="POST">
           <button
             type="submit"
