@@ -48,7 +48,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al cargar tu perfil." }, { status: 500 });
   }
 
-  // ✅ Parse request body
   let type: "cv" | "cover" = "cv";
   let prompt: string;
 
@@ -73,7 +72,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: "Error al procesar la solicitud." }, { status: 400 });
   }
 
-  // ✅ Plan + limits
   const plan = (profile.plan ?? "free") as "free" | "estandar" | "pro";
   const isFree = plan === "free";
 
@@ -91,24 +89,34 @@ export async function POST(req: Request) {
     );
   }
 
-  const systemPrompt =
-    type === "cover"
-      ? "Eres un experto en cartas de presentación para el mercado laboral español. Responde solo con la carta generada."
-      : "Eres un asistente experto en redacción de currículums. Responde solo con el contenido mejorado.";
+  const htmlEnforcedPrompt = `
+Corrige y mejora este texto para un ${type === "cv" ? "currículum" : "carta de presentación"} profesional en el mercado laboral español.
+
+✅ Devuelve solo HTML válido (usa <p>, <strong>, <ul>, <li>, etc.)
+❌ No uses markdown (**texto**, - guiones, etc.)
+❌ No incluyas frases finales como "este formato está optimizado para sistemas ATS"
+❌ No escribas explicaciones, solo el contenido directamente
+
+Texto original:
+${prompt}
+`;
 
   try {
     const chat = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: prompt },
+        {
+          role: "system",
+          content:
+            "Eres un experto en redacción de documentos profesionales en español. Siempre responde únicamente con HTML. No uses markdown ni texto fuera del contenido generado.",
+        },
+        { role: "user", content: htmlEnforcedPrompt },
       ],
       temperature: 0.7,
     });
 
     const result = chat.choices[0].message.content?.trim() ?? "";
 
-    // ✅ Store generation in database
     const { error: insertError } = await supabase.from("generations").insert([
       {
         user_id: userId,
@@ -122,7 +130,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ result: "❌ Error al guardar la generación." }, { status: 500 });
     }
 
-    // ✅ Update profile usage + email fallback
     const updates: Record<string, any> = {
       lastGeneratedAt: new Date().toISOString(),
     };
