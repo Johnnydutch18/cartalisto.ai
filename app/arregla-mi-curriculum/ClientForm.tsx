@@ -68,7 +68,6 @@ Tipo de empleo (si se indicó): ${jobType}`;
 
       setOutput(data.result);
 
-      // Optional: capture usage info
       if (data?.usage) {
         setUsageInfo({
           total: data.usage.cvCount + data.usage.letterCount,
@@ -204,27 +203,20 @@ Tipo de empleo (si se indicó): ${jobType}`;
           <div
             id="pdf-content"
             style={{
-              background: '#ffffff',
-              padding: '1rem',
+              backgroundColor: '#ffffff',
+              padding: '2rem',
               borderRadius: '6px',
-              whiteSpace: 'pre-wrap',
               border: '1px solid #ccc',
+              fontFamily: 'Georgia, serif',
+              fontSize: '14px',
+              color: '#222',
+              lineHeight: '1.6',
+              whiteSpace: 'pre-wrap',
+              wordWrap: 'break-word',
             }}
+            lang="es"
           >
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-              ✅ Versión Mejorada
-            </h2>
-            <div
-              style={{
-                fontFamily: 'inherit',
-                margin: 0,
-                whiteSpace: 'pre-wrap',
-                wordWrap: 'break-word',
-              }}
-              lang="es"
-            >
-              {output}
-            </div>
+            {output}
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
