@@ -46,15 +46,14 @@ export default async function CuentaPage() {
     <main className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Mi Cuenta</h1>
 
-      {/* 🧠 Account Info */}
-      <div className="mb-6 p-4 bg-white rounded-xl shadow space-y-2 text-sm">
-        <p><strong>Email:</strong> {profile?.email ?? "No disponible"}</p>
+      <div className="mb-6 p-4 bg-white rounded-xl shadow text-sm">
+        <p className="mb-2"><strong>Email:</strong> {profile?.email ?? "No disponible"}</p>
 
-        {/* 🧾 Plan Info Section */}
+        {/* 👇 Plan Info Block */}
         {profile?.plan === 'free' && (
-          <div className="mt-4 rounded-xl bg-gray-100 p-4 text-gray-800 shadow-sm">
+          <div className="mt-2 rounded-lg bg-gray-100 p-4 text-gray-800">
             <p><strong>Tu plan actual:</strong> Gratuito</p>
-            <p className="mt-1">1 generación por día · GPT‑4o‑mini · Descarga PDF</p>
+            <p className="mt-1">1 generación al día · GPT‑4o‑mini · Descarga en PDF</p>
             <p className="mt-2 text-sm text-gray-600">
               Has usado {cv + letter}/1 generación hoy.
             </p>
@@ -68,7 +67,7 @@ export default async function CuentaPage() {
         )}
 
         {profile?.plan === 'estandar' && (
-          <div className="mt-4 rounded-xl bg-green-100 p-4 text-green-900 shadow-sm">
+          <div className="mt-2 rounded-lg bg-green-100 p-4 text-green-900">
             <p><strong>Tu plan actual:</strong> Estándar</p>
             <p className="mt-1">Generaciones ilimitadas · GPT‑4o · PDF + Copiar · Selector de tono</p>
             <form action="/api/create-billing-portal-session" method="POST">
@@ -83,9 +82,9 @@ export default async function CuentaPage() {
         )}
 
         {profile?.plan === 'pro' && (
-          <div className="mt-4 rounded-xl bg-purple-100 p-4 text-purple-900 shadow-sm">
+          <div className="mt-2 rounded-lg bg-purple-100 p-4 text-purple-900">
             <p><strong>Tu plan actual:</strong> Pro</p>
-            <p className="mt-1">GPT-4.1 · Generaciones ilimitadas · Historial de documentos · Soporte prioritario</p>
+            <p className="mt-1">GPT‑4.1 · Generaciones ilimitadas · Historial · Soporte prioritario</p>
             <form action="/api/create-billing-portal-session" method="POST">
               <button
                 type="submit"
@@ -98,7 +97,6 @@ export default async function CuentaPage() {
         )}
       </div>
 
-      {/* 📜 Generation History */}
       <div className="mt-6">
         <h2 className="text-xl font-semibold mb-2">Historial de generaciones</h2>
         <ul className="space-y-2 text-sm">
