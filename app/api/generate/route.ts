@@ -40,12 +40,15 @@ export async function POST(req: Request) {
   let type: "cv" | "cover" = "cv";
   let prompt: string;
   let format = "Tradicional";
+  let jobType = "";
+  let resume = "";
 
   try {
     const body = await req.json();
     prompt = body.prompt;
+    resume = body.resume || "";
+    jobType = body.jobType || "";
     format = body.format || "Tradicional";
-
     const rawType = (body.type || "").toLowerCase().trim();
     if (rawType.includes("letter") || rawType === "cover") {
       type = "cover";
@@ -69,44 +72,41 @@ export async function POST(req: Request) {
     );
   }
 
-  // ✅ Define visual and tonal style for each format
-  const formatStyleMap: Record<string, string> = {
-    Tradicional: `
-      Usa un tono profesional y serio, como si el CV fuera para un trabajo administrativo o corporativo. 
-      Utiliza HTML limpio con títulos destacados, párrafos bien espaciados y listas con viñetas. 
-      Usa fuentes como Georgia o Times New Roman. 
-      Añade margen interno y estructura clásica. 
-      Secciones deben incluir Perfil Profesional, Experiencia, Formación, Habilidades e Idiomas. 
-      Si falta algo, infiere contenido útil y realista.
-    `,
-    Moderno: `
-      Usa un tono claro y directo. 
-      Estructura el CV con columnas visuales limpias si es posible, títulos claros y buena separación entre secciones. 
-      Utiliza fuentes sans-serif, un diseño limpio y ordenado. 
-      Mantén el HTML limpio y responsive. 
-      Agrega secciones faltantes si no están presentes (Perfil, Habilidades, etc).
-    `,
-    Creativo: `
-      Usa un tono amigable y profesional, como si el CV fuera para una startup, agencia creativa o empresa internacional.
-      Juega con el color de títulos, tipografías modernas y destaca los logros o talentos. 
-      Usa encabezados llamativos, bloques de color suaves y estilos ligeros sin exagerar. 
-      Infiere contenido que destaque la personalidad del candidato.
-    `,
+  const formatStyles: Record<string, string> = {
+    Tradicional: "Un diseño clásico y formal, con encabezados sobrios, sin colores llamativos, ideal para sectores conservadores como administración o derecho.",
+    Moderno: "Un diseño limpio con buena jerarquía visual, tipografía profesional y estructura clara. Ideal para trabajos de oficina, marketing, tecnología o atención al cliente.",
+    Creativo: "Un diseño atractivo y llamativo, con colores sutiles, íconos y secciones diferenciadas. Adecuado para industrias creativas como diseño gráfico, moda o medios.",
   };
 
-  const tonePrompt = formatStyleMap[format] || formatStyleMap["Tradicional"];
+  const visualStyle = formatStyles[format] || formatStyles["Tradicional"];
 
   const systemPrompt =
     type === "cover"
-      ? `Eres un experto en redacción laboral. Genera una carta de presentación en HTML editable, con tono profesional. Usa solo <div>, <h1-3>, <p>, <ul>, <li>. No uses etiquetas HTML innecesarias.`
-      : `Eres un experto en redacción de CVs con 15 años de experiencia. Genera un currículum en HTML editable que luzca profesional, bien estructurado, y adaptado al formato "${format}". Usa solo HTML limpio (<div>, <h1-3>, <p>, <ul>, <li>) y estilos inline básicos. No uses <html>, <head>, ni <style>. Asegúrate de que el contenido sea realista, completo y bien redactado incluso si el input del usuario es limitado. Usa este estilo: ${tonePrompt}`;
+      ? "Eres un experto en cartas de presentación. Genera solo una carta en HTML limpio, usando <div>, <h1>, <h2>, <p>, <ul>, <li>. No uses <html>, <head>, ni <style>."
+      : "Eres un experto redactor de currículums con 15 años de experiencia en el mercado laboral español. Transforma entradas básicas en un currículum completo en HTML limpio. Usa solo <div>, <h1-3>, <p>, <ul>, <li>. Nada más.";
+
+  const userPrompt = `
+🧠 Tu objetivo es generar un currículum profesional completo en español, listo para editar y exportar en PDF.
+
+✅ Instrucciones:
+- No repitas literalmente lo que escribió el usuario. Reescribe con tono profesional y humano.
+- Detecta el idioma de entrada y responde en español.
+- Auto-completa cualquier sección faltante con contenido lógico y relevante.
+- Usa buena jerarquía visual: títulos claros, secciones separadas, saltos de línea, viñetas si es necesario.
+- Solo genera contenido HTML válido y simple: <div>, <h1-3>, <p>, <ul>, <li>. Nada más.
+- Estilo visual solicitado: ${visualStyle}
+
+📂 Tipo de empleo objetivo: ${jobType || "No especificado"}
+📋 Información proporcionada por el usuario:
+${resume}
+`;
 
   try {
     const chat = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: prompt },
+        { role: "user", content: userPrompt },
       ],
       temperature: 0.6,
     });
@@ -125,11 +125,12 @@ export async function POST(req: Request) {
       updates.letterCount = isSameDay ? letterCount + 1 : 1;
       updates.cvCount = isSameDay ? cvCount : 0;
     }
+
     if (!profile?.email && user.email) updates.email = user.email;
 
     await supabase.from("profiles").update(updates).eq("id", user.id);
 
-    return NextResponse.json({ result });
+    return NextResponse.json({ result, usage: { cvCount: updates.cvCount, letterCount: updates.letterCount, limit: isFree ? 1 : 999 } });
   } catch (err: any) {
     console.error("❌ OpenAI error:", err);
     return NextResponse.json(
