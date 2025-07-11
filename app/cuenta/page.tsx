@@ -42,8 +42,10 @@ export default async function CuentaPage() {
   const cv = isToday ? profile?.cvCount ?? 0 : 0;
   const letter = isToday ? profile?.letterCount ?? 0 : 0;
 
-  // 🔍 Normalize plan to lowercase
-  const plan = profile?.plan?.toLowerCase();
+  const rawPlan = profile?.plan?.toLowerCase() || 'gratuito';
+
+  // Normalize for display (force all to Spanish)
+  const plan = rawPlan === 'standard' ? 'estandar' : rawPlan;
 
   return (
     <main className="max-w-2xl mx-auto p-6">
@@ -52,11 +54,16 @@ export default async function CuentaPage() {
       <div className="mb-6 p-4 bg-white rounded-xl shadow text-sm">
         <p className="mb-2"><strong>Email:</strong> {profile?.email ?? "No disponible"}</p>
 
-        {/* 🧾 Plan Info Section */}
+        {/* ✅ DEBUG: Confirm Plan */}
+        <div className="mb-4 p-2 text-xs bg-yellow-50 text-yellow-900 border border-yellow-200 rounded">
+          Debug: plan = <code>{plan}</code>
+        </div>
+
+        {/* ✅ PLAN BLOCKS */}
         {plan === 'gratuito' && (
-          <div className="mt-2 rounded-lg bg-gray-100 p-4 text-gray-800">
+          <div className="rounded-lg bg-gray-100 p-4 text-gray-800">
             <p><strong>Tu plan actual:</strong> Gratuito</p>
-            <p className="mt-1">1 generación al día · GPT‑4o‑mini · Descarga en PDF</p>
+            <p className="mt-1">1 generación por día · GPT‑4o‑mini · Descarga en PDF</p>
             <p className="mt-2 text-sm text-gray-600">
               Has usado {cv + letter}/1 generación hoy.
             </p>
@@ -70,7 +77,7 @@ export default async function CuentaPage() {
         )}
 
         {plan === 'estandar' && (
-          <div className="mt-2 rounded-lg bg-green-100 p-4 text-green-900">
+          <div className="rounded-lg bg-green-100 p-4 text-green-900">
             <p><strong>Tu plan actual:</strong> Estándar</p>
             <p className="mt-1">Generaciones ilimitadas · GPT‑4o · PDF + Copiar · Selector de tono</p>
             <form action="/api/create-billing-portal-session" method="POST">
@@ -85,7 +92,7 @@ export default async function CuentaPage() {
         )}
 
         {plan === 'pro' && (
-          <div className="mt-2 rounded-lg bg-purple-100 p-4 text-purple-900">
+          <div className="rounded-lg bg-purple-100 p-4 text-purple-900">
             <p><strong>Tu plan actual:</strong> Pro</p>
             <p className="mt-1">GPT‑4.1 · Generaciones ilimitadas · Historial de documentos · Soporte prioritario</p>
             <form action="/api/create-billing-portal-session" method="POST">
