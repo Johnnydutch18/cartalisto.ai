@@ -108,14 +108,17 @@ ${resume}
 ❌ No incluyas <html>, <head> ni <body>.
 `.trim();
 
-  if (format === "Moderno") {
-    userPrompt += `
-📌 Usa listas (<ul><li>) para habilidades y experiencia, en lugar de solo párrafos.
-🧩 Resume los logros y funciones en frases claras y concisas.
-🔹 Evita palabras de relleno y redacción innecesaria.
-📐 Usa estructura limpia y ordenada con buena separación de secciones.
+if (format === "Moderno") {
+  userPrompt += `
+📌 Estructura moderna: Usa viñetas (<ul><li>) para *todas* las secciones (experiencia, habilidades, educación, idiomas).
+✂️ Redacta en frases breves, activas y sin adornos innecesarios. Evita párrafos largos.
+🔹 No incluyas un bloque de "Perfil Profesional". El CV debe ser funcional y directo.
+📧 Si faltan datos personales, usa ejemplos genéricos como correo@ejemplo.com o Madrid, España.
+❌ Nunca uses corchetes como [Nombre] o [Dirección completa].
+🎯 El resultado debe ser claro, escaneable y moderno. Prioriza impacto visual y legibilidad.
 `.trim();
-  }
+}
+
 
   if (format === "Creativo") {
     userPrompt += `
