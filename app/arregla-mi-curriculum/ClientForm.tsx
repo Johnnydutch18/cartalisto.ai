@@ -32,18 +32,18 @@ export default function FixMyResume() {
       return;
     }
 
-    const prompt = `Actúa como un experto redactor de currículums con experiencia en el mercado laboral español. Tu tarea es:
+    const prompt = `Actúa como un experto redactor de currículums con experiencia en el mercado laboral español. Genera un CV en HTML estructurado con los siguientes requisitos:
 
-1. Corregir errores gramaticales y mejorar la redacción.
-2. Reorganizar la información para mayor claridad y fluidez.
-3. Aplicar un formato profesional, claro y moderno (${format}).
-4. Genera el resultado en HTML editable, sin marcas de texto tipo ** o __.
-5. No incluyas ninguna frase que sugiera que este documento ha sido generado por una IA o que es compatible con sistemas ATS.
+- Usa un diseño profesional con títulos de sección claros (por ejemplo, h2 para secciones como Perfil Profesional, Experiencia, Educación).
+- Varía el estilo ligeramente en cada generación (usa sinónimos, cambia el orden si es lógico).
+- No incluyas marcas de formato como ** o ---.
+- Asegúrate de que sea editable en el navegador y se vea limpio al exportar en PDF.
 
-CV original:
+Contenido original del usuario:
+
 ${resume}
 
-Tipo de empleo (si se indicó): ${jobType}`;
+Tipo de empleo deseado (si se indicó): ${jobType}`;
 
     try {
       const response = await fetch('/api/generate', {
