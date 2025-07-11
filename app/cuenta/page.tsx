@@ -43,8 +43,6 @@ export default async function CuentaPage() {
   const letter = isToday ? profile?.letterCount ?? 0 : 0;
 
   const rawPlan = profile?.plan?.toLowerCase() || 'gratuito';
-
-  // Normalize for display (force all to Spanish)
   const plan = rawPlan === 'standard' ? 'estandar' : rawPlan;
 
   return (
@@ -53,11 +51,6 @@ export default async function CuentaPage() {
 
       <div className="mb-6 p-4 bg-white rounded-xl shadow text-sm">
         <p className="mb-2"><strong>Email:</strong> {profile?.email ?? "No disponible"}</p>
-
-        {/* ✅ DEBUG: Confirm Plan */}
-        <div className="mb-4 p-2 text-xs bg-yellow-50 text-yellow-900 border border-yellow-200 rounded">
-          Debug: plan = <code>{plan}</code>
-        </div>
 
         {/* ✅ PLAN BLOCKS */}
         {plan === 'gratuito' && (
