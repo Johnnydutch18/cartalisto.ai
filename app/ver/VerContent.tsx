@@ -12,6 +12,7 @@ const supabase = createBrowserClient(
 export default function VerContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+
   const [loading, setLoading] = useState(true);
   const [output, setOutput] = useState<string | null>(null);
   const [type, setType] = useState<"cv" | "letter" | null>(null);
@@ -53,7 +54,7 @@ export default function VerContent() {
   }, [searchParams, router]);
 
   const handleDownload = async () => {
-    if (!output) return;
+    if (!output || !type) return;
 
     const html2pdf = (await import("html2pdf.js")).default;
 
@@ -81,7 +82,8 @@ export default function VerContent() {
             {type === "cv" ? "Currículum generado" : "Carta generada"}
           </h1>
           <p className="text-sm text-gray-500 mb-4">
-            Generado el {createdAt && new Date(createdAt).toLocaleString("es-ES")}
+            Generado el{" "}
+            {createdAt && new Date(createdAt).toLocaleString("es-ES")}
           </p>
 
           <div className="mb-6">

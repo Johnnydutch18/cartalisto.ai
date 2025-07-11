@@ -3,13 +3,7 @@ import VerContent from "./VerContent";
 
 export default function VerPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="p-10 flex justify-center items-center h-screen text-lg text-gray-500">
-          Cargando generación...
-        </div>
-      }
-    >
+    <Suspense fallback={<p className="p-6">Cargando...</p>}>
       <VerContent />
     </Suspense>
   );
