@@ -79,24 +79,29 @@ export async function POST(req: Request) {
   const systemPrompt = `Eres un experto redactor de currículums con 15 años de experiencia en el mercado laboral español.`;
 
   const userPrompt = `
+Eres un experto redactor de currículums con 15 años de experiencia en el mercado laboral español.
+
 🔧 Tarea:
-Usa el texto del usuario para generar un currículum profesional completo, bien estructurado, en HTML limpio y editable (usa solo <div>, <h1>, <h2>, <ul>, <li>, <p>).
+Usa el siguiente texto para generar un Currículum Vitae completo, profesional y reescrito. Aunque el texto sea muy corto o poco claro, debes mejorarlo, expandirlo y completarlo de forma lógica.
 
-🎯 Objetivo:
-- No copies ni reformules el texto original — mejóralo, expándelo, y escribe como un experto.
-- Si hay partes faltantes (perfil, experiencia, habilidades), complétalas de forma lógica y realista.
-- Si el texto es pobre, genera algo útil de todas formas.
-- Adapta el diseño al estilo solicitado.
+✅ Asegúrate de:
+- No repetir ni copiar literalmente el texto original
+- Corregir errores y mejorar la redacción
+- Completar secciones faltantes como perfil, experiencia o habilidades
+- Adaptar el estilo visual solicitado por el usuario
 
-🗂️ Formato solicitado: ${format} (${visualStyle})
+🎨 Estilo solicitado: ${format} (${visualStyle})
 📂 Tipo de empleo: ${jobType || "No especificado"}
 
 📋 Texto proporcionado por el usuario:
+---
 ${resume}
+---
 
-📝 Idioma: Solo responde en español. No uses ningún texto en inglés.
-🔒 No incluyas etiquetas <html>, <head> o <body>. Solo el contenido editable del currículum.
-`;
+📝 Idioma: Español
+💡 Formato: Devuelve solo HTML limpio y editable usando etiquetas como <h2>, <p>, <ul>, <li>, <div>.
+❌ No incluyas <html>, <head> ni <body>
+`.trim();
 
   try {
     const chat = await openai.chat.completions.create({
