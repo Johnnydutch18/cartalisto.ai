@@ -32,28 +32,34 @@ export default function FixMyResume() {
       return;
     }
 
-    const formatPromptMap: Record<string, string> = {
-      Tradicional: `Diseña un currículum profesional y sobrio con estilo limpio y fuentes legibles. Usa HTML semántico y etiquetas simples.`,
-      Moderno: `Diseña un currículum moderno con estructura clara, tipografía profesional y líneas limpias. Usa HTML estructurado con estilos inline.`,
-      Creativo: `Diseña un currículum llamativo y creativo con secciones visualmente atractivas, colores sutiles y encabezados destacados en HTML.`,
+    const visualStyleMap: Record<string, string> = {
+      Tradicional: "Diseño clásico y sobrio, encabezados limpios, fuente legible (Arial o similar), sin color.",
+      Moderno: "Diseño limpio y contemporáneo, fuente profesional, líneas suaves, separación clara entre secciones.",
+      Creativo: "Diseño llamativo, colores sutiles, encabezados destacados, secciones bien espaciadas visualmente.",
     };
 
-    const visualStyle = formatPromptMap[format] || formatPromptMap['Tradicional'];
+    const visualStyle = visualStyleMap[format] || visualStyleMap["Tradicional"];
 
     const prompt = `
-Actúa como un experto redactor de currículums con 15 años de experiencia en el mercado laboral español. Genera un currículum profesional completo, editable y en formato HTML limpio.
+Actúa como un redactor experto de currículums con 15 años de experiencia en el mercado laboral español. Tu trabajo es generar un currículum profesional completo y bien redactado, incluso si el contenido proporcionado por el usuario es básico o incompleto.
 
-✅ Lo que debes hacer:
-1. Auto-completa cualquier sección que falte o esté incompleta.
-2. Mantén un tono profesional, persuasivo y humano.
-3. Asegura buena estructura, legibilidad y claridad.
-4. Aplica el siguiente estilo visual: ${visualStyle}
+📌 Objetivo:
+Crear un CV que el usuario pueda usar directamente o con mínimas ediciones, mostrando un perfil sólido, profesional y competitivo en el mercado español.
 
-📄 Formato base solicitado: ${format}
-📂 Tipo de empleo: ${jobType || 'No especificado'}
-📋 CV Original del usuario:
+🛠️ Tareas clave:
+- Si el contenido es breve o pobremente redactado, reescríbelo de forma clara, profesional y convincente.
+- Si hay secciones faltantes (como perfil, habilidades, o experiencia), complétalas tú mismo de forma lógica y adecuada al puesto.
+- No repitas literalmente el texto del usuario — mejóralo, amplíalo y hazlo sonar como redactado por un experto.
+- Usa un formato HTML limpio y editable, con estructura clara: encabezados visibles, saltos de línea, listas con viñetas, etc.
+- Adapta el estilo visual según el formato preferido: Tradicional, Moderno o Creativo.
+- Todo debe estar en español neutro y sin errores gramaticales o estilísticos.
+
+🎨 Estilo visual seleccionado: ${format} (${visualStyle})
+📋 Currículum proporcionado por el usuario:
 ${resume}
-    `;
+
+📂 Tipo de empleo (si se proporcionó): ${jobType || 'No especificado'}
+`;
 
     try {
       const response = await fetch('/api/generate', {
