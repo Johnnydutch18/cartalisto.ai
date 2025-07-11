@@ -61,27 +61,34 @@ export async function POST(req: Request) {
 
   if (isFree && cvCount + letterCount >= 1) {
     return NextResponse.json(
-      { result: "⚠️ Has alcanzado tu límite diario. Mejora tu plan para más usos." },
+      { error: "Daily usage limit reached." },
       { status: 429 }
     );
   }
 
   const systemPrompt =
     type === "cover"
-      ? "Genera solo una carta de presentación como HTML editable, usando <div>, <h1>, <h2>, <ul>, <li>, <p>. Nada más. No uses <html> ni <body>."
-      : "Genera solo el contenido de un currículum como HTML editable, usando <div>, <h1>, <h2>, <ul>, <li>, <p>. No incluyas <html>, <head>, <style>, ni mensajes adicionales.";
+      ? `Eres un experto en cartas de presentación laborales. Genera una carta en HTML editable y visualmente estructurada. Usa solo <div>, <h1>, <h2>, <ul>, <li>, <p>, <strong>, <em>. No incluyas <html>, <head> ni CSS externo. No escribas explicaciones.`
+      : `Eres un redactor profesional de currículums. Genera solo el contenido del currículum en HTML editable y bien estructurado. Usa <div>, <h1>, <h2>, <ul>, <li>, <p>, <strong>, <em>. No incluyas <html>, <head> ni comentarios ni explicaciones.`
 
   try {
     const chat = await openai.chat.completions.create({
       model: "gpt-4o",
+      temperature: 0.4,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt },
       ],
-      temperature: 0.5,
     });
 
-    const result = chat.choices[0].message.content?.trim() ?? "";
+    const result = chat.choices?.[0]?.message?.content?.trim();
+
+    if (!result || result.length < 100) {
+      return NextResponse.json(
+        { result: "⚠️ El contenido generado fue demasiado corto o inválido." },
+        { status: 502 }
+      );
+    }
 
     await supabase.from("generations").insert([
       { user_id: user.id, type, output: result },
@@ -99,7 +106,14 @@ export async function POST(req: Request) {
 
     await supabase.from("profiles").update(updates).eq("id", user.id);
 
-    return NextResponse.json({ result });
+    return NextResponse.json({
+      result,
+      usage: {
+        cvCount: updates.cvCount,
+        letterCount: updates.letterCount,
+        limit: plan === "free" ? 1 : 999,
+      },
+    });
   } catch (err: any) {
     console.error("❌ OpenAI error:", err);
     return NextResponse.json(

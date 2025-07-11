@@ -32,67 +32,28 @@ export default function FixMyResume() {
       return;
     }
 
-    const prompt = `Actúa como un redactor profesional de currículums con experiencia en el mercado laboral español. Genera un CV profesional en HTML limpio, editable en el navegador, y con diseño basado en este formato preferido: "${format}". Cambia sutilmente el estilo (fuentes, colores, disposición) en cada generación para que no todos los CVs se vean iguales.
+    const formatPromptMap: Record<string, string> = {
+      Tradicional: `Diseña un currículum profesional y sobrio con estilo limpio y fuentes legibles. Usa HTML semántico y etiquetas simples.`,
+      Moderno: `Diseña un currículum moderno con estructura clara, tipografía profesional y líneas limpias. Usa HTML estructurado con estilos inline.`,
+      Creativo: `Diseña un currículum llamativo y creativo con secciones visualmente atractivas, colores sutiles y encabezados destacados en HTML.`,
+    };
 
-Tu tarea:
-1. Corregir errores y mejorar el texto
-2. Aplicar diseño profesional, adaptable a PDF
-3. Usar etiquetas HTML limpias, sin Markdown
-4. Incluir: nombre, datos de contacto, perfil, experiencia, educación, habilidades, idiomas
+    const visualStyle = formatPromptMap[format] || formatPromptMap['Tradicional'];
 
-Contenido del usuario:
+    const prompt = `
+Actúa como un experto redactor de currículums con 15 años de experiencia en el mercado laboral español. Genera un currículum profesional completo, editable y en formato HTML limpio.
+
+✅ Lo que debes hacer:
+1. Auto-completa cualquier sección que falte o esté incompleta.
+2. Mantén un tono profesional, persuasivo y humano.
+3. Asegura buena estructura, legibilidad y claridad.
+4. Aplica el siguiente estilo visual: ${visualStyle}
+
+📄 Formato base solicitado: ${format}
+📂 Tipo de empleo: ${jobType || 'No especificado'}
+📋 CV Original del usuario:
 ${resume}
-
-Tipo de empleo: ${jobType || 'No especificado'}
-
-Estructura HTML esperada:
-<div class="cv-container" style="font-family: ${
-      format === 'Creativo'
-        ? "'Courier New', monospace"
-        : format === 'Moderno'
-        ? "'Helvetica Neue', sans-serif"
-        : "'Arial', sans-serif"
-    }; max-width: 800px; margin: 0 auto; padding: 20px; color: #222;">
-  <header style="text-align: center; margin-bottom: 1.5rem;">
-    <h1 style="font-size: 24px;">[Nombre Completo]</h1>
-    <p style="margin: 0;">📧 email@email.com | 📞 +34 600000000 | 📍 Ciudad</p>
-  </header>
-
-  <section>
-    <h2 style="font-size: 18px; border-bottom: 2px solid #ccc;">Perfil Profesional</h2>
-    <p>[Resumen del perfil profesional]</p>
-  </section>
-
-  <section>
-    <h2 style="font-size: 18px; border-bottom: 2px solid #ccc;">Experiencia Laboral</h2>
-    <p><strong>[Puesto]</strong><br /><em>[Empresa] – [Fechas]</em></p>
-    <ul>
-      <li>[Responsabilidad o logro]</li>
-      <li>[Responsabilidad o logro]</li>
-    </ul>
-  </section>
-
-  <section>
-    <h2 style="font-size: 18px; border-bottom: 2px solid #ccc;">Educación</h2>
-    <p><strong>[Título]</strong><br />[Institución] – [Año]</p>
-  </section>
-
-  <section>
-    <h2 style="font-size: 18px; border-bottom: 2px solid #ccc;">Habilidades</h2>
-    <ul>
-      <li>[Habilidad #1]</li>
-      <li>[Habilidad #2]</li>
-    </ul>
-  </section>
-
-  <section>
-    <h2 style="font-size: 18px; border-bottom: 2px solid #ccc;">Idiomas</h2>
-    <ul>
-      <li>[Idioma #1]</li>
-      <li>[Idioma #2]</li>
-    </ul>
-  </section>
-</div>`;
+    `;
 
     try {
       const response = await fetch('/api/generate', {
