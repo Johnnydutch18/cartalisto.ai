@@ -37,9 +37,8 @@ export default function FixMyResume() {
 1. Corregir errores gramaticales y mejorar la redacción.
 2. Reorganizar la información para mayor claridad y fluidez.
 3. Aplicar un formato profesional, claro y moderno (${format}).
-4. Incluir mejoras compatibles con sistemas ATS (palabras clave, estructura).
-
-Conserva todos los datos importantes proporcionados por el usuario, pero expresa las ideas con mayor impacto profesional.
+4. Genera el resultado en HTML editable, sin marcas de texto tipo ** o __.
+5. No incluyas ninguna frase que sugiera que este documento ha sido generado por una IA o que es compatible con sistemas ATS.
 
 CV original:
 ${resume}
@@ -198,62 +197,60 @@ Tipo de empleo (si se indicó): ${jobType}`;
         <p style={{ color: '#777', fontSize: '0.9rem' }}>🕒 El límite se reinicia cada día a medianoche.</p>
       </div>
 
-{output && (
-  <div style={{ marginTop: '2rem' }}>
-    <div
-      id="pdf-content"
-      contentEditable={true}
-      suppressContentEditableWarning={true}
-      dangerouslySetInnerHTML={{ __html: output }}
-      style={{
-        backgroundColor: '#ffffff',
-        padding: '2rem',
-        borderRadius: '6px',
-        border: '1px solid #ccc',
-        fontFamily: 'Georgia, serif',
-        fontSize: '14px',
-        color: '#222',
-        lineHeight: '1.6',
-        whiteSpace: 'normal',
-        wordWrap: 'break-word',
-      }}
-      lang="es"
-    ></div>
+      {output && (
+        <div style={{ marginTop: '2rem' }}>
+          <div
+            id="pdf-content"
+            contentEditable={true}
+            suppressContentEditableWarning={true}
+            dangerouslySetInnerHTML={{ __html: output }}
+            style={{
+              backgroundColor: '#ffffff',
+              padding: '2rem',
+              borderRadius: '6px',
+              border: '1px solid #ccc',
+              fontFamily: 'Georgia, serif',
+              fontSize: '14px',
+              color: '#222',
+              lineHeight: '1.6',
+              whiteSpace: 'normal',
+              wordWrap: 'break-word',
+            }}
+            lang="es"
+          ></div>
 
-    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-      <button
-        onClick={downloadPDF}
-        style={{
-          flex: 1,
-          padding: '0.5rem',
-          backgroundColor: '#333',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-        }}
-      >
-        Descargar PDF
-      </button>
-      <button
-        onClick={handleSubmit}
-        style={{
-          flex: 1,
-          padding: '0.5rem',
-          backgroundColor: '#0070f3',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-        }}
-      >
-        Regenerar
-      </button>
-    </div>
-  </div>
-)}
-
-
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <button
+              onClick={downloadPDF}
+              style={{
+                flex: 1,
+                padding: '0.5rem',
+                backgroundColor: '#333',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Descargar PDF
+            </button>
+            <button
+              onClick={handleSubmit}
+              style={{
+                flex: 1,
+                padding: '0.5rem',
+                backgroundColor: '#0070f3',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Regenerar
+            </button>
+          </div>
+        </div>
+      )}
 
       {showPopup && (
         <div
