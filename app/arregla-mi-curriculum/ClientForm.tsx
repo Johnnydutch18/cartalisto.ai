@@ -204,6 +204,7 @@ Tipo de empleo (si se indicó): ${jobType}`;
       id="pdf-content"
       contentEditable={true}
       suppressContentEditableWarning={true}
+      dangerouslySetInnerHTML={{ __html: output }}
       style={{
         backgroundColor: '#ffffff',
         padding: '2rem',
@@ -213,19 +214,11 @@ Tipo de empleo (si se indicó): ${jobType}`;
         fontSize: '14px',
         color: '#222',
         lineHeight: '1.6',
-        whiteSpace: 'pre-wrap',
+        whiteSpace: 'normal',
         wordWrap: 'break-word',
       }}
       lang="es"
-      dangerouslySetInnerHTML={{
-        __html: output
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Convert **text** to bold
-          .replace(/\n{2,}/g, '</p><p>')                    // Paragraph breaks
-          .replace(/\n/g, '<br/>')                          // Soft line breaks
-          .replace(/^/, '<p>')                              // Open first <p>
-          .replace(/$/, '</p>'),                            // Close last </p>
-      }}
-    />
+    ></div>
 
     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
       <button
@@ -257,39 +250,9 @@ Tipo de empleo (si se indicó): ${jobType}`;
         Regenerar
       </button>
     </div>
-
-    <div style={{ marginTop: '1rem', textAlign: 'center', color: '#666' }}>
-      {feedback === 'limit' ? (
-        <>
-          <p><strong>⚠️ Has alcanzado el límite diario.</strong></p>
-          <p>
-            <a href="/planes" style={{ color: '#0070f3', textDecoration: 'underline' }}>
-              Mejora tu plan aquí
-            </a>
-          </p>
-        </>
-      ) : (
-        <>
-          <p>¿Te fue útil?</p>
-          <div style={{ fontSize: '1.5rem', cursor: 'pointer' }}>
-            <span
-              onClick={() => setFeedback('up')}
-              style={{ marginRight: '1rem', opacity: feedback === 'up' ? 1 : 0.4 }}
-            >
-              👍
-            </span>
-            <span
-              onClick={() => setFeedback('down')}
-              style={{ opacity: feedback === 'down' ? 1 : 0.4 }}
-            >
-              👎
-            </span>
-          </div>
-        </>
-      )}
-    </div>
   </div>
 )}
+
 
 
       {showPopup && (
