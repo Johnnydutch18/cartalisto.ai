@@ -76,8 +76,8 @@ export async function POST(req: Request) {
 
   const toneStyleMap: Record<string, string> = {
     Tradicional: "Usa un tono formal, serio y profesional. Evita contracciones y lenguaje casual.",
-    Moderno: "Usa un tono claro, directo y profesional. Sé conciso y enfocado.",
-    Creativo: "Usa un tono dinámico, entusiasta y ligeramente informal. Puedes mostrar personalidad y pasión.",
+    Moderno: "Usa un tono claro, moderno y directo. Evita frases largas o rebuscadas. Sé preciso y profesional.",
+    Creativo: "Usa un tono dinámico, motivador y ligeramente informal. Está bien mostrar entusiasmo o aspiraciones.",
   };
 
   const visualStyle = formatStyleMap[format] || formatStyleMap.Tradicional;
@@ -106,15 +106,23 @@ ${resume}
 📝 Idioma: Español
 💡 Formato: Devuelve solo HTML limpio y editable usando etiquetas como <h2>, <p>, <ul>, <li>, <div>.
 ❌ No incluyas <html>, <head> ni <body>.
-`;
+`.trim();
 
-  // Extra structure rules for Moderno and Creativo
-  if (format === "Moderno" || format === "Creativo") {
-    userPrompt += `\n📌 Usa listas (<ul><li>) para habilidades y experiencia.`;
+  if (format === "Moderno") {
+    userPrompt += `
+📌 Usa listas (<ul><li>) para habilidades y experiencia, en lugar de solo párrafos.
+🧩 Resume los logros y funciones en frases claras y concisas.
+🔹 Evita palabras de relleno y redacción innecesaria.
+📐 Usa estructura limpia y ordenada con buena separación de secciones.
+`.trim();
   }
 
   if (format === "Creativo") {
-    userPrompt += `\n✨ Puedes usar frases personales o creativas que hagan destacar el CV de forma profesional.`;
+    userPrompt += `
+📌 Usa viñetas (<ul><li>) para habilidades y logros si ayuda a la presentación.
+✨ Puedes incluir frases personales o creativas que hagan destacar el CV.
+🎭 Está bien mostrar algo de personalidad o motivación (sin perder profesionalismo).
+`.trim();
   }
 
   try {
@@ -128,7 +136,7 @@ ${resume}
     });
 
     let result = chat.choices[0].message.content?.trim() ?? "";
-    result = result.replace(/```html|```/g, "").trim(); // Strip backticks
+    result = result.replace(/```html|```/g, "").trim(); // Strip markdown fences
 
     await supabase.from("generations").insert([
       { user_id: user.id, type, output: result },
