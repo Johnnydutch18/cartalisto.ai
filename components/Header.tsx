@@ -1,4 +1,3 @@
-// app/components/Header.tsx (or wherever it's located)
 "use client";
 
 import { useState, useEffect } from "react";
@@ -61,6 +60,15 @@ export default function Header() {
     router.push("/");
   };
 
+  // ✅ Translate plan to Spanish
+  const translatedPlan = {
+    free: "Gratuito",
+    gratuito: "Gratuito",
+    standard: "Estándar",
+    estandar: "Estándar",
+    pro: "Pro",
+  }[plan?.toLowerCase() || ""] || "";
+
   return (
     <header className="w-full px-4 py-4 border-b flex justify-between items-center relative z-50">
       {/* Logo */}
@@ -78,7 +86,7 @@ export default function Header() {
             <Link href="/cuenta" className="hover:underline">Mi cuenta</Link>
             <span>
               {session.user.email}
-              {plan && <span className="text-xs text-gray-500"> ({plan})</span>}
+              {translatedPlan && <span className="text-xs text-gray-500"> ({translatedPlan})</span>}
             </span>
             <button onClick={handleLogout} className="text-blue-600 hover:underline">Cerrar sesión</button>
           </>
@@ -109,7 +117,7 @@ export default function Header() {
               <Link href="/cuenta" onClick={() => setMenuOpen(false)} className="hover:underline">Mi cuenta</Link>
               <span>
                 {session.user.email}
-                {plan && <span className="block text-xs text-gray-500">Plan: {plan}</span>}
+                {translatedPlan && <span className="block text-xs text-gray-500">Plan: {translatedPlan}</span>}
               </span>
               <button
                 onClick={() => {
