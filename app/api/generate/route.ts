@@ -38,15 +38,13 @@ export async function POST(req: Request) {
     .single();
 
   let type: "cv" | "cover" = "cv";
-  let prompt: string;
-  let format = "Tradicional";
-  let jobType = "";
   let resume = "";
+  let jobType = "";
+  let format = "Tradicional";
 
   try {
     const body = await req.json();
-    prompt = body.prompt;
-    resume = body.resume || "";
+    resume = body.prompt || "";
     jobType = body.jobType || "";
     format = body.format || "Tradicional";
     const rawType = (body.type || "").toLowerCase().trim();
@@ -61,54 +59,53 @@ export async function POST(req: Request) {
   const isSameDay = profile?.lastGeneratedAt?.split("T")[0] === today;
   const cvCount = isSameDay ? profile.cvCount ?? 0 : 0;
   const letterCount = isSameDay ? profile.letterCount ?? 0 : 0;
-
   const plan = profile?.plan ?? "free";
-  const isFree = plan === "free";
 
-  if (isFree && cvCount + letterCount >= 1) {
+  if (plan === "free" && cvCount + letterCount >= 1) {
     return NextResponse.json(
       { result: "⚠️ Has alcanzado tu límite diario. Mejora tu plan para más usos." },
       { status: 429 }
     );
   }
 
-  const formatStyles: Record<string, string> = {
-    Tradicional: "Un diseño clásico y formal, con encabezados sobrios, sin colores llamativos, ideal para sectores conservadores como administración o derecho.",
-    Moderno: "Un diseño limpio con buena jerarquía visual, tipografía profesional y estructura clara. Ideal para trabajos de oficina, marketing, tecnología o atención al cliente.",
-    Creativo: "Un diseño atractivo y llamativo, con colores sutiles, íconos y secciones diferenciadas. Adecuado para industrias creativas como diseño gráfico, moda o medios.",
+  const formatStyleMap: Record<string, string> = {
+    Tradicional: "Diseño clásico y sobrio con encabezados en negrita y texto bien estructurado.",
+    Moderno: "Diseño profesional, limpio, con secciones bien definidas y separación clara.",
+    Creativo: "Diseño visualmente atractivo, uso de color sutil, encabezados destacados.",
   };
 
-  const visualStyle = formatStyles[format] || formatStyles["Tradicional"];
+  const visualStyle = formatStyleMap[format] || formatStyleMap.Tradicional;
 
-  const systemPrompt =
-    type === "cover"
-      ? "Eres un experto en cartas de presentación. Genera solo una carta en HTML limpio, usando <div>, <h1>, <h2>, <p>, <ul>, <li>. No uses <html>, <head>, ni <style>."
-      : "Eres un experto redactor de currículums con 15 años de experiencia en el mercado laboral español. Transforma entradas básicas en un currículum completo en HTML limpio. Usa solo <div>, <h1-3>, <p>, <ul>, <li>. Nada más.";
+  const systemPrompt = `Eres un experto redactor de currículums con 15 años de experiencia en el mercado laboral español.`;
 
   const userPrompt = `
-🧠 Tu objetivo es generar un currículum profesional completo en español, listo para editar y exportar en PDF.
+🔧 Tarea:
+Usa el texto del usuario para generar un currículum profesional completo, bien estructurado, en HTML limpio y editable (usa solo <div>, <h1>, <h2>, <ul>, <li>, <p>).
 
-✅ Instrucciones:
-- No repitas literalmente lo que escribió el usuario. Reescribe con tono profesional y humano.
-- Detecta el idioma de entrada y responde en español.
-- Auto-completa cualquier sección faltante con contenido lógico y relevante.
-- Usa buena jerarquía visual: títulos claros, secciones separadas, saltos de línea, viñetas si es necesario.
-- Solo genera contenido HTML válido y simple: <div>, <h1-3>, <p>, <ul>, <li>. Nada más.
-- Estilo visual solicitado: ${visualStyle}
+🎯 Objetivo:
+- No copies ni reformules el texto original — mejóralo, expándelo, y escribe como un experto.
+- Si hay partes faltantes (perfil, experiencia, habilidades), complétalas de forma lógica y realista.
+- Si el texto es pobre, genera algo útil de todas formas.
+- Adapta el diseño al estilo solicitado.
 
-📂 Tipo de empleo objetivo: ${jobType || "No especificado"}
-📋 Información proporcionada por el usuario:
+🗂️ Formato solicitado: ${format} (${visualStyle})
+📂 Tipo de empleo: ${jobType || "No especificado"}
+
+📋 Texto proporcionado por el usuario:
 ${resume}
+
+📝 Idioma: Solo responde en español. No uses ningún texto en inglés.
+🔒 No incluyas etiquetas <html>, <head> o <body>. Solo el contenido editable del currículum.
 `;
 
   try {
     const chat = await openai.chat.completions.create({
       model: "gpt-4o",
+      temperature: 0.5,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      temperature: 0.6,
     });
 
     const result = chat.choices[0].message.content?.trim() ?? "";
@@ -125,17 +122,13 @@ ${resume}
       updates.letterCount = isSameDay ? letterCount + 1 : 1;
       updates.cvCount = isSameDay ? cvCount : 0;
     }
-
     if (!profile?.email && user.email) updates.email = user.email;
 
     await supabase.from("profiles").update(updates).eq("id", user.id);
 
-    return NextResponse.json({ result, usage: { cvCount: updates.cvCount, letterCount: updates.letterCount, limit: isFree ? 1 : 999 } });
+    return NextResponse.json({ result });
   } catch (err: any) {
-    console.error("❌ OpenAI error:", err);
-    return NextResponse.json(
-      { result: "Error al generar. Intenta más tarde." },
-      { status: 500 }
-    );
+    console.error("❌ Error generando CV:", err);
+    return NextResponse.json({ result: "Error al generar el CV. Intenta más tarde." }, { status: 500 });
   }
 }
