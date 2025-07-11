@@ -70,27 +70,32 @@ export async function POST(req: Request) {
 
   const formatStyleMap: Record<string, string> = {
     Tradicional: "Diseño clásico y sobrio con encabezados en negrita y texto bien estructurado.",
-    Moderno: "Diseño profesional, limpio, con secciones bien definidas y separación clara.",
-    Creativo: "Diseño visualmente atractivo, uso de color sutil, encabezados destacados.",
+    Moderno: "Diseño profesional, limpio, con secciones bien definidas y separación clara mediante listas.",
+    Creativo: "Diseño visualmente atractivo, uso de color sutil, estructura destacada y original.",
+  };
+
+  const toneStyleMap: Record<string, string> = {
+    Tradicional: "Usa un tono formal, serio y profesional. Evita contracciones y lenguaje casual.",
+    Moderno: "Usa un tono claro, directo y profesional. Sé conciso y enfocado.",
+    Creativo: "Usa un tono dinámico, entusiasta y ligeramente informal. Puedes mostrar personalidad y pasión.",
   };
 
   const visualStyle = formatStyleMap[format] || formatStyleMap.Tradicional;
+  const tone = toneStyleMap[format] || toneStyleMap.Tradicional;
 
   const systemPrompt = `Eres un experto redactor de currículums con 15 años de experiencia en el mercado laboral español.`;
 
-  const userPrompt = `
-Eres un experto redactor de currículums con 15 años de experiencia en el mercado laboral español.
-
+  let userPrompt = `
 🔧 Tarea:
 Usa el siguiente texto para generar un Currículum Vitae completo, profesional y reescrito. Aunque el texto sea muy corto o poco claro, debes mejorarlo, expandirlo y completarlo de forma lógica.
 
-✅ Asegúrate de:
-- No repetir ni copiar literalmente el texto original
-- Corregir errores y mejorar la redacción
-- Completar secciones faltantes como perfil, experiencia o habilidades
-- Adaptar el estilo visual solicitado por el usuario
+🎯 Objetivo:
+- No copies ni repitas el texto original.
+- Corrige errores, mejora la redacción, y completa secciones faltantes como perfil, experiencia o habilidades.
+- Adapta el contenido al estilo visual y tono especificados.
 
-🎨 Estilo solicitado: ${format} (${visualStyle})
+🎨 Estilo visual solicitado: ${format} (${visualStyle})
+🗣️ Estilo de redacción: ${tone}
 📂 Tipo de empleo: ${jobType || "No especificado"}
 
 📋 Texto proporcionado por el usuario:
@@ -100,8 +105,17 @@ ${resume}
 
 📝 Idioma: Español
 💡 Formato: Devuelve solo HTML limpio y editable usando etiquetas como <h2>, <p>, <ul>, <li>, <div>.
-❌ No incluyas <html>, <head> ni <body>
-`.trim();
+❌ No incluyas <html>, <head> ni <body>.
+`;
+
+  // Extra structure rules for Moderno and Creativo
+  if (format === "Moderno" || format === "Creativo") {
+    userPrompt += `\n📌 Usa listas (<ul><li>) para habilidades y experiencia.`;
+  }
+
+  if (format === "Creativo") {
+    userPrompt += `\n✨ Puedes usar frases personales o creativas que hagan destacar el CV de forma profesional.`;
+  }
 
   try {
     const chat = await openai.chat.completions.create({
@@ -113,7 +127,8 @@ ${resume}
       ],
     });
 
-    const result = chat.choices[0].message.content?.trim() ?? "";
+    let result = chat.choices[0].message.content?.trim() ?? "";
+    result = result.replace(/```html|```/g, "").trim(); // Strip backticks
 
     await supabase.from("generations").insert([
       { user_id: user.id, type, output: result },
