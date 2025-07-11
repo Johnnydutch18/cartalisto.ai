@@ -198,90 +198,99 @@ Tipo de empleo (si se indicó): ${jobType}`;
         <p style={{ color: '#777', fontSize: '0.9rem' }}>🕒 El límite se reinicia cada día a medianoche.</p>
       </div>
 
-      {output && (
-        <div style={{ marginTop: '2rem' }}>
-          <div
-            id="pdf-content"
-            style={{
-              backgroundColor: '#ffffff',
-              padding: '2rem',
-              borderRadius: '6px',
-              border: '1px solid #ccc',
-              fontFamily: 'Georgia, serif',
-              fontSize: '14px',
-              color: '#222',
-              lineHeight: '1.6',
-              whiteSpace: 'pre-wrap',
-              wordWrap: 'break-word',
-            }}
-            lang="es"
-          >
-            {output}
-          </div>
+{output && (
+  <div style={{ marginTop: '2rem' }}>
+    <div
+      id="pdf-content"
+      contentEditable={true}
+      suppressContentEditableWarning={true}
+      style={{
+        backgroundColor: '#ffffff',
+        padding: '2rem',
+        borderRadius: '6px',
+        border: '1px solid #ccc',
+        fontFamily: 'Georgia, serif',
+        fontSize: '14px',
+        color: '#222',
+        lineHeight: '1.6',
+        whiteSpace: 'pre-wrap',
+        wordWrap: 'break-word',
+      }}
+      lang="es"
+      dangerouslySetInnerHTML={{
+        __html: output
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Convert **text** to bold
+          .replace(/\n{2,}/g, '</p><p>')                    // Paragraph breaks
+          .replace(/\n/g, '<br/>')                          // Soft line breaks
+          .replace(/^/, '<p>')                              // Open first <p>
+          .replace(/$/, '</p>'),                            // Close last </p>
+      }}
+    />
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-            <button
-              onClick={downloadPDF}
-              style={{
-                flex: 1,
-                padding: '0.5rem',
-                backgroundColor: '#333',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-              }}
-            >
-              Descargar PDF
-            </button>
-            <button
-              onClick={handleSubmit}
-              style={{
-                flex: 1,
-                padding: '0.5rem',
-                backgroundColor: '#0070f3',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-              }}
-            >
-              Regenerar
-            </button>
-          </div>
+    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+      <button
+        onClick={downloadPDF}
+        style={{
+          flex: 1,
+          padding: '0.5rem',
+          backgroundColor: '#333',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+        }}
+      >
+        Descargar PDF
+      </button>
+      <button
+        onClick={handleSubmit}
+        style={{
+          flex: 1,
+          padding: '0.5rem',
+          backgroundColor: '#0070f3',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+        }}
+      >
+        Regenerar
+      </button>
+    </div>
 
-          <div style={{ marginTop: '1rem', textAlign: 'center', color: '#666' }}>
-            {feedback === 'limit' ? (
-              <>
-                <p><strong>⚠️ Has alcanzado el límite diario.</strong></p>
-                <p>
-                  <a href="/planes" style={{ color: '#0070f3', textDecoration: 'underline' }}>
-                    Mejora tu plan aquí
-                  </a>
-                </p>
-              </>
-            ) : (
-              <>
-                <p>¿Te fue útil?</p>
-                <div style={{ fontSize: '1.5rem', cursor: 'pointer' }}>
-                  <span
-                    onClick={() => setFeedback('up')}
-                    style={{ marginRight: '1rem', opacity: feedback === 'up' ? 1 : 0.4 }}
-                  >
-                    👍
-                  </span>
-                  <span
-                    onClick={() => setFeedback('down')}
-                    style={{ opacity: feedback === 'down' ? 1 : 0.4 }}
-                  >
-                    👎
-                  </span>
-                </div>
-              </>
-            )}
+    <div style={{ marginTop: '1rem', textAlign: 'center', color: '#666' }}>
+      {feedback === 'limit' ? (
+        <>
+          <p><strong>⚠️ Has alcanzado el límite diario.</strong></p>
+          <p>
+            <a href="/planes" style={{ color: '#0070f3', textDecoration: 'underline' }}>
+              Mejora tu plan aquí
+            </a>
+          </p>
+        </>
+      ) : (
+        <>
+          <p>¿Te fue útil?</p>
+          <div style={{ fontSize: '1.5rem', cursor: 'pointer' }}>
+            <span
+              onClick={() => setFeedback('up')}
+              style={{ marginRight: '1rem', opacity: feedback === 'up' ? 1 : 0.4 }}
+            >
+              👍
+            </span>
+            <span
+              onClick={() => setFeedback('down')}
+              style={{ opacity: feedback === 'down' ? 1 : 0.4 }}
+            >
+              👎
+            </span>
           </div>
-        </div>
+        </>
       )}
+    </div>
+  </div>
+)}
+
 
       {showPopup && (
         <div
