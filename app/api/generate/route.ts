@@ -41,6 +41,7 @@ export async function POST(req: Request) {
   let resume = "";
   let jobType = "";
   let format = "Tradicional";
+  let tone = "formal";
   let name = "";
   let phone = "";
   let email = "";
@@ -50,14 +51,13 @@ export async function POST(req: Request) {
   let education = "";
   let skills = "";
   let languages = "";
-  let tone = "";
 
   try {
     const body = await req.json();
     resume = body.prompt || "";
     jobType = body.jobType || "";
     format = body.format || "Tradicional";
-    tone = body.tone || "Formal";
+    tone = body.tone || "formal";
     name = body.name || "";
     phone = body.phone || "";
     email = body.email || "";
@@ -92,38 +92,62 @@ export async function POST(req: Request) {
   let userPrompt = "";
 
   if (type === "cover") {
-    const toneInstructions: Record<string, string> = {
-      Formal: `Tono: Formal. Usa lenguaje muy profesional, serio y cortés. No uses contracciones. Frases largas, lenguaje impersonal. Evita entusiasmo o informalidad.`,
-      Neutral: `Tono: Neutral. Profesional y claro. Frases directas pero educadas. Sin exageración, sin informalidad.`,
-      Casual: `Tono: Casual. Cercano, natural, algo coloquial. Puedes usar frases más cortas, mostrar entusiasmo y expresarte de forma relajada.`
+    const coverLetterToneMap: Record<string, string> = {
+      formal: `Eres un experto redactor de cartas de presentación en español para el mercado laboral. Escribe una carta de presentación formal y profesional, con un tono serio y respetuoso. Usa frases largas y elegantes. No uses encabezados ni listas, solo texto estructurado. La carta debe dirigirse a "Estimados miembros del equipo de selección" y terminar con "Atentamente, [Nombre]". Usa el siguiente contenido como base, pero mejóralo completamente:
+
+Nombre: ${name}
+Puesto: ${jobType}
+Resumen: ${summary}
+Experiencia: ${experience}
+
+Redacta la carta con fluidez, sin repetir información innecesaria.`,
+
+      neutral: `Eres un redactor profesional de cartas de presentación en español. Escribe una carta de presentación neutra, clara y profesional. Usa un lenguaje directo, sin adornos excesivos ni demasiada informalidad. La carta debe ir dirigida a "Estimados/as" o "Estimado equipo de selección" y terminar con "Atentamente, [Nombre]". Evita frases demasiado largas o rebuscadas. Basado en estos datos:
+
+Nombre: ${name}
+Puesto: ${jobType}
+Resumen: ${summary}
+Experiencia: ${experience}
+
+Reescribe con buena estructura y estilo claro.`,
+
+      casual: `Actúa como un redactor creativo de cartas de presentación. Escribe una carta con un tono cercano, accesible y algo informal (pero aún profesional). Usa frases más cortas, lenguaje más natural, y permite mostrar un poco de personalidad o entusiasmo. Comienza con "Hola equipo" o similar, y termina con "Saludos" o "Gracias por su tiempo". Basado en esta información:
+
+Nombre: ${name}
+Puesto: ${jobType}
+Resumen: ${summary}
+Experiencia: ${experience}
+
+Haz que la carta suene auténtica, diferente y humana.`,
     };
 
-    userPrompt = `
-Eres un generador experto de cartas de presentación en español. Tu tarea es redactar una carta desde cero, bien escrita, clara y orientada al puesto de Coordinadora de Proyectos. NO repitas el texto original del usuario.
-
-Tu objetivo es producir un texto:
-- Adaptado al tono solicitado.
-- Que destaque habilidades reales.
-- Que sea útil para enviar en una postulación laboral.
-- En HTML limpio (sin etiquetas <html>, solo <p>, <br> o <div> si hace falta).
-
-${toneInstructions[tone] || toneInstructions.Formal}
-
-Detalles de la persona:
-Nombre: ${name}
-Puesto deseado: Coordinadora de Proyectos
-Resumen/experiencia: ${resume}
-`.trim();
+    userPrompt = coverLetterToneMap[tone] || coverLetterToneMap.formal;
   } else {
-    // [Keep previous CV logic untouched for now.]
+    // CV generation prompt (existing logic)
+    userPrompt = `Genera un currículum en HTML limpio usando estos datos:
+Nombre: ${name}
+Teléfono: ${phone}
+Email: ${email}
+Dirección: ${address}
+Resumen: ${summary}
+Experiencia: ${experience}
+Educación: ${education}
+Habilidades: ${skills}
+Idiomas: ${languages}
+Formato: ${format}
+Idioma: Español
+
+Devuelve solo HTML estructurado con <h2>, <ul>, <li>. No uses <html> ni <body>. Mejora el contenido si es débil.`;
   }
 
-  const systemPrompt = `Eres un experto redactor profesional de CVs y cartas de presentación con 15 años de experiencia en el mercado laboral español.`;
+  const systemPrompt = type === "cover"
+    ? "Eres un experto redactor de cartas de presentación laborales en español."
+    : "Eres un experto redactor de currículums con 15 años de experiencia en el mercado laboral español.";
 
   try {
     const chat = await openai.chat.completions.create({
       model: "gpt-4o",
-      temperature: 0.8,
+      temperature: 0.7,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -151,7 +175,7 @@ Resumen/experiencia: ${resume}
 
     return NextResponse.json({ result });
   } catch (err: any) {
-    console.error("❌ Error generando salida:", err);
+    console.error("❌ Error generando contenido:", err);
     return NextResponse.json({ result: "Error al generar contenido. Intenta más tarde." }, { status: 500 });
   }
 }
