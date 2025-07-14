@@ -32,24 +32,26 @@ Eres un generador de cartas de presentación en HTML para el mercado laboral esp
 
 🎯 Objetivo:
 - Crear una carta personalizada, concisa y bien redactada, que complemente un currículum.
-- No repitas el contenido de un CV.
+- No repitas el contenido del CV.
 - No uses títulos ni listas. Solo usa párrafos <p>.
 - Devuelve solo HTML limpio. No incluyas <html>, <body>, ni encabezados <h1>, <h2>, etc.
 
 📌 Datos del usuario:
-Nombre: ${name}
-Puesto deseado: ${jobTitle}
-Experiencia relevante: ${experience}
+Nombre: ${name || 'Nombre del candidato'}
+Puesto deseado: ${jobTitle || 'No especificado'}
+Experiencia relevante: ${experience || 'No especificado'}
 Tono: ${toneLabel} — ${toneStyle}
 
 📄 Estructura de salida:
-1. Breve introducción con saludo.
+1. Introducción breve con saludo.
 2. Un párrafo explicando la motivación y cómo encaja con el puesto.
 3. Un párrafo destacando experiencia clave.
 4. Un cierre con disponibilidad y agradecimiento.
+5. Una despedida profesional como "Atentamente", "Un cordial saludo", etc., seguida del nombre del candidato si está disponible.
 
-❗ Devuelve solo el contenido HTML, en párrafos <p>. Nada más.
+❗ Devuelve solo el contenido HTML, usando párrafos <p>. No incluyas etiquetas <html>, <body> ni ningún marcador de código. No uses comillas invertidas ni bloques de código.
 `.trim();
+
 
   async function handleSubmit() {
     setLoading(true);

@@ -57,6 +57,7 @@ Actúa como un redactor experto de currículums con 15 años de experiencia en e
 💼 Tipo de empleo (si se proporcionó): ${jobType || 'No especificado'}
 📋 CV o información del usuario:
 ${resume}
+❗ Nunca uses comillas invertidas, bloques de código Markdown (\`\`\`) ni formateo Markdown. Devuelve solo HTML limpio.
 `;
 
   try {

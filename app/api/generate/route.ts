@@ -96,14 +96,17 @@ const cookieStore = await cookies();
       })
       .eq('id', userId);
 
-    return NextResponse.json({
-      result,
-      usage: {
-        cvCount: (type === 'cv' ? (profile?.cv_count || 0) + 1 : profile?.cv_count || 0),
-        letterCount: (type === 'letter' ? (profile?.letter_count || 0) + 1 : profile?.letter_count || 0),
-        limit: isPro ? Infinity : isStandard ? standardLimit : freeLimit,
-      },
-    });
+// 🧼 Clean unwanted Markdown wrapping (e.g., ```html)
+const cleanResult = result.replace(/```html\s*([\s\S]*?)```/gi, '$1').replace(/```([\s\S]*?)```/gi, '$1');
+
+return NextResponse.json({
+  result: cleanResult,
+  usage: {
+    cvCount: type === 'cv' ? (profile?.cv_count || 0) + 1 : profile?.cv_count || 0,
+    letterCount: type === 'letter' ? (profile?.letter_count || 0) + 1 : profile?.letter_count || 0,
+    limit: isPro ? Infinity : isStandard ? standardLimit : freeLimit,
+  },
+});
   } catch (error) {
     console.error('❌ Error during AI generation:', error);
     return NextResponse.json({ error: 'Error generating content.' }, { status: 500 });
