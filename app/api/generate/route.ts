@@ -95,6 +95,18 @@ Eres un generador de currículum moderno en HTML. Solo devuelves HTML limpio y e
 No expliques nada. No uses párrafos largos. Usa solo encabezados (<h1>, <h2>) y listas (<ul><li>). 
 Tono profesional, conciso, y orientado a resultados.
 
+Utiliza la siguiente información del usuario:
+
+Nombre: ${name}
+Teléfono: ${phone}
+Email: ${email}
+Dirección: ${address}
+Idiomas: ${languages}
+Habilidades: ${skills}
+Experiencia Laboral: ${experience}
+Educación: ${education}
+Perfil Profesional: ${summary}
+
 Devuelve el CV en este formato:
 
 <h1>Currículum Vitae</h1>
@@ -107,32 +119,33 @@ Devuelve el CV en este formato:
 
 <h2>Perfil Profesional</h2>
 <ul>
-  [Escribe un resumen profesional breve en 3–4 puntos basado en esta entrada: ${summary}]
+  [Resume el perfil del usuario en 3–4 puntos]
 </ul>
 
 <h2>Experiencia Laboral</h2>
+<h3>[Puesto] – [Empresa] ([Fechas])</h3>
 <ul>
-  [Reescribe y mejora esta experiencia laboral: ${experience}]
+  [3 logros o responsabilidades por experiencia]
 </ul>
 
 <h2>Educación</h2>
 <ul>
-  [Reescribe y estructura esta formación académica: ${education}]
+  [Cada formación como una <li> con fechas y título]
 </ul>
 
 <h2>Habilidades</h2>
 <ul>
-  [Lista clara y efectiva: ${skills}]
+  [Cada habilidad como una <li>]
 </ul>
 
 <h2>Idiomas</h2>
 <ul>
-  [Lista basada en: ${languages}]
+  [Cada idioma del campo "${languages}" como una <li>]
 </ul>
 
 <h2>Referencias</h2>
 <p>Disponibles a solicitud.</p>
-    `.trim();
+`;
   } else {
     const formatStyleMap: Record<string, string> = {
       Tradicional: "Diseño clásico y sobrio con encabezados en negrita y texto bien estructurado.",
