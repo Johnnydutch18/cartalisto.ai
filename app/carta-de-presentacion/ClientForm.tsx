@@ -52,29 +52,28 @@ const toneLabel = tone?.toLowerCase() ?? "neutral";
 const toneStyle = toneStyleMap[toneLabel] || toneStyleMap.neutral;
 
 const prompt = `
-Eres un generador de cartas de presentación en HTML para el mercado laboral español. 
+Eres un generador de cartas de presentación en HTML. No generes un currículum. Devuelve solo párrafos con etiquetas <p>. No uses listas, encabezados, ni secciones tipo CV.
 
 🎯 Objetivo:
-- Crear una carta personalizada, concisa y bien redactada, que complemente un currículum.
-- No repitas el contenido de un CV.
-- No uses títulos ni listas. Solo usa párrafos <p>.
-- Devuelve solo HTML limpio. No incluyas <html>, <body>, ni encabezados <h1>, <h2>, etc.
+- Redactar una carta de presentación clara, profesional y personalizada.
+- Adaptar el texto al tono: ${selectedTone} — ${toneInstructions}.
+- El contenido debe leerse como una carta real, no como un CV.
+- No repitas información como "Perfil profesional", "Educación", "Idiomas", etc.
 
-📌 Datos del usuario:
-Nombre: ${name}
-Puesto deseado: ${jobTitle}
-Experiencia relevante: ${experience}
-Tono: ${selectedTone} — ${toneInstructions}
+📌 Datos proporcionados:
+- Nombre: ${name}
+- Puesto deseado: ${jobTitle}
+- Experiencia relevante: ${experience}
 
-📄 Estructura de salida:
-1. Breve introducción con saludo.
-2. Un párrafo explicando la motivación y cómo encaja con el puesto.
-3. Un párrafo destacando experiencia clave.
-4. Un cierre con disponibilidad y agradecimiento.
+📄 Estructura:
+1. Saludo inicial (Ej. "Estimado/a...")
+2. Motivación para postular al puesto
+3. Resumen breve de experiencia y habilidades clave
+4. Cierre con disponibilidad y agradecimiento
+5. Firma (Ej. "Atentamente, ${name}")
 
-❗ Devuelve solo el contenido HTML, en párrafos <p>. Nada más.
+❗ Devuelve solo HTML válido. Solo usa <p>. Nada más.
 `.trim();
-
 
 
     try {
