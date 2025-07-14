@@ -214,7 +214,7 @@ Tono: ${toneLabel} — ${toneStyle}
             }}
           >
             <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-              ✅ Carta Generada
+        
             </h2>
 
             <div
