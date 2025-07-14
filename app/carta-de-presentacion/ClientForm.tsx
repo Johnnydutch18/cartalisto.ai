@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useRouter, usePathname } from 'next/navigation';
 
-export default function CoverLetterForm() {
+export default function ClientForm() {
   const [name, setName] = useState('');
   const [experience, setExperience] = useState('');
   const [jobTitle, setJobTitle] = useState('');
@@ -19,13 +19,37 @@ export default function CoverLetterForm() {
   const pathname = usePathname();
 
   const toneMap: Record<string, string> = {
-    formal: "Usa un tono formal, profesional y respetuoso. Dirige la carta con cortesía, evita lenguaje coloquial y estructura clara.",
-    neutral: "Usa un tono profesional, claro y accesible, manteniendo un lenguaje equilibrado y directo.",
-    casual: "Usa un tono cercano, amistoso y optimista, sin dejar de ser profesional. Evita formalidades innecesarias.",
+    formal: 'Usa un tono formal, profesional y respetuoso. Dirige la carta con cortesía y evita lenguaje coloquial.',
+    neutral: 'Usa un tono profesional y claro, sin sonar demasiado rígido ni demasiado informal.',
+    casual: 'Usa un tono cercano, positivo y amistoso, sin dejar de ser profesional.',
   };
 
-  const selectedTone = tone?.toLowerCase() ?? "neutral";
-  const toneInstructions = toneMap[selectedTone] || toneMap.neutral;
+  const toneLabel = tone?.toLowerCase() ?? 'neutral';
+  const toneStyle = toneMap[toneLabel] || toneMap.neutral;
+
+  const prompt = `
+Eres un generador de cartas de presentación en HTML para el mercado laboral español.
+
+🎯 Objetivo:
+- Crear una carta personalizada, concisa y bien redactada, que complemente un currículum.
+- No repitas el contenido de un CV.
+- No uses títulos ni listas. Solo usa párrafos <p>.
+- Devuelve solo HTML limpio. No incluyas <html>, <body>, ni encabezados <h1>, <h2>, etc.
+
+📌 Datos del usuario:
+Nombre: ${name}
+Puesto deseado: ${jobTitle}
+Experiencia relevante: ${experience}
+Tono: ${toneLabel} — ${toneStyle}
+
+📄 Estructura de salida:
+1. Breve introducción con saludo.
+2. Un párrafo explicando la motivación y cómo encaja con el puesto.
+3. Un párrafo destacando experiencia clave.
+4. Un cierre con disponibilidad y agradecimiento.
+
+❗ Devuelve solo el contenido HTML, en párrafos <p>. Nada más.
+`.trim();
 
   async function handleSubmit() {
     setLoading(true);
@@ -41,30 +65,6 @@ export default function CoverLetterForm() {
       setLoading(false);
       return;
     }
-
-    const prompt = `
-Eres un generador de cartas de presentación en HTML para el mercado laboral español. 
-
-🎯 Objetivo:
-- Crear una carta personalizada, concisa y bien redactada, que complemente un currículum.
-- No repitas el contenido de un CV.
-- No uses títulos ni listas. Solo usa párrafos <p>.
-- Devuelve solo HTML limpio. No incluyas <html>, <body>, ni encabezados <h1>, <h2>, etc.
-
-📌 Datos del usuario:
-Nombre: ${name}
-Puesto deseado: ${jobTitle}
-Experiencia relevante: ${experience}
-Tono: ${selectedTone} — ${toneInstructions}
-
-📄 Estructura de salida:
-1. Breve introducción con saludo.
-2. Un párrafo explicando la motivación y cómo encaja con el puesto.
-3. Un párrafo destacando experiencia clave.
-4. Un cierre con disponibilidad y agradecimiento.
-
-❗ Devuelve solo el contenido HTML, en párrafos <p>. Nada más.
-`.trim();
 
     try {
       const response = await fetch('/api/generate', {
@@ -115,7 +115,9 @@ Tono: ${selectedTone} — ${toneInstructions}
   return (
     <main style={{ maxWidth: '650px', margin: '2rem auto', padding: '1rem' }}>
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Carta de Presentación</h1>
-      <p style={{ color: '#555' }}>Crea una carta profesional para acompañar tu solicitud de empleo.</p>
+      <p style={{ color: '#555' }}>
+        Crea una carta profesional para acompañar tu solicitud de empleo.
+      </p>
 
       <div style={{ marginTop: '1rem' }}>
         <label><strong>Nombre:</strong></label>
@@ -154,6 +156,7 @@ Tono: ${selectedTone} — ${toneInstructions}
           <option value="casual">Casual</option>
         </select>
 
+        {/* ✅ Correct Buttons + Loading Text */}
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
           <button
             onClick={handleSubmit}
@@ -184,6 +187,19 @@ Tono: ${selectedTone} — ${toneInstructions}
             Limpiar
           </button>
         </div>
+
+        {loading && (
+          <p style={{ color: '#888', marginTop: '0.5rem' }}>
+            ⏳ Esto puede tardar unos segundos... generando carta con IA.
+          </p>
+        )}
+
+        {usageInfo && (
+          <p style={{ marginTop: '1rem', color: '#777' }}>
+            📊 Usado hoy: {usageInfo.total} / {usageInfo.limit}
+          </p>
+        )}
+        <p style={{ color: '#777', fontSize: '0.9rem' }}>🕒 El límite se reinicia cada día a medianoche.</p>
       </div>
 
       {output && (
@@ -197,6 +213,10 @@ Tono: ${selectedTone} — ${toneInstructions}
               border: '1px solid #ccc',
             }}
           >
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+              ✅ Carta Generada
+            </h2>
+
             <div
               id="editable-letter"
               contentEditable
@@ -245,6 +265,20 @@ Tono: ${selectedTone} — ${toneInstructions}
             }}
           >
             Iniciar sesión
+          </button>
+          <button
+            onClick={() => router.push(`/signup?next=${pathname}`)}
+            style={{
+              marginLeft: '0.5rem',
+              backgroundColor: '#ffffff',
+              color: '#f44336',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '0.25rem 0.75rem',
+              cursor: 'pointer',
+            }}
+          >
+            Crear cuenta
           </button>
         </div>
       )}
