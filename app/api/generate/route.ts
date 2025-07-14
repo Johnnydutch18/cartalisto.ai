@@ -110,26 +110,58 @@ ${resume}
 
 if (format === "Moderno") {
   userPrompt += `
-📌 Este currículum debe seguir una estructura moderna, concisa y 100% funcional. El resultado debe facilitar una lectura rápida y escaneable.
+Estructura moderna obligatoria. No uses perfiles ni bloques introductorios. No uses párrafos largos. Devuelve únicamente el siguiente HTML, completado con contenido profesional generado a partir del texto del usuario:
 
-❌ No incluyas secciones como “Perfil Profesional”, “Sobre mí” o cualquier bloque introductorio.
-❌ No uses frases genéricas como “Profesional con experiencia en...”.
-❌ No escribas párrafos largos. Usa solo frases directas y específicas en formato de lista.
+<div>
+  <h2>Nombre</h2>
+  <p>Laura García</p>
 
-✅ Formato obligatorio:
-1. Nombre completo
-2. Información de contacto (Teléfono, Email, Ciudad)
-3. Experiencia Laboral — con títulos, fechas y responsabilidades en viñetas (<ul><li>)
-4. Educación — en viñetas
-5. Habilidades — en viñetas
-6. Idiomas — en viñetas
-7. Referencias — opcional, en una línea si se incluye
+  <h2>Información de Contacto</h2>
+  <ul>
+    <li>Teléfono: (+34) 600 123 456</li>
+    <li>Email: correo@ejemplo.com</li>
+    <li>Ubicación: Madrid, España</li>
+  </ul>
 
-✂️ Usa frases breves y activas, como “Reduje el tiempo de respuesta en un 20%” o “Gestioné 50 consultas diarias”.
-📧 Si faltan datos personales, usa ejemplos realistas como correo@ejemplo.com o Madrid, España.
+  <h2>Experiencia Laboral</h2>
+  <ul>
+    <li><strong>Especialista en Atención al Cliente - Empresa XYZ</strong> (Marzo 2018 - Presente)<br>
+    - Gestioné más de 50 consultas diarias con soluciones efectivas.<br>
+    - Implementé mejoras que aumentaron la satisfacción en un 20%.</li>
+
+    <li><strong>Representante - Empresa ABC</strong> (Ene 2013 - Feb 2018)<br>
+    - Resolví reclamaciones complejas.<br>
+    - Reduje tiempos de espera mediante colaboración con el equipo técnico.</li>
+  </ul>
+
+  <h2>Educación</h2>
+  <ul>
+    <li><strong>Grado en Administración y Dirección de Empresas</strong><br>
+    Universidad Complutense de Madrid, 2008–2012</li>
+  </ul>
+
+  <h2>Habilidades</h2>
+  <ul>
+    <li>Comunicación efectiva</li>
+    <li>Gestión de conflictos</li>
+    <li>Manejo de herramientas CRM</li>
+    <li>Adaptabilidad</li>
+  </ul>
+
+  <h2>Idiomas</h2>
+  <ul>
+    <li>Español — Nativo</li>
+    <li>Inglés — Intermedio</li>
+  </ul>
+
+  <h2>Referencias</h2>
+  <p>Disponibles a solicitud.</p>
+</div>
+
+⚠️ No modifiques el orden ni los encabezados. Si algún dato no está presente en el input, rellena con ejemplos profesionales o texto lógico.
+💡 Devuelve solo el bloque HTML resultante, sin explicaciones ni etiquetas adicionales.
 `.trim();
 }
-
 
 
 
