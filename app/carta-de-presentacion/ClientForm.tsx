@@ -52,7 +52,6 @@ Tono: ${toneLabel} — ${toneStyle}
 ❗ Devuelve solo el contenido HTML, usando párrafos <p>. No incluyas etiquetas <html>, <body> ni ningún marcador de código. No uses comillas invertidas ni bloques de código.
 `.trim();
 
-
   async function handleSubmit() {
     setLoading(true);
     setOutput('');
@@ -102,6 +101,24 @@ Tono: ${toneLabel} — ${toneStyle}
     }
 
     setLoading(false);
+  }
+
+  async function downloadPDF() {
+    const element = document.getElementById('editable-letter');
+    if (!element) return;
+
+    const html2pdfModule = await import('html2pdf.js');
+    const html2pdf = html2pdfModule.default;
+
+    const opt = {
+      margin: 0.5,
+      filename: 'carta-presentacion.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+    };
+
+    html2pdf().set(opt).from(element).save();
   }
 
   function resetForm() {
@@ -158,7 +175,6 @@ Tono: ${toneLabel} — ${toneStyle}
           <option value="casual">Casual</option>
         </select>
 
-        {/* ✅ Correct Buttons + Loading Text */}
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
           <button
             onClick={handleSubmit}
@@ -215,10 +231,6 @@ Tono: ${toneLabel} — ${toneStyle}
               border: '1px solid #ccc',
             }}
           >
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-        
-            </h2>
-
             <div
               id="editable-letter"
               contentEditable
@@ -234,6 +246,37 @@ Tono: ${toneLabel} — ${toneStyle}
               lang="es"
               dangerouslySetInnerHTML={{ __html: output }}
             ></div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <button
+              onClick={downloadPDF}
+              style={{
+                flex: 1,
+                padding: '0.5rem',
+                backgroundColor: '#333',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Descargar PDF
+            </button>
+            <button
+              onClick={handleSubmit}
+              style={{
+                flex: 1,
+                padding: '0.5rem',
+                backgroundColor: '#0070f3',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Regenerar
+            </button>
           </div>
         </div>
       )}

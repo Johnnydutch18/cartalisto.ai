@@ -40,25 +40,44 @@ async function handleSubmit() {
 
   const visualStyle = visualStyleMap[format] || visualStyleMap["Tradicional"];
 
-  const prompt = `
+const prompt = `
 Actúa como un redactor experto de currículums con 15 años de experiencia en el mercado laboral de habla hispana. Tu tarea es crear un currículum **completo, profesional y listo para usar**.
 
 🎯 Objetivo: Transformar el contenido proporcionado por el usuario en un CV convincente, bien redactado, visualmente claro y redactado en **español neutro**.
 
-✅ Instrucciones:
+✅ Instrucciones generales:
 - Si la información del usuario es breve o poco clara, interpreta y expande razonablemente el contenido.
-- Si hay secciones clave ausentes (como perfil, experiencia, educación o habilidades), **genéralas tú mismo** de forma coherente y profesional.
+- Si faltan secciones clave (perfil, experiencia, educación, habilidades), **genéralas tú mismo** de forma coherente y profesional.
 - Mejora todo el lenguaje. Usa frases completas, vocabulario profesional y evita repetir exactamente lo que el usuario escribió.
-- Nunca uses valores genéricos como “Nombre del Candidato” o “Responsabilidad 1”. Siempre inventa contenido realista.
+- ❗️**No incluyas frases de despedida como “Un cordial saludo” ni firmas** — este no es una carta de presentación.
 - Devuelve solo HTML **editable** bien estructurado, usando <div>, <h1>, <h2>, <ul>, <li>, <p> y <strong>. No uses etiquetas <html> o <body>.
-- Aplica el siguiente estilo visual: ${visualStyle}
 
-🧾 Formato preferido: ${format}
 💼 Tipo de empleo (si se proporcionó): ${jobType || 'No especificado'}
-📋 CV o información del usuario:
+📄 Formato seleccionado: ${format}
+
+---
+
+🎨 Instrucciones por formato:
+
+- Tradicional:
+  - Diseño clásico con bloques de texto.
+  - No uses listas ni íconos.
+  - Usa párrafos y títulos con <strong>, sin adornos visuales.
+  - Ideal para puestos más conservadores.
+
+- Moderno:
+  - Usa listas con <ul> y <li> para experiencia, habilidades, etc.
+  - Muestra datos de contacto al principio: nombre, teléfono, email, LinkedIn.
+  - Usa subtítulos claros, y formato más estructurado.
+
+---
+
+📝 Datos del usuario:
 ${resume}
-❗ Nunca uses comillas invertidas, bloques de código Markdown (\`\`\`) ni formateo Markdown. Devuelve solo HTML limpio.
-`;
+
+❗ Devuelve solo HTML limpio. No uses comillas invertidas ni bloques de código Markdown.
+`.trim();
+
 
   try {
     const response = await fetch('/api/generate', {
