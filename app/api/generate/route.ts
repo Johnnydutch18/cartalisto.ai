@@ -12,16 +12,17 @@ export async function POST(req: Request) {
 
   const cookieStore = await nextCookies();
 
-  const cookieAdapter = {
+const cookieAdapter = {
   get: (name: string) => cookieStore.get(name)?.value ?? undefined,
-  getAll: async () =>
-    (await cookieStore.getAll()).map((cookie: { name: string; value: string }) => ({
+  getAll: () =>
+    cookieStore.getAll().map((cookie) => ({
       name: cookie.name,
       value: cookie.value,
     })),
   set: () => {},
   remove: () => {},
 } as const;
+
 
 
   const supabase = createServerClient(
