@@ -33,13 +33,42 @@ export default function CoverLetterForm() {
       return;
     }
 
-    const prompt = `Eres un experto redactor de cartas de presentación para el mercado laboral español. Con la información siguiente, redacta una carta profesional, concisa y con tono ${tone}, dirigida a un reclutador, para acompañar una solicitud de empleo al puesto de "${jobTitle}". Evita repetir el currículum y enfócate en cómo el candidato puede aportar valor.
+const toneStyleMap: Record<string, string> = {
+  formal: "Usa un tono formal, profesional y respetuoso. Dirige la carta con cortesía y evita lenguaje coloquial.",
+  neutral: "Usa un tono profesional y claro, sin sonar demasiado rígido ni demasiado informal.",
+  casual: "Usa un tono cercano, positivo y amistoso, sin dejar de ser profesional.",
+};
 
-Información:
-- Nombre: ${name}
-- Experiencia relevante: ${experience}
+const toneLabel = tone?.toLowerCase() ?? "neutral";
+const toneStyle = toneStyleMap[toneLabel] || toneStyleMap.neutral;
 
-Escribe la carta en español, estructurada correctamente, en un solo bloque de texto, sin encabezados ni firma final.`;
+const prompt = `
+✉️ Eres un generador de cartas de presentación en HTML. Devuelve solo HTML limpio y estructurado. 
+No expliques nada. Usa solo <h1>, <h2> y <p>. No uses listas, encabezados grandes o estructuras complejas.
+
+🎯 Objetivo:
+- Generar una carta de presentación breve, clara y bien redactada.
+- Mejorar el texto del usuario aunque sea poco o mal escrito.
+- Adaptar la redacción al tono preferido y al puesto deseado.
+
+📌 Información proporcionada:
+Nombre: ${name}
+Puesto deseado: ${jobTitle}
+Experiencia relevante: ${experience}
+Tono preferido: ${toneLabel} (${toneStyle})
+
+📝 Formato HTML requerido:
+<h1>Carta de Presentación</h1>
+
+<h2>Información Personal</h2>
+<p><strong>Nombre:</strong> ${name}</p>
+
+<h2>Contenido</h2>
+<p>[Aquí comienza la carta generada]</p>
+
+❌ No incluyas <html>, <head> ni <body>. Solo devuelve contenido HTML limpio.
+`.trim();
+
 
     try {
       const response = await fetch('/api/generate', {
@@ -140,14 +169,15 @@ Escribe la carta en español, estructurada correctamente, en un solo bloque de t
 
         <label><strong>Tono preferido:</strong></label>
         <select
-          value={tone}
-          onChange={(e) => setTone(e.target.value)}
-          style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem' }}
-        >
-          <option value="Formal">Formal</option>
-          <option value="Neutral">Neutral</option>
-          <option value="Casual">Casual</option>
-        </select>
+  value={tone}
+  onChange={(e) => setTone(e.target.value)}
+  style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem' }}
+>
+  <option value="formal">Formal</option>
+  <option value="neutral">Neutro</option>
+  <option value="casual">Casual</option>
+</select>
+
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
           <button
