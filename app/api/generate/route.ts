@@ -110,14 +110,16 @@ ${resume}
 
 if (format === "Moderno") {
   userPrompt += `
-📌 Estructura moderna: Usa viñetas (<ul><li>) para *todas* las secciones (experiencia, habilidades, educación, idiomas).
-✂️ Redacta en frases breves, activas y sin adornos innecesarios. Evita párrafos largos.
-🔹 No incluyas un bloque de "Perfil Profesional". El CV debe ser funcional y directo.
+📌 Estructura moderna: Usa solo listas (<ul><li>) para todas las secciones (experiencia, habilidades, educación, idiomas).
+❌ No incluyas una sección de "Perfil Profesional". Comienza directamente con Experiencia Laboral.
+✂️ Redacta en frases breves, activas y cuantificables. Por ejemplo: “Reduje el tiempo de respuesta en un 20%”.
+🔹 Evita frases genéricas como “Profesional con experiencia en atención al cliente”.
 📧 Si faltan datos personales, usa ejemplos genéricos como correo@ejemplo.com o Madrid, España.
 ❌ Nunca uses corchetes como [Nombre] o [Dirección completa].
-🎯 El resultado debe ser claro, escaneable y moderno. Prioriza impacto visual y legibilidad.
+🎯 El resultado debe ser funcional, escaneable y visualmente limpio. Ideal para lectura rápida.
 `.trim();
 }
+
 
 
   if (format === "Creativo") {
