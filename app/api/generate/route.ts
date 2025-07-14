@@ -8,174 +8,109 @@ const openai = new OpenAI({
 });
 
 export async function POST(req: Request) {
+  console.log("✅ /api/generate route hit");
+
   const cookieStore = await nextCookies();
+
   const cookieAdapter = {
-    get: (name: string) => cookieStore.get(name)?.value ?? undefined,
-    getAll: () => cookieStore.getAll().map(({ name, value }) => ({ name, value })),
-    set: () => {},
-    remove: () => {},
-  } as const;
+  get: (name: string) => cookieStore.get(name)?.value ?? undefined,
+  getAll: async () =>
+    (await cookieStore.getAll()).map((cookie: { name: string; value: string }) => ({
+      name: cookie.name,
+      value: cookie.value,
+    })),
+  set: () => {},
+  remove: () => {},
+} as const;
+
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: cookieAdapter }
+    {
+      cookies: cookieAdapter,
+    }
   );
 
   const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!user || userError) {
-    return NextResponse.json({ result: "No estás autenticado." }, { status: 401 });
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("plan, cvCount, letterCount, lastGeneratedAt, email")
-    .eq("id", user.id)
-    .single();
+  const body = await req.json();
 
-  let type: "cv" | "cover" = "cv";
-  let resume = "";
-  let jobType = "";
-  let format = "Tradicional";
-  let tone = "formal";
-  let name = "";
-  let phone = "";
-  let email = "";
-  let address = "";
-  let summary = "";
-  let experience = "";
-  let education = "";
-  let skills = "";
-  let languages = "";
-
-  try {
-    const body = await req.json();
-    resume = body.prompt || "";
-    jobType = body.jobType || "";
-    format = body.format || "Tradicional";
-    tone = body.tone || "formal";
-    name = body.name || "";
-    phone = body.phone || "";
-    email = body.email || "";
-    address = body.address || "";
-    summary = body.summary || "";
-    experience = body.experience || "";
-    education = body.education || "";
-    skills = body.skills || "";
-    languages = body.languages || "";
-
-    const rawType = (body.type || "").toLowerCase().trim();
-    if (rawType.includes("letter") || rawType === "cover") {
-      type = "cover";
-    }
-  } catch {
-    return NextResponse.json({ result: "Error al procesar tu solicitud." }, { status: 400 });
-  }
-
-  const today = new Date().toISOString().split("T")[0];
-  const isSameDay = profile?.lastGeneratedAt?.split("T")[0] === today;
-  const cvCount = isSameDay ? profile.cvCount ?? 0 : 0;
-  const letterCount = isSameDay ? profile.letterCount ?? 0 : 0;
-  const plan = profile?.plan ?? "free";
-
-  if (plan === "free" && cvCount + letterCount >= 1) {
-    return NextResponse.json(
-      { result: "⚠️ Has alcanzado tu límite diario. Mejora tu plan para más usos." },
-      { status: 429 }
-    );
-  }
+  const {
+    type,
+    name,
+    jobType,
+    summary,
+    experience,
+    education,
+    skills,
+    languages,
+    tone,
+  } = body;
 
   let userPrompt = "";
 
+  const toneInstructionsMap: Record<string, string> = {
+    formal: `
+Usa un tono formal y profesional. Dirígete al lector con cortesía ("Estimado/a", "Atentamente") y evita lenguaje coloquial. Usa frases largas, estructura académica, y voz pasiva si es natural. Ejemplo de cierre: "Agradezco su atención y quedo a su disposición para una entrevista."
+`,
+    neutral: `
+Usa un tono claro, directo y educado. Evita excesiva formalidad, pero mantén respeto. Frases equilibradas, sin demasiada rigidez ni expresiones coloquiales. Ejemplo de cierre: "Gracias por su tiempo. Quedo atento/a a su respuesta."
+`,
+    casual: `
+Usa un tono cercano, conversacional y accesible. Puedes usar frases como “Estoy muy entusiasmado/a con…” o “Me encantaría formar parte de…”. Usa construcciones más cortas, activas, y lenguaje positivo. Cierre ejemplo: "Gracias por leerme. Espero tener la oportunidad de hablar pronto."
+`,
+  };
+
+  const toneInstruction = toneInstructionsMap[tone] || toneInstructionsMap.neutral;
+
   if (type === "cover") {
-    const coverLetterToneMap: Record<string, string> = {
-      formal: `Eres un experto redactor de cartas de presentación en español para el mercado laboral. Escribe una carta de presentación formal y profesional, con un tono serio y respetuoso. Usa frases largas y elegantes. No uses encabezados ni listas, solo texto estructurado. La carta debe dirigirse a "Estimados miembros del equipo de selección" y terminar con "Atentamente, [Nombre]". Usa el siguiente contenido como base, pero mejóralo completamente:
+    userPrompt = `
+Redacta una carta de presentación profesional en HTML sin encabezados. Debe tener un solo cuerpo, con párrafos separados por <br><br> y sin títulos como "Perfil Profesional", etc.
 
-Nombre: ${name}
-Puesto: ${jobType}
-Resumen: ${summary}
-Experiencia: ${experience}
+Nombre del candidato: ${name}
+Puesto deseado: ${jobType || "No especificado"}
 
-Redacta la carta con fluidez, sin repetir información innecesaria.`,
+🔹 Instrucciones de tono:
+${toneInstruction.trim()}
 
-      neutral: `Eres un redactor profesional de cartas de presentación en español. Escribe una carta de presentación neutra, clara y profesional. Usa un lenguaje directo, sin adornos excesivos ni demasiada informalidad. La carta debe ir dirigida a "Estimados/as" o "Estimado equipo de selección" y terminar con "Atentamente, [Nombre]". Evita frases demasiado largas o rebuscadas. Basado en estos datos:
-
-Nombre: ${name}
-Puesto: ${jobType}
-Resumen: ${summary}
-Experiencia: ${experience}
-
-Reescribe con buena estructura y estilo claro.`,
-
-      casual: `Actúa como un redactor creativo de cartas de presentación. Escribe una carta con un tono cercano, accesible y algo informal (pero aún profesional). Usa frases más cortas, lenguaje más natural, y permite mostrar un poco de personalidad o entusiasmo. Comienza con "Hola equipo" o similar, y termina con "Saludos" o "Gracias por su tiempo". Basado en esta información:
-
-Nombre: ${name}
-Puesto: ${jobType}
-Resumen: ${summary}
-Experiencia: ${experience}
-
-Haz que la carta suene auténtica, diferente y humana.`,
-    };
-
-    userPrompt = coverLetterToneMap[tone] || coverLetterToneMap.formal;
-  } else {
-    // CV generation prompt (existing logic)
-    userPrompt = `Genera un currículum en HTML limpio usando estos datos:
-Nombre: ${name}
-Teléfono: ${phone}
-Email: ${email}
-Dirección: ${address}
-Resumen: ${summary}
+📝 Contenido:
+Usa los siguientes datos para redactar una carta personalizada. Incluye el nombre del candidato en el saludo de cierre.
+---
+Resumen profesional: ${summary}
 Experiencia: ${experience}
 Educación: ${education}
 Habilidades: ${skills}
 Idiomas: ${languages}
-Formato: ${format}
-Idioma: Español
+---
 
-Devuelve solo HTML estructurado con <h2>, <ul>, <li>. No uses <html> ni <body>. Mejora el contenido si es débil.`;
+Devuelve solo el texto en formato HTML limpio. No incluyas "<html>" ni "<body>".
+`.trim();
+  } else {
+    return NextResponse.json({ error: "Tipo de documento no válido" }, { status: 400 });
   }
 
-  const systemPrompt = type === "cover"
-    ? "Eres un experto redactor de cartas de presentación laborales en español."
-    : "Eres un experto redactor de currículums con 15 años de experiencia en el mercado laboral español.";
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      {
+        role: "system",
+        content: "Eres un asistente que redacta cartas de presentación profesionales en español.",
+      },
+      {
+        role: "user",
+        content: userPrompt,
+      },
+    ],
+    temperature: 0.8,
+  });
 
-  try {
-    const chat = await openai.chat.completions.create({
-      model: "gpt-4o",
-      temperature: 0.7,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-    });
-
-    let result = chat.choices[0].message.content?.trim() ?? "";
-    result = result.replace(/```html|```/g, "").trim();
-
-    await supabase.from("generations").insert([
-      { user_id: user.id, type, output: result },
-    ]);
-
-    const updates: any = { lastGeneratedAt: new Date().toISOString() };
-    if (type === "cv") {
-      updates.cvCount = isSameDay ? cvCount + 1 : 1;
-      updates.letterCount = isSameDay ? letterCount : 0;
-    } else {
-      updates.letterCount = isSameDay ? letterCount + 1 : 1;
-      updates.cvCount = isSameDay ? cvCount : 0;
-    }
-    if (!profile?.email && user.email) updates.email = user.email;
-
-    await supabase.from("profiles").update(updates).eq("id", user.id);
-
-    return NextResponse.json({ result });
-  } catch (err: any) {
-    console.error("❌ Error generando contenido:", err);
-    return NextResponse.json({ result: "Error al generar contenido. Intenta más tarde." }, { status: 500 });
-  }
+  const result = completion.choices[0].message.content;
+  return NextResponse.json({ result });
 }
