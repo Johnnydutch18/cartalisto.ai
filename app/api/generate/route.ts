@@ -110,15 +110,26 @@ ${resume}
 
 if (format === "Moderno") {
   userPrompt += `
-📌 Estructura moderna: Usa solo listas (<ul><li>) para todas las secciones (experiencia, habilidades, educación, idiomas).
-❌ No incluyas una sección de "Perfil Profesional". Comienza directamente con Experiencia Laboral.
-✂️ Redacta en frases breves, activas y cuantificables. Por ejemplo: “Reduje el tiempo de respuesta en un 20%”.
-🔹 Evita frases genéricas como “Profesional con experiencia en atención al cliente”.
-📧 Si faltan datos personales, usa ejemplos genéricos como correo@ejemplo.com o Madrid, España.
-❌ Nunca uses corchetes como [Nombre] o [Dirección completa].
-🎯 El resultado debe ser funcional, escaneable y visualmente limpio. Ideal para lectura rápida.
+📌 Este currículum debe seguir una estructura moderna, concisa y 100% funcional. El resultado debe facilitar una lectura rápida y escaneable.
+
+❌ No incluyas secciones como “Perfil Profesional”, “Sobre mí” o cualquier bloque introductorio.
+❌ No uses frases genéricas como “Profesional con experiencia en...”.
+❌ No escribas párrafos largos. Usa solo frases directas y específicas en formato de lista.
+
+✅ Formato obligatorio:
+1. Nombre completo
+2. Información de contacto (Teléfono, Email, Ciudad)
+3. Experiencia Laboral — con títulos, fechas y responsabilidades en viñetas (<ul><li>)
+4. Educación — en viñetas
+5. Habilidades — en viñetas
+6. Idiomas — en viñetas
+7. Referencias — opcional, en una línea si se incluye
+
+✂️ Usa frases breves y activas, como “Reduje el tiempo de respuesta en un 20%” o “Gestioné 50 consultas diarias”.
+📧 Si faltan datos personales, usa ejemplos realistas como correo@ejemplo.com o Madrid, España.
 `.trim();
 }
+
 
 
 
