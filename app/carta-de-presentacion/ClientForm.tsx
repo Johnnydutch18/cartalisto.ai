@@ -8,7 +8,7 @@ export default function CoverLetterForm() {
   const [name, setName] = useState('');
   const [experience, setExperience] = useState('');
   const [jobTitle, setJobTitle] = useState('');
-  const [tone, setTone] = useState('Formal');
+  const [tone, setTone] = useState('formal');
   const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<null | 'up' | 'down' | 'limit'>(null);
@@ -19,13 +19,13 @@ export default function CoverLetterForm() {
   const pathname = usePathname();
 
   const toneMap: Record<string, string> = {
-  formal: "Usa un tono formal, profesional y respetuoso. Dirige la carta con cortesía, evita lenguaje coloquial y estructura clara.",
-  neutral: "Usa un tono profesional, claro y accesible, manteniendo un lenguaje equilibrado y directo.",
-  casual: "Usa un tono cercano, amistoso y optimista, sin dejar de ser profesional. Evita formalidades innecesarias.",
-};
+    formal: "Usa un tono formal, profesional y respetuoso. Dirige la carta con cortesía, evita lenguaje coloquial y estructura clara.",
+    neutral: "Usa un tono profesional, claro y accesible, manteniendo un lenguaje equilibrado y directo.",
+    casual: "Usa un tono cercano, amistoso y optimista, sin dejar de ser profesional. Evita formalidades innecesarias.",
+  };
 
-const selectedTone = tone?.toLowerCase() ?? "neutral";
-const toneInstructions = toneMap[selectedTone] || toneMap.neutral;
+  const selectedTone = tone?.toLowerCase() ?? "neutral";
+  const toneInstructions = toneMap[selectedTone] || toneMap.neutral;
 
   async function handleSubmit() {
     setLoading(true);
@@ -42,39 +42,29 @@ const toneInstructions = toneMap[selectedTone] || toneMap.neutral;
       return;
     }
 
-const toneStyleMap: Record<string, string> = {
-  formal: "Usa un tono formal, profesional y respetuoso. Dirige la carta con cortesía y evita lenguaje coloquial.",
-  neutral: "Usa un tono profesional y claro, sin sonar demasiado rígido ni demasiado informal.",
-  casual: "Usa un tono cercano, positivo y amistoso, sin dejar de ser profesional.",
-};
-
-const toneLabel = tone?.toLowerCase() ?? "neutral";
-const toneStyle = toneStyleMap[toneLabel] || toneStyleMap.neutral;
-
-const prompt = `
-Eres un generador de cartas de presentación en HTML. No generes un currículum. Devuelve solo párrafos con etiquetas <p>. No uses listas, encabezados, ni secciones tipo CV.
+    const prompt = `
+Eres un generador de cartas de presentación en HTML para el mercado laboral español. 
 
 🎯 Objetivo:
-- Redactar una carta de presentación clara, profesional y personalizada.
-- Adaptar el texto al tono: ${selectedTone} — ${toneInstructions}.
-- El contenido debe leerse como una carta real, no como un CV.
-- No repitas información como "Perfil profesional", "Educación", "Idiomas", etc.
+- Crear una carta personalizada, concisa y bien redactada, que complemente un currículum.
+- No repitas el contenido de un CV.
+- No uses títulos ni listas. Solo usa párrafos <p>.
+- Devuelve solo HTML limpio. No incluyas <html>, <body>, ni encabezados <h1>, <h2>, etc.
 
-📌 Datos proporcionados:
-- Nombre: ${name}
-- Puesto deseado: ${jobTitle}
-- Experiencia relevante: ${experience}
+📌 Datos del usuario:
+Nombre: ${name}
+Puesto deseado: ${jobTitle}
+Experiencia relevante: ${experience}
+Tono: ${selectedTone} — ${toneInstructions}
 
-📄 Estructura:
-1. Saludo inicial (Ej. "Estimado/a...")
-2. Motivación para postular al puesto
-3. Resumen breve de experiencia y habilidades clave
-4. Cierre con disponibilidad y agradecimiento
-5. Firma (Ej. "Atentamente, ${name}")
+📄 Estructura de salida:
+1. Breve introducción con saludo.
+2. Un párrafo explicando la motivación y cómo encaja con el puesto.
+3. Un párrafo destacando experiencia clave.
+4. Un cierre con disponibilidad y agradecimiento.
 
-❗ Devuelve solo HTML válido. Solo usa <p>. Nada más.
+❗ Devuelve solo el contenido HTML, en párrafos <p>. Nada más.
 `.trim();
-
 
     try {
       const response = await fetch('/api/generate', {
@@ -112,29 +102,11 @@ Eres un generador de cartas de presentación en HTML. No generes un currículum.
     setLoading(false);
   }
 
-  async function downloadPDF() {
-const element = document.getElementById('editable-letter');
-    if (!element) return;
-
-    const html2pdfModule = await import('html2pdf.js');
-    const html2pdf = html2pdfModule.default;
-
-    const opt = {
-      margin: 0.5,
-      filename: 'carta-presentacion.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-    };
-
-    html2pdf().set(opt).from(element).save();
-  }
-
   function resetForm() {
     setName('');
     setExperience('');
     setJobTitle('');
-    setTone('Formal');
+    setTone('formal');
     setOutput('');
     setFeedback(null);
     setUsageInfo(null);
@@ -143,9 +115,7 @@ const element = document.getElementById('editable-letter');
   return (
     <main style={{ maxWidth: '650px', margin: '2rem auto', padding: '1rem' }}>
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Carta de Presentación</h1>
-      <p style={{ color: '#555' }}>
-        Crea una carta profesional para acompañar tu solicitud de empleo.
-      </p>
+      <p style={{ color: '#555' }}>Crea una carta profesional para acompañar tu solicitud de empleo.</p>
 
       <div style={{ marginTop: '1rem' }}>
         <label><strong>Nombre:</strong></label>
@@ -175,15 +145,14 @@ const element = document.getElementById('editable-letter');
 
         <label><strong>Tono preferido:</strong></label>
         <select
-  value={tone}
-  onChange={(e) => setTone(e.target.value)}
-  style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem' }}
->
-  <option value="formal">Formal</option>
-  <option value="neutral">Neutro</option>
-  <option value="casual">Casual</option>
-</select>
-
+          value={tone}
+          onChange={(e) => setTone(e.target.value)}
+          style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem' }}
+        >
+          <option value="formal">Formal</option>
+          <option value="neutral">Neutro</option>
+          <option value="casual">Casual</option>
+        </select>
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
           <button
@@ -215,114 +184,34 @@ const element = document.getElementById('editable-letter');
             Limpiar
           </button>
         </div>
-
-        {loading && (
-          <p style={{ color: '#888', marginTop: '0.5rem' }}>
-            ⏳ Esto puede tardar unos segundos... generando carta con IA.
-          </p>
-        )}
-
-        {usageInfo && (
-          <p style={{ marginTop: '1rem', color: '#777' }}>
-            📊 Usado hoy: {usageInfo.total} / {usageInfo.limit}
-          </p>
-        )}
-        <p style={{ color: '#777', fontSize: '0.9rem' }}>🕒 El límite se reinicia cada día a medianoche.</p>
       </div>
 
-  {output && (
-  <div style={{ marginTop: '2rem' }}>
-    <div
-      style={{
-        background: '#ffffff',
-        padding: '1rem',
-        borderRadius: '6px',
-        whiteSpace: 'pre-wrap',
-        border: '1px solid #ccc',
-      }}
-    >
-      <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-        ✅ Carta Generada
-      </h2>
-
-      <div
-        id="editable-letter"
-        contentEditable
-        suppressContentEditableWarning
-        style={{
-          fontFamily: 'inherit',
-          margin: 0,
-          whiteSpace: 'pre-wrap',
-          wordWrap: 'break-word',
-          outline: 'none',
-          minHeight: '300px',
-        }}
-        lang="es"
-        dangerouslySetInnerHTML={{ __html: output }}
-      ></div>
-    </div>
-
-
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-            <button
-              onClick={downloadPDF}
+      {output && (
+        <div style={{ marginTop: '2rem' }}>
+          <div
+            style={{
+              background: '#ffffff',
+              padding: '1rem',
+              borderRadius: '6px',
+              whiteSpace: 'pre-wrap',
+              border: '1px solid #ccc',
+            }}
+          >
+            <div
+              id="editable-letter"
+              contentEditable
+              suppressContentEditableWarning
               style={{
-                flex: 1,
-                padding: '0.5rem',
-                backgroundColor: '#333',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
+                fontFamily: 'inherit',
+                margin: 0,
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                outline: 'none',
+                minHeight: '300px',
               }}
-            >
-              Descargar PDF
-            </button>
-            <button
-              onClick={handleSubmit}
-              style={{
-                flex: 1,
-                padding: '0.5rem',
-                backgroundColor: '#0070f3',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-              }}
-            >
-              Regenerar
-            </button>
-          </div>
-
-          <div style={{ marginTop: '1rem', textAlign: 'center', color: '#666' }}>
-            {feedback === 'limit' ? (
-              <>
-                <p><strong>⚠️ Has alcanzado el límite diario.</strong></p>
-                <p>
-                  <a href="/planes" style={{ color: '#0070f3', textDecoration: 'underline' }}>
-                    Mejora tu plan aquí
-                  </a>
-                </p>
-              </>
-            ) : (
-              <>
-                <p>¿Te fue útil?</p>
-                <div style={{ fontSize: '1.5rem', cursor: 'pointer' }}>
-                  <span
-                    onClick={() => setFeedback('up')}
-                    style={{ marginRight: '1rem', opacity: feedback === 'up' ? 1 : 0.4 }}
-                  >
-                    👍
-                  </span>
-                  <span
-                    onClick={() => setFeedback('down')}
-                    style={{ opacity: feedback === 'down' ? 1 : 0.4 }}
-                  >
-                    👎
-                  </span>
-                </div>
-              </>
-            )}
+              lang="es"
+              dangerouslySetInnerHTML={{ __html: output }}
+            ></div>
           </div>
         </div>
       )}
@@ -356,20 +245,6 @@ const element = document.getElementById('editable-letter');
             }}
           >
             Iniciar sesión
-          </button>
-          <button
-            onClick={() => router.push(`/signup?next=${pathname}`)}
-            style={{
-              marginLeft: '0.5rem',
-              backgroundColor: '#ffffff',
-              color: '#f44336',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '0.25rem 0.75rem',
-              cursor: 'pointer',
-            }}
-          >
-            Crear cuenta
           </button>
         </div>
       )}
