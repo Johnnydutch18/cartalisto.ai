@@ -50,7 +50,7 @@ export async function POST(req: Request) {
   let education = "";
   let skills = "";
   let languages = "";
-  let tone = "formal";
+  let tone = "Formal";
 
   try {
     const body = await req.json();
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     education = body.education || "";
     skills = body.skills || "";
     languages = body.languages || "";
-    tone = body.tone || "formal";
+    tone = body.tone || "Formal";
 
     const rawType = (body.type || "").toLowerCase().trim();
     if (rawType.includes("letter") || rawType === "cover") {
@@ -92,32 +92,29 @@ export async function POST(req: Request) {
   let userPrompt = "";
 
   if (type === "cover") {
-    const tonePromptMap: Record<string, string> = {
-      formal: `Redacta una carta de presentación formal y profesional. Usa frases completas, lenguaje respetuoso y orientado al mundo corporativo. Evita informalidades.`,
-      neutral: `Escribe una carta de presentación clara y directa, sin sonar ni demasiado formal ni demasiado informal. Utiliza un tono profesional, pero accesible.`,
-      casual: `Genera una carta de presentación con un tono cercano y conversacional, mostrando entusiasmo y personalidad. Está bien incluir frases más naturales, pero manteniendo un enfoque profesional.`
+    const toneInstructionsMap: Record<string, string> = {
+      Formal: "Usa un tono profesional, serio y respetuoso. Sé directo/a, evita lenguaje casual, y mantén una estructura clara.",
+      Neutral: "Usa un tono claro y profesional, pero accesible. Muestra interés y confianza sin sonar ni demasiado formal ni demasiado informal.",
+      Casual: "Usa un tono cercano, amable y ligeramente informal. Puedes mostrar personalidad y entusiasmo, manteniendo siempre el respeto.",
     };
 
     userPrompt = `
-Eres un generador de cartas de presentación en HTML. Devuelve solo HTML limpio sin encabezados como "Perfil Profesional" ni secciones de CV. No expliques nada. No uses listas ni apartados con títulos.
+Redacta una carta de presentación en español en formato HTML, con base en los siguientes datos:
 
-Tarea: Genera una carta de presentación en español para una persona que busca un puesto como ${jobType || "[Puesto]"}.
+🧑 Nombre del candidato: ${name || "[Nombre]"}
+💼 Puesto deseado: ${jobType || "[Puesto]"}
+📜 Experiencia y logros: ${resume || "Experiencia no especificada"}
 
-Nombre: ${name || "[Nombre]"}
-Tono solicitado: ${tone}
-${tonePromptMap[tone] || tonePromptMap.formal}
+✍️ Instrucciones:
+- ${toneInstructionsMap[tone] || toneInstructionsMap["Formal"]}
+- No uses títulos, encabezados ni listas.
+- Utiliza <p> o <br> para separar párrafos.
+- Devuelve solo HTML limpio (sin <html>, <head> o <body>).
+- La carta debe ser original, coherente y adaptada a la información del usuario.
 
-Incluye:
-- Saludo inicial
-- Introducción con motivación
-- Breve resumen de experiencia relacionada
-- Conclusión con disponibilidad y despedida
-
-Devuelve solo HTML limpio con <p> y saltos de línea si es necesario. No incluyas <html>, <head> ni <body>.
-`.trim();
-
+Empieza ahora.
+    `.trim();
   } else {
-    // CV generation block (your existing logic)
     const formatStyleMap: Record<string, string> = {
       Tradicional: "Diseño clásico y sobrio con encabezados en negrita y texto bien estructurado.",
       Moderno: "Diseño profesional, limpio, con secciones bien definidas y separación clara mediante listas.",
@@ -131,7 +128,7 @@ Devuelve solo HTML limpio con <p> y saltos de línea si es necesario. No incluya
     };
 
     const visualStyle = formatStyleMap[format] || formatStyleMap.Tradicional;
-    const toneStyle = toneStyleMap[format] || toneStyleMap.Tradicional;
+    const cvTone = toneStyleMap[format] || toneStyleMap.Tradicional;
 
     userPrompt = `
 🔧 Tarea:
@@ -143,7 +140,7 @@ Usa el siguiente texto para generar un Currículum Vitae completo, profesional y
 - Adapta el contenido al estilo visual y tono especificados.
 
 🎨 Estilo visual solicitado: ${format} (${visualStyle})
-🗣️ Estilo de redacción: ${toneStyle}
+🗣️ Estilo de redacción: ${cvTone}
 📂 Tipo de empleo: ${jobType || "No especificado"}
 
 📋 Texto proporcionado por el usuario:
@@ -154,24 +151,23 @@ ${resume}
 📝 Idioma: Español
 💡 Formato: Devuelve solo HTML limpio y editable usando etiquetas como <h2>, <p>, <ul>, <li>, <div>.
 ❌ No incluyas <html>, <head> ni <body>.
-`.trim();
+    `.trim();
 
     if (format === "Creativo") {
       userPrompt += `
 📌 Usa viñetas (<ul><li>) para habilidades y logros si ayuda a la presentación.
 ✨ Puedes incluir frases personales o creativas que hagan destacar el CV.
-🎭 Está bien mostrar algo de personalidad o motivación (sin perder profesionalismo).`;
+🎭 Está bien mostrar algo de personalidad o motivación (sin perder profesionalismo).
+      `.trim();
     }
   }
 
-  const systemPrompt = type === "cover"
-    ? `Eres un redactor profesional de cartas de presentación para el mercado laboral español. Tu estilo depende del tono solicitado.`
-    : `Eres un experto redactor de currículums con 15 años de experiencia en el mercado laboral español.`;
+  const systemPrompt = `Eres un experto redactor de currículums y cartas de presentación con 15 años de experiencia en el mercado laboral español.`;
 
   try {
     const chat = await openai.chat.completions.create({
       model: "gpt-4o",
-      temperature: 0.5,
+      temperature: 0.7,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -199,7 +195,10 @@ ${resume}
 
     return NextResponse.json({ result });
   } catch (err: any) {
-    console.error("❌ Error generando CV/carta:", err);
-    return NextResponse.json({ result: "Error al generar el contenido. Intenta más tarde." }, { status: 500 });
+    console.error("❌ Error generando CV o carta:", err);
+    return NextResponse.json(
+      { result: "Error al generar el documento. Intenta más tarde." },
+      { status: 500 }
+    );
   }
 }
