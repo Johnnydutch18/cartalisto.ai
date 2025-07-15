@@ -106,27 +106,64 @@ ${resume.skills || 'No especificado'}
 
   let finalPrompt = prompt;
 
-  if (type === 'cv') {
-    finalPrompt = `
-Actúa como un redactor experto de currículums con 15 años de experiencia en el mercado laboral de habla hispana. Tu tarea es crear un currículum completo, profesional y listo para usar.
+if (type === 'cv') {
+  const userData = typeof resume === 'object' ? resume : {};
 
-🎯 Objetivo: Transformar el contenido proporcionado por el usuario en un CV convincente, bien redactado, visualmente claro y redactado en español neutro.
+  const name = userData.name || 'Juan Martínez';
+  const phone = userData.phone || '600123456';
+  const email = userData.email || 'juan@example.com';
+  const address = userData.address || 'Barcelona, España';
+  const summary = userData.summary || '';
+  const experience = userData.experience || '';
+  const education = userData.education || '';
+  const skills = userData.skills || '';
+  const languages = userData.languages || '';
 
-✅ Instrucciones:
-- Si la información del usuario es breve o poco clara, interpreta y expande razonablemente el contenido.
-- Si hay secciones clave ausentes (como perfil, experiencia, educación o habilidades), genéralas tú mismo.
-- Mejora todo el lenguaje. Usa frases completas, vocabulario profesional y evita repetir exactamente lo que el usuario escribió.
-- Nunca uses frases de despedida como “Un cordial saludo”. Este no es una carta.
-- Devuelve solo HTML editable bien estructurado, usando <div>, <h1>, <h2>, <ul>, <li>, <p> y <strong>. No uses etiquetas <html>, <body>, ni bloques de código.
-- Aplica el siguiente estilo visual: ${visualStyle}
+  let visualStyle = '';
+  if (format === 'tradicional') {
+    visualStyle = 'Formato clásico con párrafos. Sin íconos, sin emojis, sin listas. Solo texto plano con títulos en negrita. No uses tablas.';
+  } else if (format === 'moderno') {
+    visualStyle = 'Diseño limpio con listas <ul>, secciones claras, y encabezados organizados. Usa <strong> para títulos. Incluye detalles de contacto arriba.';
+  } else if (format === 'creativo') {
+    visualStyle = 'Formato moderno y visual. Usa emojis y encabezados llamativos. Diseñado para destacar habilidades y creatividad. Usa <ul>, <strong> y emojis de forma relevante.';
+  }
 
-🧾 Formato preferido: ${format}
+  finalPrompt = `
+Eres un redactor profesional de currículums con 15 años de experiencia. Tu tarea es generar un CV completo, bien redactado, y visualmente coherente, basado en los datos del usuario.
+
+✅ Requisitos:
+- Si faltan secciones como experiencia, habilidades o idiomas, créalas tú mismo basándote en perfiles típicos.
+- Si el texto del usuario es escueto o mal escrito, mejóralo con lenguaje profesional.
+- No escribas campos vacíos ni textos tipo [Nombre].
+- No uses saludos ni cierres como en una carta.
+- Devuelve solo HTML limpio y bien estructurado usando <div>, <h1>, <h2>, <ul>, <li>, <p>, <strong>. Nada de etiquetas <html>, <body>, ni bloques markdown.
+
+🎨 Estilo visual: ${visualStyle}
 💼 Tipo de empleo: ${jobType || 'No especificado'}
 
-📋 Información del usuario:
-${structuredResume}
-    `.trim();
-  }
+📋 Datos del usuario:
+Nombre: ${name}
+Teléfono: ${phone}
+Email: ${email}
+Dirección: ${address}
+
+Perfil profesional:
+${summary}
+
+Experiencia:
+${experience}
+
+Educación:
+${education}
+
+Habilidades:
+${skills}
+
+Idiomas:
+${languages}
+`.trim();
+}
+
 
   try {
     const response = await openai.chat.completions.create({
