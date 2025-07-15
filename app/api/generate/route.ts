@@ -47,7 +47,6 @@ export async function POST(req: Request) {
   const isPro = profile?.plan === 'pro';
   const isStandard = profile?.plan === 'standard';
   const freeLimit = 1;
-  const standardLimit = 5;
 
   const today = new Date().toISOString().split('T')[0];
   const lastGenDay = profile?.last_generated_at?.split('T')[0];
@@ -65,26 +64,49 @@ export async function POST(req: Request) {
     }
 
     const totalCount = (profile?.cv_count || 0) + (profile?.letter_count || 0);
-    const limit = freeLimit;
-
-    if (totalCount >= limit) {
+    if (totalCount >= freeLimit) {
       return NextResponse.json({ error: 'Daily usage limit reached.' }, { status: 429 });
     }
   }
 
-  // 🧠 Build prompt depending on type
+  // 🔧 Format resume input into structured text
+  const structuredResume = typeof resume === 'object'
+    ? `
+Nombre completo: ${resume.name || 'No especificado'}
+Teléfono: ${resume.phone || 'No especificado'}
+Email: ${resume.email || 'No especificado'}
+Dirección: ${resume.address || 'No especificado'}
+
+Perfil profesional:
+${resume.summary || 'No especificado'}
+
+Experiencia laboral:
+${resume.experience || 'No especificado'}
+
+Educación:
+${resume.education || 'No especificado'}
+
+Idiomas:
+${resume.languages || 'No especificado'}
+
+Habilidades:
+${resume.skills || 'No especificado'}
+    `.trim()
+    : resume;
+
+  // 🎨 CV Format Style Guide
+  let visualStyle = '';
+  if (format === 'tradicional') {
+    visualStyle = 'Formato clásico con párrafos. Sin íconos, sin emojis, sin listas. Solo texto plano con títulos en negrita. No uses tablas.';
+  } else if (format === 'moderno') {
+    visualStyle = 'Diseño limpio con listas <ul>, secciones claras, y encabezados organizados. Incluye detalles de contacto arriba como nombre, teléfono, correo y LinkedIn.';
+  } else if (format === 'creativo') {
+    visualStyle = 'Formato moderno y visual. Usa emojis y encabezados llamativos. Diseñado para destacar habilidades y creatividad. Usa <ul>, <strong>, y estilo llamativo.';
+  }
+
   let finalPrompt = prompt;
 
   if (type === 'cv') {
-    let visualStyle = '';
-    if (format === 'tradicional') {
-      visualStyle = 'Formato clásico con párrafos. Sin íconos, sin emojis, sin listas. Solo texto plano con títulos en negrita. No uses tablas.';
-    } else if (format === 'moderno') {
-      visualStyle = 'Diseño limpio con listas <ul>, secciones claras, y encabezados organizados. Incluye detalles de contacto arriba como nombre, teléfono, correo y LinkedIn.';
-    } else if (format === 'creativo') {
-      visualStyle = 'Formato moderno y visual. Usa emojis y encabezados llamativos. Diseñado para destacar habilidades y creatividad. Usa <ul>, <strong>, y estilo llamativo.';
-    }
-
     finalPrompt = `
 Actúa como un redactor experto de currículums con 15 años de experiencia en el mercado laboral de habla hispana. Tu tarea es crear un currículum completo, profesional y listo para usar.
 
@@ -95,14 +117,15 @@ Actúa como un redactor experto de currículums con 15 años de experiencia en e
 - Si hay secciones clave ausentes (como perfil, experiencia, educación o habilidades), genéralas tú mismo.
 - Mejora todo el lenguaje. Usa frases completas, vocabulario profesional y evita repetir exactamente lo que el usuario escribió.
 - Nunca uses frases de despedida como “Un cordial saludo”. Este no es una carta.
-- Devuelve solo HTML editable bien estructurado, usando <div>, <h1>, <h2>, <ul>, <li>, <p> y <strong>. No uses etiquetas <html> o <body>.
+- Devuelve solo HTML editable bien estructurado, usando <div>, <h1>, <h2>, <ul>, <li>, <p> y <strong>. No uses etiquetas <html>, <body>, ni bloques de código.
 - Aplica el siguiente estilo visual: ${visualStyle}
 
 🧾 Formato preferido: ${format}
 💼 Tipo de empleo: ${jobType || 'No especificado'}
-📋 CV o información del usuario:
-${resume}
-`.trim();
+
+📋 Información del usuario:
+${structuredResume}
+    `.trim();
   }
 
   try {
