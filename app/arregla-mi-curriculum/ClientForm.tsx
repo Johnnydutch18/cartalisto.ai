@@ -40,43 +40,70 @@ async function handleSubmit() {
 
   const visualStyle = visualStyleMap[format] || visualStyleMap["Tradicional"];
 
+// 👇 Everything else stays the same above...
+// Replace only this prompt section inside your handleSubmit() function:
+
 const prompt = `
-Actúa como un redactor experto de currículums con 15 años de experiencia en el mercado laboral de habla hispana. Tu tarea es crear un currículum **completo, profesional y listo para usar**.
+Actúa como un redactor profesional de currículums con 15 años de experiencia en el mercado hispanohablante. Tu tarea es generar un **currículum completo, profesional y visualmente claro** para el usuario, basado en su información. El contenido debe estar escrito en **español neutro**, y listo para copiar, editar o exportar a PDF.
 
-🎯 Objetivo: Transformar el contenido proporcionado por el usuario en un CV convincente, bien redactado, visualmente claro y redactado en **español neutro**.
+🔎 Tu trabajo incluye:
+- Corregir y mejorar el lenguaje profesionalmente
+- Expandir información escasa con contenido coherente
+- Generar secciones clave si faltan (perfil, experiencia, educación, habilidades)
+- Evitar frases de cierre como “Un cordial saludo” o firmas
 
-✅ Instrucciones generales:
-- Si la información del usuario es breve o poco clara, interpreta y expande razonablemente el contenido.
-- Si faltan secciones clave (perfil, experiencia, educación, habilidades), **genéralas tú mismo** de forma coherente y profesional.
-- Mejora todo el lenguaje. Usa frases completas, vocabulario profesional y evita repetir exactamente lo que el usuario escribió.
-- ❗️**No incluyas frases de despedida como “Un cordial saludo” ni firmas** — este no es una carta de presentación.
-- Devuelve solo HTML **editable** bien estructurado, usando <div>, <h1>, <h2>, <ul>, <li>, <p> y <strong>. No uses etiquetas <html> o <body>.
-
-💼 Tipo de empleo (si se proporcionó): ${jobType || 'No especificado'}
-📄 Formato seleccionado: ${format}
+🧠 Elige la estructura adecuada según el formato seleccionado:
 
 ---
 
-🎨 Instrucciones por formato:
+🪶 **Tradicional**
+- Estilo clásico, bloques de texto
+- Encabezados simples: <strong>Perfil Profesional</strong>, etc.
+- No usar listas ni íconos
+- Usa <p> para cada párrafo
+- Ideal para sectores conservadores o administrativos
 
-- Tradicional:
-  - Diseño clásico con bloques de texto.
-  - No uses listas ni íconos.
-  - Usa párrafos y títulos con <strong>, sin adornos visuales.
-  - Ideal para puestos más conservadores.
-
-- Moderno:
-  - Usa listas con <ul> y <li> para experiencia, habilidades, etc.
-  - Muestra datos de contacto al principio: nombre, teléfono, email, LinkedIn.
-  - Usa subtítulos claros, y formato más estructurado.
+📄 Ejemplo:
+<strong>Perfil Profesional</strong>
+<p>Soy un profesional responsable con experiencia como mozo de almacén...</p>
 
 ---
 
-📝 Datos del usuario:
+📋 **Moderno**
+- Diseño estructurado con listas <ul> y <li>
+- Muestra datos personales al inicio
+- Usa subtítulos claros: Educación, Habilidades, Idiomas, etc.
+- Mejora legibilidad y organización
+
+📄 Ejemplo:
+<ul>
+  <li><strong>Mozo de almacén</strong> — Empresa XYZ (2021–2023)</li>
+  <li>Gestión de inventario, preparación de pedidos, trabajo en equipo</li>
+</ul>
+
+---
+
+🎨 **Creativo**
+- Usa emojis sutiles para secciones (🎯 Perfil, 💼 Experiencia, 🎓 Educación)
+- Estilo expresivo pero profesional
+- Puedes usar negritas, saltos de línea, y frases más originales
+- Ideal para marketing, diseño, atención al cliente
+
+📄 Ejemplo:
+<h2>🎯 Perfil Profesional</h2>
+<p>Apasionado por el diseño gráfico con enfoque creativo e innovador...</p>
+
+---
+
+💼 Tipo de empleo (si proporcionado): ${jobType || 'No especificado'}
+🎨 Formato elegido: ${format}
+
+📝 Información del usuario:
 ${resume}
 
-❗ Devuelve solo HTML limpio. No uses comillas invertidas ni bloques de código Markdown.
+Devuelve solo HTML limpio usando <div>, <p>, <ul>, <li>, <strong>, etc. ❗️No uses etiquetas <html> o <body> ni bloques Markdown.
 `.trim();
+
 
 
   try {
