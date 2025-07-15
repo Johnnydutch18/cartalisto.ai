@@ -165,142 +165,124 @@ ${resume.skills || 'No especificado'}
     // Create comprehensive prompts for each format
     const formatPrompts = {
       'Tradicional': `
-Actúa como un redactor experto de currículums con 15 años de experiencia en recursos humanos españoles.
+Actúa como un redactor profesional con 15+ años de experiencia en recursos humanos para sectores conservadores en España.
 
-FORMATO TRADICIONAL - CARACTERÍSTICAS ESPECÍFICAS:
-- Diseño clásico y conservador, ideal para empresas tradicionales, gobierno, banca
-- SOLO usar párrafos (<p>) con títulos en <strong>
-- PROHIBIDO: listas, viñetas, emojis, íconos, colores, tablas
-- Tono formal, sobrio, y profesional
-- Usar vocabulario elevado y estructura de párrafos largos
-- Mínimo 600 palabras de contenido sustancial
+🔵 FORMATO TRADICIONAL:
+- Tono formal, serio, y profesional.
+- Estructura clásica con secciones en <strong> y contenido en <p>.
+- SOLO usa <p> y <strong>. NO uses listas, emojis, colores ni íconos.
+- El lenguaje debe ser elegante, con párrafos completos y detallados.
+- Mínimo 600 palabras.
 
-ESTRUCTURA OBLIGATORIA:
-1. Encabezado personal (nombre, teléfono, email, dirección)
-2. Perfil Profesional (párrafo de 4-5 líneas)
-3. Experiencia Laboral (párrafos detallados por cada puesto)
-4. Formación Académica (párrafos descriptivos)
-5. Competencias Profesionales (párrafo integrado)
-6. Idiomas (si aplica, en párrafo)
+🔧 ESTRUCTURA:
+1. Encabezado Personal: nombre completo, teléfono, email, dirección.
+2. Perfil Profesional: 1 párrafo largo y bien escrito.
+3. Experiencia Laboral: 1 párrafo completo por empleo.
+4. Educación: 1 párrafo por grado o formación.
+5. Competencias Profesionales: párrafo fluido.
+6. Idiomas (si aplica): en párrafo formal.
 
 ${hasUserInput ? `
-INFORMACIÓN DEL USUARIO:
+📎 DATOS DEL USUARIO:
 ${resume}
 
-INSTRUCCIONES:
-- Expande significativamente cada sección proporcionada
-- Si falta información, genera contenido coherente y profesional
-- Mantén los datos personales reales del usuario
-- Redacta en español neutro, formal y sofisticado
+✍️ INSTRUCCIONES:
+- Usa toda la información del usuario.
+- Si falta alguna sección, agrega ejemplos coherentes en español formal y profesional.
+- Mantén siempre el nombre y datos personales reales del usuario si fueron dados.
+- No escribas etiquetas como "Nombre:" o "Teléfono:" — solo el contenido.
 ` : `
-GENERAR CURRÍCULUM EJEMPLO:
-Crea un currículum tradicional completo para un profesional administrativo genérico.
-Usa nombres y datos ficticios pero realistas.
+📄 GENERAR CURRÍCULUM DE EJEMPLO:
+Currículum tradicional para una asistente administrativa en una empresa pública.
+Nombre ficticio realista: Laura Morales Ruiz.
 `}
-
-FORMATO DE SALIDA:
-- Solo HTML limpio con <div>, <p>, <strong>
-- NO usar <html>, <body>, \`\`\`, ni markdown
-- Contenido mínimo: 600 palabras
-- Cada párrafo debe tener 3-4 líneas mínimo
+📦 FORMATO DE SALIDA:
+- Solo HTML limpio con <p> y <strong>.
+- Sin listas, emojis, \`\`\`, <html>, o markdown.
+- Redacción elegante y clara, en español neutro.
 `,
+
 
       'Moderno': `
-Actúa como un redactor experto de currículums con 15 años de experiencia en empresas tecnológicas y startups.
+Eres un experto en redacción de CVs modernos para empresas tecnológicas, consultoras y startups.
 
-FORMATO MODERNO - CARACTERÍSTICAS ESPECÍFICAS:
-- Diseño limpio, profesional, contemporáneo
-- Usar listas <ul><li> para organizar información
-- Estructura clara con separación visual
-- Tono profesional pero accesible
-- Información de contacto en formato: Nombre | Ciudad | Teléfono | Email
-- Mínimo 600 palabras de contenido sustancial
+🔵 FORMATO MODERNO:
+- Tono profesional pero accesible.
+- Usa <ul><li> para secciones como experiencia, habilidades, idiomas.
+- Encabezado limpio con nombre completo, ciudad, teléfono, email.
+- Diseño claro y escaneable.
+- Mínimo 600 palabras.
 
-ESTRUCTURA OBLIGATORIA:
-1. Encabezado: Nombre | Ciudad | Teléfono | Email
-2. Perfil Profesional (párrafo de 3-4 líneas)
-3. Experiencia Laboral (usar <ul><li> para cada puesto con detalles)
-4. Educación (usar <ul><li> para cada título)
-5. Habilidades Técnicas (usar <ul><li>)
-6. Competencias Profesionales (usar <ul><li>)
-7. Idiomas (usar <ul><li> si aplica)
+🔧 ESTRUCTURA:
+1. Encabezado: Nombre completo | Ciudad | Teléfono | Email
+2. Perfil Profesional: 3–4 líneas como párrafo.
+3. Experiencia Laboral: <ul><li> con fechas, rol y logros claros.
+4. Educación: <ul><li> por título obtenido.
+5. Habilidades Técnicas: <ul><li>
+6. Competencias Profesionales: <ul><li>
+7. Idiomas (si aplica): <ul><li>
 
 ${hasUserInput ? `
-INFORMACIÓN DEL USUARIO:
+📎 DATOS DEL USUARIO:
 ${resume}
 
-INSTRUCCIONES:
-- Moderniza y expande cada sección proporcionada
-- Usa listas para organizar información de manera clara
-- Mantén los datos personales reales del usuario
-- Agrega detalles específicos y cuantificables cuando sea posible
-- Redacta en español neutro, profesional pero dinámico
+✍️ INSTRUCCIONES:
+- Convierte la información del usuario en un CV moderno, bien estructurado.
+- Si falta información, incluye ejemplos relevantes que el usuario pueda editar.
+- No repitas el nombre como "Nombre:" — solo el dato limpio.
+- Escribe en español neutro, profesional y claro.
 ` : `
-GENERAR CURRÍCULUM EJEMPLO:
-Crea un currículum moderno completo para un profesional de marketing digital.
-Usa nombres y datos ficticios pero realistas.
+📄 GENERAR CURRÍCULUM DE EJEMPLO:
+Currículum moderno para un gerente de proyectos digitales en una empresa de software.
+Nombre ficticio realista: Andrés Torres Díaz.
 `}
-
-FORMATO DE SALIDA:
-- Solo HTML limpio con <div>, <p>, <strong>, <ul>, <li>
-- NO usar <html>, <body>, \`\`\`, ni markdown
-- Contenido mínimo: 600 palabras
-- Usar listas para organizar información eficientemente
+📦 FORMATO DE SALIDA:
+- Solo HTML limpio con <div>, <strong>, <ul>, <li>, <p>.
+- Sin emojis ni markdown. No uses <html> ni \`\`\`.
+- Asegura claridad visual y separación entre secciones.
 `,
 
-      'Creativo': `
-Actúa como un redactor experto de currículums con 15 años de experiencia en industrias creativas y marketing.
 
-FORMATO CREATIVO - CARACTERÍSTICAS ESPECÍFICAS:
-- Diseño visual atractivo con elementos creativos
-- Usar emojis estratégicamente en encabezados y contenido
-- Tono profesional pero expresivo y humano
-- Colores sutiles mediante styling inline
-- Estructura dinámica y visualmente engaging
-- Mínimo 600 palabras de contenido sustancial
+  'Creativo': `
+Actúa como redactor creativo de currículums para industrias como diseño, medios, publicidad y startups.
 
-ESTRUCTURA OBLIGATORIA:
-1. 🎯 Encabezado: Nombre 📍 Ciudad ✉️ Email 📞 Teléfono
-2. 📌 Perfil Profesional (párrafo con personalidad)
-3. 💼 Experiencia Laboral (usar <ul><li> con emojis relevantes)
-4. 🎓 Educación (usar <ul><li> con emojis)
-5. 🚀 Habilidades Técnicas (usar <ul><li> con emojis)
-6. 💡 Competencias Profesionales (usar <ul><li> con emojis)
-7. 🗣️ Idiomas (usar <ul><li> si aplica)
+🟡 FORMATO CREATIVO:
+- Tono profesional pero expresivo y humano.
+- Usa emojis en títulos y puntos clave (🎯, 💼, 🚀, 🗣️, etc.).
+- Usa listas <ul><li> con texto llamativo y concreto.
+- Agrega personalidad en el lenguaje.
+- Mínimo 600 palabras.
 
-EMOJIS SUGERIDOS:
-- 💼 Experiencia laboral
-- 🎓 Educación
-- 🚀 Habilidades técnicas
-- 💡 Competencias
-- 🗣️ Idiomas
-- 📈 Logros
-- 🎯 Objetivos
-- ⭐ Destacados
+🔧 ESTRUCTURA:
+1. 🎯 Encabezado: Nombre ✉️ Email 📍 Ciudad 📞 Teléfono
+2. 📌 Perfil Profesional: párrafo corto con voz propia.
+3. 💼 Experiencia Laboral: <ul><li> con emojis y resultados visibles.
+4. 🎓 Educación: <ul><li> con logros clave.
+5. 🚀 Habilidades Técnicas: <ul><li>
+6. 💡 Competencias Profesionales: <ul><li>
+7. 🗣️ Idiomas: <ul><li>
 
 ${hasUserInput ? `
-INFORMACIÓN DEL USUARIO:
+📎 DATOS DEL USUARIO:
 ${resume}
 
-INSTRUCCIONES:
-- Transforma el contenido en un formato visualmente atractivo
-- Usa emojis de manera profesional pero llamativa
-- Mantén los datos personales reales del usuario
-- Agrega personalidad y creatividad al lenguaje
-- Redacta en español neutro, profesional pero con carácter
+✍️ INSTRUCCIONES:
+- Convierte la información en un currículum creativo, visualmente atractivo.
+- Usa emojis estratégicamente en títulos y listas.
+- El texto debe sonar humano, con energía, sin perder profesionalismo.
+- No uses etiquetas como "Nombre:" — solo el valor real.
+- Redacta en español claro y expresivo.
 ` : `
-GENERAR CURRÍCULUM EJEMPLO:
-Crea un currículum creativo completo para un diseñador gráfico.
-Usa nombres y datos ficticios pero realistas.
+📄 GENERAR CURRÍCULUM DE EJEMPLO:
+Diseñadora gráfica para una startup de tecnología creativa.
+Nombre ficticio realista: Clara Vidal Sánchez.
 `}
+📦 FORMATO DE SALIDA:
+- Solo HTML limpio. Usa <p>, <strong>, <ul>, <li>.
+- NO uses <html>, markdown, ni bloques de código.
+- Usa emojis pero no abuses — deben complementar.
+`,
 
-FORMATO DE SALIDA:
-- Solo HTML limpio con <div>, <p>, <strong>, <ul>, <li>
-- NO usar <html>, <body>, \`\`\`, ni markdown
-- Contenido mínimo: 600 palabras
-- Usar emojis estratégicamente para mejorar la presentación visual
-- Puede incluir styling inline sutil (colores, etc.)
-`
     };
 
     // Select the appropriate prompt based on format
