@@ -107,65 +107,85 @@ ${resume.skills || 'No especificado'}
   let finalPrompt = prompt;
 
 if (type === 'cv') {
-  const fallbackResume = `
-Nombre: Juan Martínez
-Teléfono: 600123456
-Email: juan@example.com
-Dirección: Barcelona, España
+  const hasInput = typeof resume === 'string' && resume.trim().length > 0;
 
-Perfil Profesional:
-Profesional motivado con experiencia en atención al cliente, logística y administración. Destacado por su responsabilidad, adaptabilidad y habilidades comunicativas.
+  const fallbackExample = `
+Ejemplo de CV para editar directamente:
 
-Experiencia Laboral:
-- Asistente de almacén en Logística Express (2022 - 2023): Recepción, organización y envío de productos.
-- Atención al cliente en ElectroFast (2020 - 2021): Resolución de incidencias, ventas y soporte diario.
+<strong>📌 Perfil Profesional</strong>
+<p>Profesional motivado con experiencia en atención al cliente y logística. Responsable, organizado y orientado a resultados. Busco aplicar mis habilidades en un entorno dinámico.</p>
 
-Educación:
-- Bachillerato en IES Barcelona Centro, 2018
+<strong>💼 Experiencia Laboral</strong>
+<ul>
+  <li><strong>Logística Express</strong> (2022–2023) – Gestión de almacén y preparación de pedidos.</li>
+  <li><strong>ElectroFast</strong> (2020–2021) – Atención al cliente y soporte técnico.</li>
+</ul>
 
-Idiomas:
-- Español (nativo)
-- Inglés (intermedio)
+<strong>🎓 Educación</strong>
+<ul>
+  <li>Bachillerato – IES Madrid Centro (2018)</li>
+</ul>
 
-Habilidades:
-- Comunicación efectiva
-- Gestión del tiempo
-- Resolución de problemas
-- Trabajo en equipo
+<strong>🧠 Habilidades</strong>
+<ul>
+  <li>Comunicación efectiva</li>
+  <li>Resolución de problemas</li>
+  <li>Gestión del tiempo</li>
+</ul>
+
+<strong>🗣️ Idiomas</strong>
+<ul>
+  <li>Español – Nativo</li>
+  <li>Inglés – Intermedio</li>
+</ul>
 `.trim();
 
-  const cleanResume = typeof resume === 'string' && resume.trim().length > 0
-    ? resume.trim()
-    : fallbackResume;
-
-  let visualStyle = '';
-  if (format === 'Tradicional') {
-    visualStyle = 'Diseño sobrio y clásico. Usa párrafos sin listas, sin emojis, sin íconos. Todo debe estar organizado por secciones claras con títulos en negrita. Usa <p> y <strong> para formatear, pero sin <ul>, <li>, ni tablas.';
-  } else if (format === 'Moderno') {
-    visualStyle = 'Diseño moderno, limpio y estructurado. Usa listas con <ul> y <li> para experiencia, habilidades e idiomas. Usa <strong> para los títulos de sección. Muestra datos de contacto arriba. Nada de emojis.';
-  } else if (format === 'Creativo') {
-    visualStyle = 'Diseño llamativo con emojis y encabezados destacados. Usa <ul>, <li>, <strong>, y <div>. Agrega emojis apropiados para cada sección (📌, 🧠, 💼, 🎓, 🗣️, etc). El objetivo es destacar creatividad y personalidad.';
+  let styleGuide = '';
+  switch (format) {
+    case 'Tradicional':
+      styleGuide = `
+- Usa solo <p> y <strong>
+- No uses listas, emojis, íconos, ni colores
+- Redacta cada sección como párrafos formales
+- Mantén un tono serio y sobrio`;
+      break;
+    case 'Moderno':
+      styleGuide = `
+- Usa <ul><li> para experiencia, educación, habilidades e idiomas
+- Usa <strong> para encabezados
+- Muestra los datos de contacto en la primera línea
+- Tono profesional y directo. Sin emojis.`;
+      break;
+    case 'Creativo':
+      styleGuide = `
+- Usa encabezados con emojis como 📌, 💼, 🎓, 🧠, 🗣️
+- Usa <ul><li> y frases expresivas
+- Agrega emojis relevantes dentro del contenido
+- Tono entusiasta, moderno, pero profesional`;
+      break;
   }
 
   finalPrompt = `
-Eres un redactor profesional de currículums con 15 años de experiencia. Tu tarea es crear un CV completo y profesional con base en el contenido proporcionado.
+Actúa como un redactor profesional de currículums con 15 años de experiencia.
 
-🎯 Tu objetivo:
-- Generar un currículum de mínimo 500 palabras.
-- Redactar contenido real, detallado y profesional — aunque el texto original sea escaso o poco claro.
-- Si faltan secciones (experiencia, educación, habilidades, idiomas), inventa contenido coherente y útil según el perfil.
-- Mejora el lenguaje y estructura todo con claridad y estilo.
-- NO uses ningún texto ficticio como [Nombre], [Campo], etc.
-- NO devuelvas el resultado dentro de bloques \`\`\`html ni markdown.
+🎯 Objetivo:
+Tu tarea es transformar el texto del usuario en un currículum profesional, claro y visualmente adecuado. Si el contenido es breve o mal estructurado, reorganízalo y mejóralo tú mismo. Si no se proporciona nada, responde con un ejemplo listo para editar.
 
-✅ Formato visual: ${visualStyle}
-💼 Tipo de empleo: ${jobType || 'No especificado'}
+📌 Instrucciones:
+- No uses nombres genéricos como Juan Martínez
+- No uses etiquetas como "Nombre:", "Teléfono:" o "[Campo]"
+- Devuelve solo HTML limpio usando <div>, <h1>, <h2>, <p>, <strong>, <ul>, <li>
+- Nunca uses bloques de código \`\`\` ni etiquetas <html> o <body>
+- El CV debe tener al menos 500 palabras si el usuario proporcionó contenido
 
-📋 Contenido proporcionado por el usuario:
-${cleanResume}
+🖋️ Estilo solicitado: ${format}
+📋 Guía de estilo específica:
+${styleGuide}
+
+📝 Texto del usuario:
+${hasInput ? resume.trim() : fallbackExample}
 `.trim();
 }
-
 
   try {
     const response = await openai.chat.completions.create({
