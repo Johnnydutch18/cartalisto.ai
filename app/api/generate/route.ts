@@ -7,70 +7,15 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 });
 
-const prompts = {
-  Tradicional: `
-Actúa como un redactor profesional de CV con más de 15 años de experiencia.
-
-Tu tarea es generar un currículum en formato Tradicional para un usuario que ha proporcionado los siguientes datos:
-
-{content}
-
-Formato Tradicional:
-- Tono formal y clásico (no creativo).
-- Solo usa etiquetas HTML básicas como <p> y <strong>.
-- No uses listas ni emojis.
-- Cada sección debe ser larga y en formato de párrafo.
-- Usa encabezados separados para cada sección como "Perfil Profesional", "Experiencia Laboral", "Educación", "Idiomas", "Competencias Profesionales".
-- No inventes datos personales. Si el usuario no ha proporcionado nombre, email, etc., escribe un texto editable como: {Tu nombre aquí}, {Tu email aquí}.
-
-Devuelve solo el HTML formateado y limpio. No añadas etiquetas <html> o markdown.
-`,
-  Moderno: `
-Actúa como un redactor profesional de CV con más de 15 años de experiencia.
-
-Tu tarea es generar un currículum en formato Moderno para un usuario que ha proporcionado los siguientes datos:
-
-{content}
-
-Formato Moderno:
-- Tono neutro-profesional.
-- Usa etiquetas HTML como <div>, <ul>, <li>, <strong> para organizar.
-- Usa viñetas para listar habilidades, experiencia, educación.
-- No uses emojis.
-- Organiza el contenido en secciones claras con títulos.
-- No inventes datos personales. Si el usuario no ha proporcionado nombre, email, etc., escribe un texto editable como: {Tu nombre aquí}, {Tu email aquí}.
-
-Devuelve solo el HTML formateado y limpio. No añadas etiquetas <html> o markdown.
-`,
-  Creativo: `
-Actúa como un redactor profesional de CV con más de 15 años de experiencia.
-
-Tu tarea es generar un currículum en formato Creativo para un usuario que ha proporcionado los siguientes datos:
-
-{content}
-
-Formato Creativo:
-- Tono expresivo pero profesional.
-- Usa etiquetas HTML como <strong>, <ul>, <li>, <div>.
-- Agrega emojis relevantes en los títulos y listas.
-- Agrega personalidad al lenguaje.
-- Ideal para marketing, diseño, startups.
-- No inventes datos personales. Si el usuario no ha proporcionado nombre, email, etc., escribe un texto editable como: {Tu nombre aquí}, {Tu email aquí}.
-
-Devuelve solo el HTML formateado y limpio. No añadas etiquetas <html> o markdown.
-`,
-};
-
 export async function POST(req: Request) {
+  console.log("✅ /api/generate route hit");
+
   const cookieStore = await nextCookies();
 
   const cookieAdapter = {
     get: (name: string) => cookieStore.get(name)?.value ?? undefined,
     getAll: () =>
-      cookieStore.getAll().map(({ name, value }: { name: string; value: string }) => ({
-        name,
-        value,
-      })),
+      cookieStore.getAll().map(({ name, value }: any) => ({ name, value })),
     set: () => {},
     remove: () => {},
   } as const;
@@ -78,33 +23,139 @@ export async function POST(req: Request) {
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: cookieAdapter }
+    {
+      cookies: cookieAdapter,
+    }
   );
 
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await req.json();
-  const format = body.format as keyof typeof prompts;
-  const selectedPrompt = prompts[format];
+  const { resume, format, type, tone, letter } = body;
+
+  let finalPrompt = "";
+
+  if (type === "cv") {
+    const hasUserInput = resume && resume.trim().length > 20;
+
+    const safeResume = hasUserInput
+      ? resume
+      : "Nombre: {Tu nombre aquí}\nTeléfono: {Tu teléfono aquí}\nEmail: {Tu email aquí}\nDirección: {Tu dirección}\n\nPerfil Profesional: {Breve descripción}\nExperiencia Laboral: {Puestos anteriores}\nEducación: {Tu formación}\nHabilidades: {Habilidades principales}";
+
+    const formatPrompts: Record<string, string> = {
+      Tradicional: `
+Actúa como un redactor experto de currículums con 15 años de experiencia en recursos humanos españoles.
+
+FORMATO TRADICIONAL:
+- Diseño clásico y formal
+- Solo usar párrafos (<p>) con títulos en <strong>
+- Prohibido: listas, emojis, tablas
+- Tono sobrio y profesional
+- Mínimo 600 palabras
+
+INSTRUCCIONES:
+- Usa el siguiente contenido del usuario
+- Completa cualquier sección faltante con texto profesional
+- NO uses datos falsos si ya están proporcionados
+
+Contenido:
+${safeResume}
+
+Formato de salida:
+- Solo HTML válido (<div>, <p>, <strong>)
+- No usar <html>, markdown ni backticks
+- Si falta un dato personal, usa {Tu nombre aquí}, etc.
+`,
+
+      Moderno: `
+Actúa como un redactor experto en currículums modernos para startups y empresas tecnológicas.
+
+FORMATO MODERNO:
+- Diseño limpio y organizado
+- Usar <ul><li> para experiencia, educación, habilidades
+- Tono profesional pero accesible
+- Mínimo 600 palabras
+
+INSTRUCCIONES:
+- Usa el contenido del usuario y expande con claridad
+- Usa listas estructuradas para secciones técnicas
+
+Contenido:
+${safeResume}
+
+Formato de salida:
+- Solo HTML válido (<div>, <p>, <strong>, <ul>, <li>)
+- No usar <html>, markdown ni backticks
+- Si falta un dato personal, usa {Tu nombre aquí}, etc.
+`,
+
+      Creativo: `
+Actúa como un redactor creativo de CV para diseño y marketing.
+
+FORMATO CREATIVO:
+- Visualmente llamativo, usa emojis con moderación
+- Usa listas con encabezados expresivos
+- Estilo profesional pero con carácter humano
+- Mínimo 600 palabras
+
+INSTRUCCIONES:
+- Transforma el contenido del usuario en un CV creativo
+- Usa emojis apropiados para secciones (🎯, 💼, 🧠...)
+
+Contenido:
+${safeResume}
+
+Formato de salida:
+- Solo HTML válido (<div>, <p>, <ul>, <li>, <strong>)
+- No usar <html>, markdown ni backticks
+- Si falta un dato personal, usa {Tu nombre aquí}, etc.
+`
+    };
+
+    const selectedPrompt = formatPrompts[format as keyof typeof formatPrompts] || formatPrompts.Tradicional;
+    finalPrompt = selectedPrompt;
+  }
+
+  if (type === "coverLetter") {
+    const safeLetter = letter || "Especifica tu experiencia, puesto deseado y logros principales.";
+
+    finalPrompt = `
+Actúa como un redactor profesional de cartas de presentación.
+
+Instrucciones:
+- Tono: ${tone || "formal"}
+- Redacta una carta profesional y personalizada
+- Si no hay información clara, usa contenido ficticio pero realista
+- Siempre incluye una despedida apropiada (ej. Un cordial saludo)
+
+Contenido del usuario:
+${safeLetter}
+
+Formato de salida:
+- Solo HTML válido (<div>, <p>, <strong>)
+- No usar markdown, backticks, ni etiquetas <html>
+`;
+  }
+
+  if (!finalPrompt) {
+    return NextResponse.json({ error: "Tipo de generación inválido." }, { status: 400 });
+  }
 
   try {
-    const completion = await openai.chat.completions.create({
+    const chatResponse = await openai.chat.completions.create({
       model: "gpt-4o",
-      temperature: 0.85,
-      messages: [
-        {
-          role: "user",
-          content: selectedPrompt.replace("{content}", body.content || ""),
-        },
-      ],
+      messages: [{ role: "user", content: finalPrompt }],
     });
 
-    const result = completion.choices[0].message.content;
+    const aiOutput = chatResponse.choices[0].message.content;
 
-    return NextResponse.json({ result });
+    return NextResponse.json({ output: aiOutput });
   } catch (err) {
-    console.error("❌ Error al llamar a OpenAI:", err);
-    return NextResponse.json(
-      { error: "Hubo un problema al generar el contenido." },
-      { status: 500 }
-    );
+    console.error("❌ Error generating content:", err);
+    return NextResponse.json({ error: "Error al generar el contenido." }, { status: 500 });
   }
 }
