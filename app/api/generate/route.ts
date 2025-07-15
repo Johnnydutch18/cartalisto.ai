@@ -107,60 +107,62 @@ ${resume.skills || 'No especificado'}
   let finalPrompt = prompt;
 
 if (type === 'cv') {
-  const userData = typeof resume === 'object' ? resume : {};
+  const fallbackResume = `
+Nombre: Juan Martínez
+Teléfono: 600123456
+Email: juan@example.com
+Dirección: Barcelona, España
 
-  const name = userData.name || 'Juan Martínez';
-  const phone = userData.phone || '600123456';
-  const email = userData.email || 'juan@example.com';
-  const address = userData.address || 'Barcelona, España';
-  const summary = userData.summary || '';
-  const experience = userData.experience || '';
-  const education = userData.education || '';
-  const skills = userData.skills || '';
-  const languages = userData.languages || '';
+Perfil Profesional:
+Profesional motivado con experiencia en atención al cliente, logística y administración. Destacado por su responsabilidad, adaptabilidad y habilidades comunicativas.
+
+Experiencia Laboral:
+- Asistente de almacén en Logística Express (2022 - 2023): Recepción, organización y envío de productos.
+- Atención al cliente en ElectroFast (2020 - 2021): Resolución de incidencias, ventas y soporte diario.
+
+Educación:
+- Bachillerato en IES Barcelona Centro, 2018
+
+Idiomas:
+- Español (nativo)
+- Inglés (intermedio)
+
+Habilidades:
+- Comunicación efectiva
+- Gestión del tiempo
+- Resolución de problemas
+- Trabajo en equipo
+`.trim();
+
+  const cleanResume = typeof resume === 'string' && resume.trim().length > 0
+    ? resume.trim()
+    : fallbackResume;
 
   let visualStyle = '';
-  if (format === 'tradicional') {
-    visualStyle = 'Formato clásico con párrafos. Sin íconos, sin emojis, sin listas. Solo texto plano con títulos en negrita. No uses tablas.';
-  } else if (format === 'moderno') {
-    visualStyle = 'Diseño limpio con listas <ul>, secciones claras, y encabezados organizados. Usa <strong> para títulos. Incluye detalles de contacto arriba.';
-  } else if (format === 'creativo') {
-    visualStyle = 'Formato moderno y visual. Usa emojis y encabezados llamativos. Diseñado para destacar habilidades y creatividad. Usa <ul>, <strong> y emojis de forma relevante.';
+  if (format === 'Tradicional') {
+    visualStyle = 'Diseño sobrio y clásico. Usa párrafos sin listas, sin emojis, sin íconos. Todo debe estar organizado por secciones claras con títulos en negrita. Usa <p> y <strong> para formatear, pero sin <ul>, <li>, ni tablas.';
+  } else if (format === 'Moderno') {
+    visualStyle = 'Diseño moderno, limpio y estructurado. Usa listas con <ul> y <li> para experiencia, habilidades e idiomas. Usa <strong> para los títulos de sección. Muestra datos de contacto arriba. Nada de emojis.';
+  } else if (format === 'Creativo') {
+    visualStyle = 'Diseño llamativo con emojis y encabezados destacados. Usa <ul>, <li>, <strong>, y <div>. Agrega emojis apropiados para cada sección (📌, 🧠, 💼, 🎓, 🗣️, etc). El objetivo es destacar creatividad y personalidad.';
   }
 
   finalPrompt = `
-Eres un redactor profesional de currículums con 15 años de experiencia. Tu tarea es generar un CV completo, bien redactado, y visualmente coherente, basado en los datos del usuario.
+Eres un redactor profesional de currículums con 15 años de experiencia. Tu tarea es crear un CV completo y profesional con base en el contenido proporcionado.
 
-✅ Requisitos:
-- Si faltan secciones como experiencia, habilidades o idiomas, créalas tú mismo basándote en perfiles típicos.
-- Si el texto del usuario es escueto o mal escrito, mejóralo con lenguaje profesional.
-- No escribas campos vacíos ni textos tipo [Nombre].
-- No uses saludos ni cierres como en una carta.
-- Devuelve solo HTML limpio y bien estructurado usando <div>, <h1>, <h2>, <ul>, <li>, <p>, <strong>. Nada de etiquetas <html>, <body>, ni bloques markdown.
+🎯 Tu objetivo:
+- Generar un currículum de mínimo 500 palabras.
+- Redactar contenido real, detallado y profesional — aunque el texto original sea escaso o poco claro.
+- Si faltan secciones (experiencia, educación, habilidades, idiomas), inventa contenido coherente y útil según el perfil.
+- Mejora el lenguaje y estructura todo con claridad y estilo.
+- NO uses ningún texto ficticio como [Nombre], [Campo], etc.
+- NO devuelvas el resultado dentro de bloques \`\`\`html ni markdown.
 
-🎨 Estilo visual: ${visualStyle}
+✅ Formato visual: ${visualStyle}
 💼 Tipo de empleo: ${jobType || 'No especificado'}
 
-📋 Datos del usuario:
-Nombre: ${name}
-Teléfono: ${phone}
-Email: ${email}
-Dirección: ${address}
-
-Perfil profesional:
-${summary}
-
-Experiencia:
-${experience}
-
-Educación:
-${education}
-
-Habilidades:
-${skills}
-
-Idiomas:
-${languages}
+📋 Contenido proporcionado por el usuario:
+${cleanResume}
 `.trim();
 }
 
