@@ -106,64 +106,207 @@ ${resume.skills || 'No especificado'}
 
   let finalPrompt = prompt;
 
-if (type === 'cv') {
-  const hasInput = typeof resume === 'string' && resume.trim().length > 0;
+  if (type === 'cv') {
+    // Check if we have meaningful user input
+    const hasUserInput = resume && resume.trim().length > 20;
+    
+    // Parse the resume content to extract information
+    const parseResumeContent = (content: string) => {
+      const lines = content.split('\n').filter(line => line.trim());
+      const sections = {
+        name: '',
+        phone: '',
+        email: '',
+        address: '',
+        summary: '',
+        experience: '',
+        education: '',
+        skills: '',
+        languages: ''
+      };
 
-  const fallbackExample = `
-<strong>Ejemplo de currículum para editar</strong>
-...
-`.trim();
+      let currentSection = '';
+      
+      lines.forEach(line => {
+        const trimmed = line.trim();
+        
+        // Extract contact info
+        if (trimmed.toLowerCase().includes('nombre:')) {
+          sections.name = trimmed.replace(/nombre:/i, '').trim();
+        } else if (trimmed.toLowerCase().includes('teléfono:')) {
+          sections.phone = trimmed.replace(/teléfono:/i, '').trim();
+        } else if (trimmed.toLowerCase().includes('email:')) {
+          sections.email = trimmed.replace(/email:/i, '').trim();
+        } else if (trimmed.toLowerCase().includes('dirección:')) {
+          sections.address = trimmed.replace(/dirección:/i, '').trim();
+        }
+        
+        // Detect sections
+        if (trimmed.toLowerCase().includes('perfil profesional')) {
+          currentSection = 'summary';
+        } else if (trimmed.toLowerCase().includes('experiencia laboral')) {
+          currentSection = 'experience';
+        } else if (trimmed.toLowerCase().includes('educación')) {
+          currentSection = 'education';
+        } else if (trimmed.toLowerCase().includes('habilidades')) {
+          currentSection = 'skills';
+        } else if (trimmed.toLowerCase().includes('idiomas')) {
+          currentSection = 'languages';
+        } else if (currentSection && !trimmed.includes(':')) {
+          sections[currentSection as keyof typeof sections] += trimmed + ' ';
+        }
+      });
 
-  const styleGuide = {
-    Tradicional: `
-🎨 Tono: Formal y sobrio.
-⛔️ No uses emojis, listas, ni colores.
-✅ Usa solo <p> y <strong> para los títulos.
-✅ Redacta las secciones como párrafos largos, uno tras otro.
-✅ Encabezados como "Perfil Profesional", "Experiencia Laboral", "Educación", etc. deben ir en <strong>.
-❗ El resultado debe parecer un currículum clásico y reservado.
+      return sections;
+    };
+
+    const userInfo = hasUserInput ? parseResumeContent(resume) : null;
+
+    // Create comprehensive prompts for each format
+    const formatPrompts = {
+      'Tradicional': `
+Actúa como un redactor experto de currículums con 15 años de experiencia en recursos humanos españoles.
+
+FORMATO TRADICIONAL - CARACTERÍSTICAS ESPECÍFICAS:
+- Diseño clásico y conservador, ideal para empresas tradicionales, gobierno, banca
+- SOLO usar párrafos (<p>) con títulos en <strong>
+- PROHIBIDO: listas, viñetas, emojis, íconos, colores, tablas
+- Tono formal, sobrio, y profesional
+- Usar vocabulario elevado y estructura de párrafos largos
+- Mínimo 600 palabras de contenido sustancial
+
+ESTRUCTURA OBLIGATORIA:
+1. Encabezado personal (nombre, teléfono, email, dirección)
+2. Perfil Profesional (párrafo de 4-5 líneas)
+3. Experiencia Laboral (párrafos detallados por cada puesto)
+4. Formación Académica (párrafos descriptivos)
+5. Competencias Profesionales (párrafo integrado)
+6. Idiomas (si aplica, en párrafo)
+
+${hasUserInput ? `
+INFORMACIÓN DEL USUARIO:
+${resume}
+
+INSTRUCCIONES:
+- Expande significativamente cada sección proporcionada
+- Si falta información, genera contenido coherente y profesional
+- Mantén los datos personales reales del usuario
+- Redacta en español neutro, formal y sofisticado
+` : `
+GENERAR CURRÍCULUM EJEMPLO:
+Crea un currículum tradicional completo para un profesional administrativo genérico.
+Usa nombres y datos ficticios pero realistas.
+`}
+
+FORMATO DE SALIDA:
+- Solo HTML limpio con <div>, <p>, <strong>
+- NO usar <html>, <body>, \`\`\`, ni markdown
+- Contenido mínimo: 600 palabras
+- Cada párrafo debe tener 3-4 líneas mínimo
 `,
 
-    Moderno: `
-🎨 Tono: Profesional y neutral.
-✅ Usa <ul><li> para "Experiencia Laboral", "Educación", "Habilidades", "Idiomas".
-✅ Encabezados con <strong>. NO emojis.
-✅ Datos personales en una línea: Nombre | Ciudad | Teléfono | Email.
-✅ Redacción clara, directa, estructurada.
-❗ Este formato debe parecer actual, usado para trabajos en empresas modernas.
+      'Moderno': `
+Actúa como un redactor experto de currículums con 15 años de experiencia en empresas tecnológicas y startups.
+
+FORMATO MODERNO - CARACTERÍSTICAS ESPECÍFICAS:
+- Diseño limpio, profesional, contemporáneo
+- Usar listas <ul><li> para organizar información
+- Estructura clara con separación visual
+- Tono profesional pero accesible
+- Información de contacto en formato: Nombre | Ciudad | Teléfono | Email
+- Mínimo 600 palabras de contenido sustancial
+
+ESTRUCTURA OBLIGATORIA:
+1. Encabezado: Nombre | Ciudad | Teléfono | Email
+2. Perfil Profesional (párrafo de 3-4 líneas)
+3. Experiencia Laboral (usar <ul><li> para cada puesto con detalles)
+4. Educación (usar <ul><li> para cada título)
+5. Habilidades Técnicas (usar <ul><li>)
+6. Competencias Profesionales (usar <ul><li>)
+7. Idiomas (usar <ul><li> si aplica)
+
+${hasUserInput ? `
+INFORMACIÓN DEL USUARIO:
+${resume}
+
+INSTRUCCIONES:
+- Moderniza y expande cada sección proporcionada
+- Usa listas para organizar información de manera clara
+- Mantén los datos personales reales del usuario
+- Agrega detalles específicos y cuantificables cuando sea posible
+- Redacta en español neutro, profesional pero dinámico
+` : `
+GENERAR CURRÍCULUM EJEMPLO:
+Crea un currículum moderno completo para un profesional de marketing digital.
+Usa nombres y datos ficticios pero realistas.
+`}
+
+FORMATO DE SALIDA:
+- Solo HTML limpio con <div>, <p>, <strong>, <ul>, <li>
+- NO usar <html>, <body>, \`\`\`, ni markdown
+- Contenido mínimo: 600 palabras
+- Usar listas para organizar información eficientemente
 `,
 
-    Creativo: `
-🎨 Tono: Profesional pero expresivo y entusiasta.
-✅ Usa encabezados con emojis: 📌 Perfil, 💼 Experiencia, 🎓 Educación, 🧠 Habilidades, 🗣️ Idiomas.
-✅ Usa <ul><li> para contenido donde sea útil.
-✅ Agrega emojis de forma natural en los bullets o descripciones.
-✅ Encabezado con nombre y ciudad puede incluir emojis como 📍, ✉️, 📞.
-❗ El lenguaje puede ser más humano y visual. Ideal para diseño, marketing, etc.
-`,
-  };
+      'Creativo': `
+Actúa como un redactor experto de currículums con 15 años de experiencia en industrias creativas y marketing.
 
-  // ✅ Define safeFormat BEFORE using it
-  const safeFormat = format as keyof typeof styleGuide;
+FORMATO CREATIVO - CARACTERÍSTICAS ESPECÍFICAS:
+- Diseño visual atractivo con elementos creativos
+- Usar emojis estratégicamente en encabezados y contenido
+- Tono profesional pero expresivo y humano
+- Colores sutiles mediante styling inline
+- Estructura dinámica y visualmente engaging
+- Mínimo 600 palabras de contenido sustancial
 
-  finalPrompt = `
-Actúa como un redactor profesional de currículums con más de 15 años de experiencia.
+ESTRUCTURA OBLIGATORIA:
+1. 🎯 Encabezado: Nombre 📍 Ciudad ✉️ Email 📞 Teléfono
+2. 📌 Perfil Profesional (párrafo con personalidad)
+3. 💼 Experiencia Laboral (usar <ul><li> con emojis relevantes)
+4. 🎓 Educación (usar <ul><li> con emojis)
+5. 🚀 Habilidades Técnicas (usar <ul><li> con emojis)
+6. 💡 Competencias Profesionales (usar <ul><li> con emojis)
+7. 🗣️ Idiomas (usar <ul><li> si aplica)
 
-🎯 Tu tarea es transformar el siguiente texto en un currículum completo, profesional y visualmente coherente, según el formato indicado.
+EMOJIS SUGERIDOS:
+- 💼 Experiencia laboral
+- 🎓 Educación
+- 🚀 Habilidades técnicas
+- 💡 Competencias
+- 🗣️ Idiomas
+- 📈 Logros
+- 🎯 Objetivos
+- ⭐ Destacados
 
-🛑 No uses nombres inventados como Juan Martínez. No uses "Nombre:", "Teléfono:", ni ningún marcador como [Campo].
+${hasUserInput ? `
+INFORMACIÓN DEL USUARIO:
+${resume}
 
-✅ Devuelve solo HTML limpio: <div>, <p>, <strong>, <ul>, <li>, etc.
-❌ No incluyas etiquetas <html>, <body> ni bloques de código como \`\`\`.
+INSTRUCCIONES:
+- Transforma el contenido en un formato visualmente atractivo
+- Usa emojis de manera profesional pero llamativa
+- Mantén los datos personales reales del usuario
+- Agrega personalidad y creatividad al lenguaje
+- Redacta en español neutro, profesional pero con carácter
+` : `
+GENERAR CURRÍCULUM EJEMPLO:
+Crea un currículum creativo completo para un diseñador gráfico.
+Usa nombres y datos ficticios pero realistas.
+`}
 
-📄 Formato solicitado: ${format}
-📋 Guía de estilo:
-${styleGuide[safeFormat]}
+FORMATO DE SALIDA:
+- Solo HTML limpio con <div>, <p>, <strong>, <ul>, <li>
+- NO usar <html>, <body>, \`\`\`, ni markdown
+- Contenido mínimo: 600 palabras
+- Usar emojis estratégicamente para mejorar la presentación visual
+- Puede incluir styling inline sutil (colores, etc.)
+`
+    };
 
-📝 Texto del usuario:
-${hasInput ? resume.trim() : fallbackExample}
-`.trim();
-}
+    // Select the appropriate prompt based on format
+    const selectedFormat = format || 'Tradicional';
+    finalPrompt = formatPrompts[selectedFormat as keyof typeof formatPrompts] || formatPrompts['Tradicional'];
+  }
 
 
 
