@@ -111,49 +111,21 @@ if (type === 'cv') {
 
   const fallbackExample = `
 <strong>Ejemplo de currículum para editar</strong>
-
-<strong>📌 Perfil Profesional</strong>
-<p>Profesional motivado con experiencia en atención al cliente y logística. Responsable, organizado y orientado a resultados.</p>
-
-<strong>💼 Experiencia Laboral</strong>
-<ul>
-  <li><strong>Logística Express</strong> (2022–2023) – Gestión de almacén y pedidos.</li>
-  <li><strong>ElectroFast</strong> (2020–2021) – Atención al cliente y soporte técnico.</li>
-</ul>
-
-<strong>🎓 Educación</strong>
-<ul>
-  <li>Bachillerato – IES Madrid Centro (2018)</li>
-</ul>
-
-<strong>🧠 Habilidades</strong>
-<ul>
-  <li>Comunicación efectiva</li>
-  <li>Resolución de problemas</li>
-  <li>Trabajo en equipo</li>
-</ul>
-
-<strong>🗣️ Idiomas</strong>
-<ul>
-  <li>Español – Nativo</li>
-  <li>Inglés – Intermedio</li>
-</ul>
+...
 `.trim();
 
-  const visualGuide = {
+  const styleGuide = {
     Tradicional: `
 🎨 Tono: Formal y sobrio.
-
 ⛔️ No uses emojis, listas, ni colores.
 ✅ Usa solo <p> y <strong> para los títulos.
 ✅ Redacta las secciones como párrafos largos, uno tras otro.
 ✅ Encabezados como "Perfil Profesional", "Experiencia Laboral", "Educación", etc. deben ir en <strong>.
-❗ El resultado debe parecer un currículum clásico y reservado, como de oficina administrativa tradicional.
+❗ El resultado debe parecer un currículum clásico y reservado.
 `,
 
     Moderno: `
 🎨 Tono: Profesional y neutral.
-
 ✅ Usa <ul><li> para "Experiencia Laboral", "Educación", "Habilidades", "Idiomas".
 ✅ Encabezados con <strong>. NO emojis.
 ✅ Datos personales en una línea: Nombre | Ciudad | Teléfono | Email.
@@ -163,17 +135,19 @@ if (type === 'cv') {
 
     Creativo: `
 🎨 Tono: Profesional pero expresivo y entusiasta.
-
 ✅ Usa encabezados con emojis: 📌 Perfil, 💼 Experiencia, 🎓 Educación, 🧠 Habilidades, 🗣️ Idiomas.
 ✅ Usa <ul><li> para contenido donde sea útil.
 ✅ Agrega emojis de forma natural en los bullets o descripciones.
 ✅ Encabezado con nombre y ciudad puede incluir emojis como 📍, ✉️, 📞.
-❗ El lenguaje puede ser más humano, dinámico y visual, ideal para perfiles creativos, startups o marketing.
+❗ El lenguaje puede ser más humano y visual. Ideal para diseño, marketing, etc.
 `,
   };
 
+  // ✅ Define safeFormat BEFORE using it
+  const safeFormat = format as keyof typeof styleGuide;
+
   finalPrompt = `
-Actúa como un redactor profesional de currículums con 15 años de experiencia.
+Actúa como un redactor profesional de currículums con más de 15 años de experiencia.
 
 🎯 Tu tarea es transformar el siguiente texto en un currículum completo, profesional y visualmente coherente, según el formato indicado.
 
@@ -184,12 +158,14 @@ Actúa como un redactor profesional de currículums con 15 años de experiencia.
 
 📄 Formato solicitado: ${format}
 📋 Guía de estilo:
-${visualGuide[format as keyof typeof visualGuide]}
+${styleGuide[safeFormat]}
 
 📝 Texto del usuario:
 ${hasInput ? resume.trim() : fallbackExample}
 `.trim();
 }
+
+
 
   try {
     const response = await openai.chat.completions.create({
