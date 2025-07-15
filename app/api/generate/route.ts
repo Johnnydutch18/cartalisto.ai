@@ -110,14 +110,14 @@ if (type === 'cv') {
   const hasInput = typeof resume === 'string' && resume.trim().length > 0;
 
   const fallbackExample = `
-Ejemplo de CV para editar directamente:
+<strong>Ejemplo de currículum para editar</strong>
 
 <strong>📌 Perfil Profesional</strong>
-<p>Profesional motivado con experiencia en atención al cliente y logística. Responsable, organizado y orientado a resultados. Busco aplicar mis habilidades en un entorno dinámico.</p>
+<p>Profesional motivado con experiencia en atención al cliente y logística. Responsable, organizado y orientado a resultados.</p>
 
 <strong>💼 Experiencia Laboral</strong>
 <ul>
-  <li><strong>Logística Express</strong> (2022–2023) – Gestión de almacén y preparación de pedidos.</li>
+  <li><strong>Logística Express</strong> (2022–2023) – Gestión de almacén y pedidos.</li>
   <li><strong>ElectroFast</strong> (2020–2021) – Atención al cliente y soporte técnico.</li>
 </ul>
 
@@ -130,7 +130,7 @@ Ejemplo de CV para editar directamente:
 <ul>
   <li>Comunicación efectiva</li>
   <li>Resolución de problemas</li>
-  <li>Gestión del tiempo</li>
+  <li>Trabajo en equipo</li>
 </ul>
 
 <strong>🗣️ Idiomas</strong>
@@ -140,47 +140,51 @@ Ejemplo de CV para editar directamente:
 </ul>
 `.trim();
 
-  let styleGuide = '';
-  switch (format) {
-    case 'Tradicional':
-      styleGuide = `
-- Usa solo <p> y <strong>
-- No uses listas, emojis, íconos, ni colores
-- Redacta cada sección como párrafos formales
-- Mantén un tono serio y sobrio`;
-      break;
-    case 'Moderno':
-      styleGuide = `
-- Usa <ul><li> para experiencia, educación, habilidades e idiomas
-- Usa <strong> para encabezados
-- Muestra los datos de contacto en la primera línea
-- Tono profesional y directo. Sin emojis.`;
-      break;
-    case 'Creativo':
-      styleGuide = `
-- Usa encabezados con emojis como 📌, 💼, 🎓, 🧠, 🗣️
-- Usa <ul><li> y frases expresivas
-- Agrega emojis relevantes dentro del contenido
-- Tono entusiasta, moderno, pero profesional`;
-      break;
-  }
+  const visualGuide = {
+    Tradicional: `
+🎨 Tono: Formal y sobrio.
+
+⛔️ No uses emojis, listas, ni colores.
+✅ Usa solo <p> y <strong> para los títulos.
+✅ Redacta las secciones como párrafos largos, uno tras otro.
+✅ Encabezados como "Perfil Profesional", "Experiencia Laboral", "Educación", etc. deben ir en <strong>.
+❗ El resultado debe parecer un currículum clásico y reservado, como de oficina administrativa tradicional.
+`,
+
+    Moderno: `
+🎨 Tono: Profesional y neutral.
+
+✅ Usa <ul><li> para "Experiencia Laboral", "Educación", "Habilidades", "Idiomas".
+✅ Encabezados con <strong>. NO emojis.
+✅ Datos personales en una línea: Nombre | Ciudad | Teléfono | Email.
+✅ Redacción clara, directa, estructurada.
+❗ Este formato debe parecer actual, usado para trabajos en empresas modernas.
+`,
+
+    Creativo: `
+🎨 Tono: Profesional pero expresivo y entusiasta.
+
+✅ Usa encabezados con emojis: 📌 Perfil, 💼 Experiencia, 🎓 Educación, 🧠 Habilidades, 🗣️ Idiomas.
+✅ Usa <ul><li> para contenido donde sea útil.
+✅ Agrega emojis de forma natural en los bullets o descripciones.
+✅ Encabezado con nombre y ciudad puede incluir emojis como 📍, ✉️, 📞.
+❗ El lenguaje puede ser más humano, dinámico y visual, ideal para perfiles creativos, startups o marketing.
+`,
+  };
 
   finalPrompt = `
 Actúa como un redactor profesional de currículums con 15 años de experiencia.
 
-🎯 Objetivo:
-Tu tarea es transformar el texto del usuario en un currículum profesional, claro y visualmente adecuado. Si el contenido es breve o mal estructurado, reorganízalo y mejóralo tú mismo. Si no se proporciona nada, responde con un ejemplo listo para editar.
+🎯 Tu tarea es transformar el siguiente texto en un currículum completo, profesional y visualmente coherente, según el formato indicado.
 
-📌 Instrucciones:
-- No uses nombres genéricos como Juan Martínez
-- No uses etiquetas como "Nombre:", "Teléfono:" o "[Campo]"
-- Devuelve solo HTML limpio usando <div>, <h1>, <h2>, <p>, <strong>, <ul>, <li>
-- Nunca uses bloques de código \`\`\` ni etiquetas <html> o <body>
-- El CV debe tener al menos 500 palabras si el usuario proporcionó contenido
+🛑 No uses nombres inventados como Juan Martínez. No uses "Nombre:", "Teléfono:", ni ningún marcador como [Campo].
 
-🖋️ Estilo solicitado: ${format}
-📋 Guía de estilo específica:
-${styleGuide}
+✅ Devuelve solo HTML limpio: <div>, <p>, <strong>, <ul>, <li>, etc.
+❌ No incluyas etiquetas <html>, <body> ni bloques de código como \`\`\`.
+
+📄 Formato solicitado: ${format}
+📋 Guía de estilo:
+${visualGuide[format as keyof typeof visualGuide]}
 
 📝 Texto del usuario:
 ${hasInput ? resume.trim() : fallbackExample}
