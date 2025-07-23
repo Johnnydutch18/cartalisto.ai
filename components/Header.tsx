@@ -60,7 +60,6 @@ export default function Header() {
     router.push("/");
   };
 
-  // ✅ Translate plan to Spanish
   const translatedPlan = {
     free: "Gratuito",
     gratuito: "Gratuito",
@@ -70,43 +69,42 @@ export default function Header() {
   }[plan?.toLowerCase() || ""] || "";
 
   return (
-    <header className="w-full px-4 py-4 border-b flex justify-between items-center relative z-50">
-      {/* Logo */}
-      <Link href="/" className="text-xl font-bold">
-        CartaListo
-      </Link>
+    <header className="bg-background border-b text-foreground px-4 py-4 w-full z-50 relative">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <Link href="/" className="text-xl font-bold text-primary">
+          CartaListo
+        </Link>
 
-      {/* Desktop Nav */}
-      <nav className="hidden md:flex gap-6 text-sm">
-        <Link href="/arregla-mi-curriculum" className="hover:underline">Currículum</Link>
-        <Link href="/carta-de-presentacion" className="hover:underline">Carta</Link>
-        <Link href="/planes" className="hover:underline">Planes</Link>
-        {session?.user ? (
-          <>
-            <Link href="/cuenta" className="hover:underline">Mi cuenta</Link>
-            <span>
-              {session.user.email}
-              {translatedPlan && <span className="text-xs text-gray-500"> ({translatedPlan})</span>}
-            </span>
-            <button onClick={handleLogout} className="text-blue-600 hover:underline">Cerrar sesión</button>
-          </>
-        ) : (
-          <>
-            <Link href="/login?mode=signin" className="text-blue-600 hover:underline">Iniciar sesión</Link>
-            <Link href="/login?mode=signup" className="text-blue-600 hover:underline">Crear cuenta</Link>
-          </>
-        )}
-      </nav>
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex gap-6 text-sm items-center">
+          <Link href="/arregla-mi-curriculum" className="hover:underline">Currículum</Link>
+          <Link href="/carta-de-presentacion" className="hover:underline">Carta</Link>
+          <Link href="/planes" className="hover:underline">Planes</Link>
+          {session?.user ? (
+            <>
+              <Link href="/cuenta" className="hover:underline">Mi cuenta</Link>
+              <span className="text-xs text-muted-foreground">
+                {session.user.email}
+                {translatedPlan && <> ({translatedPlan})</>}
+              </span>
+              <button onClick={handleLogout} className="text-blue-600 hover:underline">Cerrar sesión</button>
+            </>
+          ) : (
+            <>
+              <Link href="/login?mode=signin" className="text-blue-600 hover:underline">Iniciar sesión</Link>
+              <Link href="/login?mode=signup" className="text-blue-600 hover:underline">Crear cuenta</Link>
+            </>
+          )}
+        </nav>
 
-      {/* Mobile Hamburger */}
-      <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
-        <Menu className="w-6 h-6" />
-      </button>
+        {/* Mobile Menu Button */}
+        <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
 
       {/* Slide-In Mobile Menu */}
-      <div
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${menuOpen ? "translate-x-0" : "translate-x-full"}`}
-      >
+      <div className={`fixed top-0 right-0 h-full w-64 bg-background border-l shadow-lg transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="p-4 flex flex-col gap-4 text-sm">
           <button className="self-end" onClick={() => setMenuOpen(false)}>✕</button>
           <Link href="/arregla-mi-curriculum" onClick={() => setMenuOpen(false)} className="hover:underline">Currículum</Link>
@@ -115,17 +113,11 @@ export default function Header() {
           {session?.user ? (
             <>
               <Link href="/cuenta" onClick={() => setMenuOpen(false)} className="hover:underline">Mi cuenta</Link>
-              <span>
+              <span className="text-xs text-muted-foreground">
                 {session.user.email}
-                {translatedPlan && <span className="block text-xs text-gray-500">Plan: {translatedPlan}</span>}
+                {translatedPlan && <> ({translatedPlan})</>}
               </span>
-              <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  handleLogout();
-                }}
-                className="text-blue-600 hover:underline"
-              >
+              <button onClick={() => { setMenuOpen(false); handleLogout(); }} className="text-blue-600 hover:underline">
                 Cerrar sesión
               </button>
             </>
