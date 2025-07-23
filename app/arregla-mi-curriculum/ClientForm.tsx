@@ -171,10 +171,7 @@ ${resume}
 
   return (
     <main style={{ maxWidth: '650px', margin: '2rem auto', padding: '1rem' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Arregla Mi Currículum</h1>
-      <p style={{ color: '#555' }}>
-        Mejora tu CV para destacar en tus postulaciones laborales.
-      </p>
+
 
       <div style={{ marginTop: '1rem' }}>
         <label htmlFor="resume"><strong>Currículum actual:</strong></label>

@@ -1,11 +1,10 @@
 const { fontFamily } = require("tailwindcss/defaultTheme");
 
-/** @type {import("tailwindcss").Config} */
 module.exports = {
   content: [
-    './app/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './pages/**/*.{ts,tsx}', // Only needed if using Pages router
+    "./app/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./pages/**/*.{ts,tsx}", // if you use /pages
   ],
   theme: {
     extend: {
