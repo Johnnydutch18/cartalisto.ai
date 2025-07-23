@@ -19,11 +19,18 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  // ✅ Public page — access to AI form preview before requiring login
   return (
-    <>
-      <div className="text-red-600 font-bold text-xl">Tailwind is working</div>
-      <FixMyResume />
-    </>
+    <main className="min-h-screen bg-background text-foreground py-12 px-4">
+      <div className="max-w-2xl mx-auto space-y-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-2">Arregla Mi Currículum</h1>
+          <p className="text-muted-foreground">
+            Mejora tu CV para destacar en tus postulaciones laborales.
+          </p>
+        </div>
+
+        <FixMyResume />
+      </div>
+    </main>
   );
 }
