@@ -52,43 +52,43 @@ Actúa como un redactor profesional de currículums con 15+ años de experiencia
 - ❌ No uses etiquetas <html> o <body>, ni markdown
 - Completa o mejora el contenido débil con descripciones profesionales, realistas y relevantes
 - No incluyas frases de cierre como “Un cordial saludo”
+- Asegúrate de que el estilo visual y la estructura cambien notablemente según el formato solicitado
 
 📋 **Debe contener estas secciones**:
-1. <strong>Información de Contacto</strong> (editable): nombre, email, teléfono, dirección
-2. <strong>Perfil Profesional</strong>: resumen de experiencia, valores, y objetivos laborales
-3. <strong>Experiencia Laboral</strong>: puestos previos, funciones, logros
-4. <strong>Educación</strong>: estudios realizados
-5. <strong>Habilidades</strong>: blandas y técnicas relevantes
-6. <strong>Idiomas</strong>: nivel hablado/escrito
-7. <strong>Certificaciones, logros, voluntariado</strong> (si es relevante)
-8. <strong>Referencias</strong> o <strong>Intereses</strong> (si aplica)
+1. Información de Contacto: nombre, email, teléfono, dirección
+2. Perfil Profesional: resumen de experiencia, valores, y objetivos laborales
+3. Experiencia Laboral: puestos previos, funciones, logros
+4. Educación: estudios realizados
+5. Habilidades: blandas y técnicas relevantes
+6. Idiomas: nivel hablado/escrito
+7. Certificaciones, logros, voluntariado (si es relevante)
+8. Referencias o Intereses (si aplica)
 
-🎨 Formato visual según preferencia del usuario:
+🎨 Aplica estrictamente el siguiente formato según la selección del usuario:
 
-🪶 **Tradicional**:  
-- Estructura en párrafos (<p>)  
-- Estilo sobrio, sin listas ni íconos  
-- Encabezados en <strong>Texto</strong>  
-- Ideal para entornos formales  
+🪶 **Tradicional**:
+- Solo párrafos <p>, sin listas
+- Encabezados en <strong> o <p><strong>
+- Tono formal y clásico
+- Sin colores, sin emojis
+- Diseño sobrio, estructurado como texto corrido
 
-📋 **Moderno**:  
-- Diseño claro con <ul>/<li> para experiencia y habilidades  
-- Encabezados organizados con <h2>  
-- Más legibilidad y separación de secciones  
-- Ideal para trabajos profesionales actuales  
+📋 **Moderno**:
+- Usa <h2> para títulos de sección
+- Emplea <ul> y <li> para experiencias laborales y habilidades
+- Separación clara entre secciones
+- Enfoque visual limpio y escaneable
+- Ideal para empleos técnicos, administrativos o profesionales
 
-🎨 **Creativo**:  
-- Diseño expresivo con emojis en secciones  
-- Frases originales, estilo dinámico  
-- Visualmente atractivo pero profesional  
-- Ideal para marketing, diseño o atención al cliente  
+🎨 **Creativo**:
+- Encabezados con emojis al inicio (ej: 🎯 Perfil Profesional)
+- Usa <ul> / <li> con frases expresivas
+- Puede incluir un bloque destacado <blockquote> con un lema personal o frase inspiradora
+- Tono dinámico, visualmente atractivo
+- Ideal para diseño, marketing, atención al cliente
 
----
-
-💼 Tipo de empleo deseado (si se proporcionó): ${jobType || 'No especificado'}  
+💼 Tipo de empleo deseado (si se proporcionó): ${jobType || 'No especificado'}
 🎨 Formato elegido: ${format}
-
----
 
 📎 Datos personales (coloca al inicio del CV):
 <p><strong>Nombre:</strong> {Tu nombre}</p>
@@ -99,7 +99,6 @@ Actúa como un redactor profesional de currículums con 15+ años de experiencia
 📝 Información ingresada por el usuario:
 ${resume}
 `.trim();
-
 
   try {
     const response = await fetch('/api/generate', {
