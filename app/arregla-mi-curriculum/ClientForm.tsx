@@ -44,54 +44,58 @@ async function handleSubmit() {
 // Replace only this prompt section inside your handleSubmit() function:
 
 const prompt = `
-Actúa como un redactor profesional de currículums con más de 15 años de experiencia. Tu tarea es generar un **currículum profesional completo en español neutro**, bien estructurado, visualmente diferenciado y adaptado al formato solicitado, usando el siguiente input del usuario.
+Eres un redactor profesional de currículums con más de 15 años de experiencia. Tu tarea es generar un **currículum profesional completo en español neutro**, adaptado al formato seleccionado por el usuario, bien estructurado y visualmente claro, utilizando HTML limpio.
 
-📌 Instrucciones clave:
-- El CV debe tener al menos **500 palabras**
-- Usa solo HTML limpio: <div>, <p>, <ul>, <li>, <strong>, <h2>, <blockquote>, etc.
-- ❌ No uses <html>, <body>, ni markdown (como \`\`\`)
-- Completa o mejora contenido débil con descripciones profesionales, realistas y relevantes
-- Asegúrate de que el **contenido, estilo visual y estructura cambien visiblemente** según el formato seleccionado
-- No incluyas frases de cierre como “Un cordial saludo”
+📌 Reglas clave:
+- Mínimo **500 palabras**. Expande cada sección, especialmente si el contenido del usuario es escaso.
+- Usa solo etiquetas HTML como: <p>, <ul>, <li>, <h2>, <strong>, <blockquote>. No uses <html>, <body>, ni markdown.
+- Si el usuario no ha especificado datos como ciudad, email, teléfono, usa **{Tu ciudad}, {Tu email}**, etc.
+- No incluyas frases de cierre como “Un cordial saludo”.
+- Mejora el contenido del usuario: sé proactivo, profesional y realista. Escribe como si quisieras impresionar a un reclutador.
+- El estilo visual y el tono **deben cambiar claramente según el formato**.
 
-📋 **Debe contener estas secciones**:
+📋 El currículum debe contener estas secciones:
 1. Información de Contacto
-2. Perfil Profesional (resumen de experiencia, valores, objetivos)
-3. Experiencia Laboral (puestos, funciones, logros)
-4. Educación (estudios realizados)
-5. Habilidades (blandas y técnicas relevantes)
-6. Idiomas (nivel hablado y escrito)
-7. Certificaciones, logros, voluntariado (si aplica)
+2. Perfil Profesional
+3. Experiencia Laboral
+4. Educación
+5. Habilidades
+6. Idiomas
+7. Certificaciones, Logros y Voluntariado (si aplica)
 8. Referencias o Intereses (si aplica)
 
-🎨 Aplica estrictamente el siguiente formato según la selección del usuario:
+🎨 Formato seleccionado: ${format}
 
-🪶 **Tradicional**:
-- Solo usa <p> y <strong>, sin <ul>, <li> ni emojis
-- Encabezados como texto simple o <p><strong>Sección</strong></p>
-- Tono muy formal, sobrio y profesional
-- Enfoque conservador y texto corrido
-- No incluyas “Intereses” salvo que estén relacionados con el trabajo
+🪶 **Tradicional**
+- Usa solo <p> y <strong>. No uses listas.
+- Escribe en un tono clásico, formal y sobrio.
+- Las habilidades deben ir en párrafo completo, no en viñetas ni con comas sueltas.
+- No uses emojis ni frases personales.
+- Longitud ideal: 600–700 palabras.
 
-📋 **Moderno**:
-- Usa <h2> para cada sección
-- Usa <ul> y <li> en Experiencia y Habilidades
-- Incluye bullets medibles o logros (ej: "↑ 25% eficiencia")
-- Tono profesional, directo y escaneable
-- Diseño claro, visualmente limpio, ideal para entornos técnicos o administrativos
+📋 **Moderno**
+- Usa <h2> para separar secciones.
+- Usa <ul> y <li> para Experiencia y Habilidades.
+- Expande cada viñeta con detalles o resultados. Evita frases genéricas.
+- Incluye logros con métricas (ej. “↑25% eficiencia”).
+- Longitud ideal: 550–650 palabras.
+- Presentación limpia, profesional y escaneable.
 
-🎨 **Creativo**:
-- Encabezados con emojis (ej: 🎯 Perfil Profesional)
-- Usa <ul> y <li> con frases expresivas y creativas
-- Agrega un <blockquote> con una frase inspiradora o lema personal
-- Usa <strong> para resaltar palabras clave
-- Tono enérgico, profesional pero más humano y personal
-- Puedes incluir secciones opcionales como 🎨 Intereses, 🤝 Valores, etc.
+🎨 **Creativo**
+- Encabezados con emojis (ej: 🎯 Perfil Profesional).
+- Usa <ul> y <li> con frases expresivas, no solo descriptivas.
+- Empieza con una cita o lema profesional en un <blockquote>.
+- Usa <strong> dentro de párrafos para destacar ideas clave.
+- Tono personal, creativo, energético, pero sigue siendo profesional.
+- Añade secciones opcionales como “🎨 Valores que me definen” o “🌟 Mi Estilo de Trabajo”.
+- Ejemplo para habilidades: 
+  → ❌ Puntual  
+  → ✅ ⏱ Siempre llego antes de que el reloj marque
+- Longitud ideal: 550–700 palabras.
 
 💼 Tipo de empleo deseado: ${jobType || 'No especificado'}
-🎨 Formato elegido: ${format}
 
-📎 Datos personales:
+📎 Datos personales (al inicio del CV, usa placeholders si están vacíos):
 <p><strong>Nombre:</strong> {Tu nombre}</p>
 <p><strong>Email:</strong> {Tu email}</p>
 <p><strong>Teléfono:</strong> {Tu número}</p>
@@ -100,7 +104,6 @@ Actúa como un redactor profesional de currículums con más de 15 años de expe
 📝 Información ingresada por el usuario:
 ${resume}
 `.trim();
-
 
   try {
     const response = await fetch('/api/generate', {
