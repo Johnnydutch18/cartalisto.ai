@@ -44,75 +44,61 @@ async function handleSubmit() {
 // Replace only this prompt section inside your handleSubmit() function:
 
 const prompt = `
-Actúa como un redactor profesional de currículums con más de 15 años de experiencia ayudando a candidatos hispanohablantes a destacar. Tu tarea es generar un **currículum completo, profesional, bien estructurado y visualmente claro** a partir de la información proporcionada.
+Actúa como un redactor profesional de currículums con 15+ años de experiencia. Tu tarea es generar un **currículum profesional completo en español neutro**, bien estructurado, y visualmente claro, usando el siguiente input del usuario.
 
-📌 **Instrucciones clave**:
-- Escribe en **español neutro**
-- Devuelve solo HTML limpio usando <div>, <p>, <ul>, <li>, <strong>, <h2>, etc.
-- ❗️ No uses etiquetas <html>, <body>, ni markdown (```)
+📌 Instrucciones clave:
+- El CV debe tener al menos **500 palabras**
+- Usa solo HTML limpio: <div>, <p>, <ul>, <li>, <strong>, <h2>, etc.
+- ❌ No uses etiquetas <html> o <body>, ni markdown
+- Completa o mejora el contenido débil con descripciones profesionales, realistas y relevantes
+- No incluyas frases de cierre como “Un cordial saludo”
 
-📏 **Requisitos mínimos**:
-- El currículum debe tener **mínimo 500 palabras**
-- Si el usuario proporciona poca información, completa y mejora con contenido coherente y profesional
-- Incluye las secciones esenciales: Datos personales, Perfil profesional, Experiencia laboral, Educación, Habilidades, Idiomas, y otras relevantes
-- No incluyas cierres como “Un cordial saludo” o firmas
+📋 **Debe contener estas secciones**:
+1. <strong>Información de Contacto</strong> (editable): nombre, email, teléfono, dirección
+2. <strong>Perfil Profesional</strong>: resumen de experiencia, valores, y objetivos laborales
+3. <strong>Experiencia Laboral</strong>: puestos previos, funciones, logros
+4. <strong>Educación</strong>: estudios realizados
+5. <strong>Habilidades</strong>: blandas y técnicas relevantes
+6. <strong>Idiomas</strong>: nivel hablado/escrito
+7. <strong>Certificaciones, logros, voluntariado</strong> (si es relevante)
+8. <strong>Referencias</strong> o <strong>Intereses</strong> (si aplica)
 
-📎 **Datos personales obligatorios (editable):**
-<p><strong>Nombre:</strong> {Tu nombre}</p>
-<p><strong>Email:</strong> {Tu correo electrónico}</p>
-<p><strong>Teléfono:</strong> {Tu número de contacto}</p>
-<p><strong>Dirección:</strong> {Tu ciudad o país}</p>
+🎨 Formato visual según preferencia del usuario:
 
-🎨 **Aplica uno de los siguientes formatos visuales según la preferencia del usuario**:
+🪶 **Tradicional**:  
+- Estructura en párrafos (<p>)  
+- Estilo sobrio, sin listas ni íconos  
+- Encabezados en <strong>Texto</strong>  
+- Ideal para entornos formales  
 
----
+📋 **Moderno**:  
+- Diseño claro con <ul>/<li> para experiencia y habilidades  
+- Encabezados organizados con <h2>  
+- Más legibilidad y separación de secciones  
+- Ideal para trabajos profesionales actuales  
 
-🪶 Tradicional:
-- Estilo sobrio y clásico
-- Párrafos largos usando <p>, sin listas
-- Encabezados simples como <strong>Perfil Profesional</strong>, <strong>Educación</strong>
-- Ideal para trabajos administrativos o formales
-
-📄 Ejemplo:
-<strong>Perfil Profesional</strong>
-<p>Soy un profesional responsable con experiencia en logística...</p>
-
----
-
-📋 Moderno:
-- Diseño limpio con secciones bien separadas
-- Usa listas <ul> y <li> para experiencia, habilidades, etc.
-- Encabezados claros como <h2> o <strong>
-- Añade referencias al final
-- Ideal para entornos profesionales modernos
-
-📄 Ejemplo:
-<h2>Habilidades</h2>
-<ul>
-  <li>Gestión de inventarios</li>
-  <li>Trabajo en equipo</li>
-  <li>Comunicación efectiva</li>
-</ul>
-
----
-
-🎨 Creativo:
-- Estilo visualmente atractivo con emojis y estructura expresiva
-- Usa negritas, saltos de línea y frases originales
-- Ideal para marketing, diseño, atención al cliente
-
-📄 Ejemplo:
-<h2>🎯 Perfil Profesional</h2>
-<p>Apasionado por la creatividad con enfoque innovador...</p>
+🎨 **Creativo**:  
+- Diseño expresivo con emojis en secciones  
+- Frases originales, estilo dinámico  
+- Visualmente atractivo pero profesional  
+- Ideal para marketing, diseño o atención al cliente  
 
 ---
 
 💼 Tipo de empleo deseado (si se proporcionó): ${jobType || 'No especificado'}  
-🧩 Formato preferido: ${format}  
-📝 Información del usuario:  
+🎨 Formato elegido: ${format}
+
+---
+
+📎 Datos personales (coloca al inicio del CV):
+<p><strong>Nombre:</strong> {Tu nombre}</p>
+<p><strong>Email:</strong> {Tu email}</p>
+<p><strong>Teléfono:</strong> {Tu número}</p>
+<p><strong>Dirección:</strong> {Tu ciudad o país}</p>
+
+📝 Información ingresada por el usuario:
 ${resume}
 `.trim();
-
 
 
   try {
