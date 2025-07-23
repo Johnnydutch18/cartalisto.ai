@@ -44,55 +44,54 @@ async function handleSubmit() {
 // Replace only this prompt section inside your handleSubmit() function:
 
 const prompt = `
-Actúa como un redactor profesional de currículums con 15+ años de experiencia. Tu tarea es generar un **currículum profesional completo en español neutro**, bien estructurado, y visualmente claro, usando el siguiente input del usuario.
+Actúa como un redactor profesional de currículums con más de 15 años de experiencia. Tu tarea es generar un **currículum profesional completo en español neutro**, bien estructurado, visualmente diferenciado y adaptado al formato solicitado, usando el siguiente input del usuario.
 
 📌 Instrucciones clave:
-- El CV debe tener al menos **500 palabras** — revisa y amplía cada sección si es necesario
+- El CV debe tener al menos **500 palabras**
 - Usa solo HTML limpio: <div>, <p>, <ul>, <li>, <strong>, <h2>, <blockquote>, etc.
-- ❌ No uses etiquetas <html> o <body>, ni markdown
-- Completa o mejora el contenido débil con descripciones profesionales, realistas y relevantes
+- ❌ No uses <html>, <body>, ni markdown (como \`\`\`)
+- Completa o mejora contenido débil con descripciones profesionales, realistas y relevantes
+- Asegúrate de que el **contenido, estilo visual y estructura cambien visiblemente** según el formato seleccionado
 - No incluyas frases de cierre como “Un cordial saludo”
-- Asegúrate de que el estilo visual y la estructura cambien notablemente según el formato solicitado
 
 📋 **Debe contener estas secciones**:
-1. Información de Contacto: nombre, email, teléfono, dirección
-2. Perfil Profesional: resumen de experiencia, valores, y objetivos laborales
-3. Experiencia Laboral: puestos previos, funciones, logros
-4. Educación: estudios realizados
-5. Habilidades: blandas y técnicas relevantes
-6. Idiomas: nivel hablado/escrito
-7. Certificaciones, logros, voluntariado (si es relevante)
+1. Información de Contacto
+2. Perfil Profesional (resumen de experiencia, valores, objetivos)
+3. Experiencia Laboral (puestos, funciones, logros)
+4. Educación (estudios realizados)
+5. Habilidades (blandas y técnicas relevantes)
+6. Idiomas (nivel hablado y escrito)
+7. Certificaciones, logros, voluntariado (si aplica)
 8. Referencias o Intereses (si aplica)
 
 🎨 Aplica estrictamente el siguiente formato según la selección del usuario:
 
 🪶 **Tradicional**:
-- Solo párrafos <p>, sin listas
-- Encabezados en <strong> o <p><strong>
-- Tono formal y clásico
-- Sin colores, sin emojis
-- Diseño sobrio, estructurado como texto corrido
+- Solo usa <p> y <strong>, sin <ul>, <li> ni emojis
+- Encabezados como texto simple o <p><strong>Sección</strong></p>
+- Tono muy formal, sobrio y profesional
+- Enfoque conservador y texto corrido
+- No incluyas “Intereses” salvo que estén relacionados con el trabajo
 
 📋 **Moderno**:
-- Usa <h2> para títulos de sección
-- Emplea <ul> y <li> para experiencias laborales y habilidades
-- Agrega viñetas detalladas y visuales para logros y funciones
-- Separación clara entre secciones
-- Enfoque visual limpio y escaneable
-- Ideal para empleos técnicos, administrativos o profesionales
+- Usa <h2> para cada sección
+- Usa <ul> y <li> en Experiencia y Habilidades
+- Incluye bullets medibles o logros (ej: "↑ 25% eficiencia")
+- Tono profesional, directo y escaneable
+- Diseño claro, visualmente limpio, ideal para entornos técnicos o administrativos
 
 🎨 **Creativo**:
-- Encabezados con emojis al inicio (ej: 🎯 Perfil Profesional)
-- Usa <ul> / <li> con frases expresivas y dinámicas
-- Incluye un bloque destacado usando <blockquote> con un lema personal o frase inspiradora
-- Usa <strong> para resaltar frases clave dentro de párrafos
-- Tono enérgico, visualmente atractivo, más informal pero profesional
-- Ideal para diseño, marketing, atención al cliente
+- Encabezados con emojis (ej: 🎯 Perfil Profesional)
+- Usa <ul> y <li> con frases expresivas y creativas
+- Agrega un <blockquote> con una frase inspiradora o lema personal
+- Usa <strong> para resaltar palabras clave
+- Tono enérgico, profesional pero más humano y personal
+- Puedes incluir secciones opcionales como 🎨 Intereses, 🤝 Valores, etc.
 
-💼 Tipo de empleo deseado (si se proporcionó): ${jobType || 'No especificado'}
+💼 Tipo de empleo deseado: ${jobType || 'No especificado'}
 🎨 Formato elegido: ${format}
 
-📎 Datos personales (coloca al inicio del CV):
+📎 Datos personales:
 <p><strong>Nombre:</strong> {Tu nombre}</p>
 <p><strong>Email:</strong> {Tu email}</p>
 <p><strong>Teléfono:</strong> {Tu número}</p>
