@@ -47,8 +47,8 @@ const prompt = `
 Actúa como un redactor profesional de currículums con 15+ años de experiencia. Tu tarea es generar un **currículum profesional completo en español neutro**, bien estructurado, y visualmente claro, usando el siguiente input del usuario.
 
 📌 Instrucciones clave:
-- El CV debe tener al menos **500 palabras**
-- Usa solo HTML limpio: <div>, <p>, <ul>, <li>, <strong>, <h2>, etc.
+- El CV debe tener al menos **500 palabras** — revisa y amplía cada sección si es necesario
+- Usa solo HTML limpio: <div>, <p>, <ul>, <li>, <strong>, <h2>, <blockquote>, etc.
 - ❌ No uses etiquetas <html> o <body>, ni markdown
 - Completa o mejora el contenido débil con descripciones profesionales, realistas y relevantes
 - No incluyas frases de cierre como “Un cordial saludo”
@@ -76,15 +76,17 @@ Actúa como un redactor profesional de currículums con 15+ años de experiencia
 📋 **Moderno**:
 - Usa <h2> para títulos de sección
 - Emplea <ul> y <li> para experiencias laborales y habilidades
+- Agrega viñetas detalladas y visuales para logros y funciones
 - Separación clara entre secciones
 - Enfoque visual limpio y escaneable
 - Ideal para empleos técnicos, administrativos o profesionales
 
 🎨 **Creativo**:
 - Encabezados con emojis al inicio (ej: 🎯 Perfil Profesional)
-- Usa <ul> / <li> con frases expresivas
-- Puede incluir un bloque destacado <blockquote> con un lema personal o frase inspiradora
-- Tono dinámico, visualmente atractivo
+- Usa <ul> / <li> con frases expresivas y dinámicas
+- Incluye un bloque destacado usando <blockquote> con un lema personal o frase inspiradora
+- Usa <strong> para resaltar frases clave dentro de párrafos
+- Tono enérgico, visualmente atractivo, más informal pero profesional
 - Ideal para diseño, marketing, atención al cliente
 
 💼 Tipo de empleo deseado (si se proporcionó): ${jobType || 'No especificado'}
@@ -99,6 +101,7 @@ Actúa como un redactor profesional de currículums con 15+ años de experiencia
 📝 Información ingresada por el usuario:
 ${resume}
 `.trim();
+
 
   try {
     const response = await fetch('/api/generate', {
