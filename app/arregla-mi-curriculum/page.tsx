@@ -20,5 +20,10 @@ export const metadata: Metadata = {
 
 export default function Page() {
   // ✅ Public page — access to AI form preview before requiring login
-  return <FixMyResume />;
+  return (
+    <>
+      <div className="text-red-600 font-bold text-xl">Tailwind is working</div>
+      <FixMyResume />
+    </>
+  );
 }
