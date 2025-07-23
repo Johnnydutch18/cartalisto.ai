@@ -44,67 +44,75 @@ async function handleSubmit() {
 // Replace only this prompt section inside your handleSubmit() function:
 
 const prompt = `
-Actúa como un experto en redacción de currículums en español neutro. Tu tarea es transformar la información del usuario en un currículum profesional, claro y completo, usando el formato especificado.
+Actúa como un redactor profesional de currículums con más de 15 años de experiencia ayudando a candidatos hispanohablantes a destacar. Tu tarea es generar un **currículum completo, profesional, bien estructurado y visualmente claro** a partir de la información proporcionada.
 
-🎯 Tu objetivo:
-- Mejorar el lenguaje y presentación
-- Añadir secciones si faltan (perfil, experiencia, educación, habilidades, idiomas)
-- Extender entradas escasas o poco detalladas
-- Asegurar que el contenido sea útil y convincente para empleadores
-- Usar la estructura y estilo correcto según el formato
+📌 **Instrucciones clave**:
+- Escribe en **español neutro**
+- Devuelve solo HTML limpio usando <div>, <p>, <ul>, <li>, <strong>, <h2>, etc.
+- ❗️ No uses etiquetas <html>, <body>, ni markdown (```)
 
-💼 Tipo de empleo: ${jobType || 'No especificado'}
-🎨 Formato elegido: ${format}
+📏 **Requisitos mínimos**:
+- El currículum debe tener **mínimo 500 palabras**
+- Si el usuario proporciona poca información, completa y mejora con contenido coherente y profesional
+- Incluye las secciones esenciales: Datos personales, Perfil profesional, Experiencia laboral, Educación, Habilidades, Idiomas, y otras relevantes
+- No incluyas cierres como “Un cordial saludo” o firmas
 
-📝 Información del usuario (corrige, completa y mejora):
-${resume || 'Sin información proporcionada. Usa ejemplos genéricos si es necesario.'}
+📎 **Datos personales obligatorios (editable):**
+<p><strong>Nombre:</strong> {Tu nombre}</p>
+<p><strong>Email:</strong> {Tu correo electrónico}</p>
+<p><strong>Teléfono:</strong> {Tu número de contacto}</p>
+<p><strong>Dirección:</strong> {Tu ciudad o país}</p>
 
----
-
-🪶 FORMATO: TRADICIONAL
-- Estilo sobrio, solo texto
-- Secciones: Perfil Profesional, Experiencia, Educación, Habilidades, Idiomas
-- Usa <p> por párrafo. No uses listas ni íconos.
-- Ideal para trabajos administrativos o clásicos
-
-📄 Ejemplo:
-<p><strong>Perfil Profesional</strong></p>
-<p>Soy un profesional con amplia experiencia en logística...</p>
+🎨 **Aplica uno de los siguientes formatos visuales según la preferencia del usuario**:
 
 ---
 
-📋 FORMATO: MODERNO
-- Encabezado inicial con nombre y datos de contacto
-- Usa listas <ul><li> para logros, tareas y habilidades
-- Secciones claras: Experiencia, Educación, Habilidades, Idiomas
-- Estructura profesional y legible
+🪶 Tradicional:
+- Estilo sobrio y clásico
+- Párrafos largos usando <p>, sin listas
+- Encabezados simples como <strong>Perfil Profesional</strong>, <strong>Educación</strong>
+- Ideal para trabajos administrativos o formales
 
 📄 Ejemplo:
+<strong>Perfil Profesional</strong>
+<p>Soy un profesional responsable con experiencia en logística...</p>
+
+---
+
+📋 Moderno:
+- Diseño limpio con secciones bien separadas
+- Usa listas <ul> y <li> para experiencia, habilidades, etc.
+- Encabezados claros como <h2> o <strong>
+- Añade referencias al final
+- Ideal para entornos profesionales modernos
+
+📄 Ejemplo:
+<h2>Habilidades</h2>
 <ul>
-  <li><strong>Mozo de almacén</strong> — Empresa XYZ (2021–2023)</li>
-  <li>Gestión de inventario, pedidos, coordinación de equipo</li>
+  <li>Gestión de inventarios</li>
+  <li>Trabajo en equipo</li>
+  <li>Comunicación efectiva</li>
 </ul>
 
 ---
 
-🎨 FORMATO: CREATIVO
-- Usa emojis sutiles (🎯, 💼, 🎓, 💡) para secciones
-- Usa formato expresivo: frases originales, lenguaje visual
-- Secciones estilizadas y llamativas
-- Ideal para diseño, marketing, atención al cliente
+🎨 Creativo:
+- Estilo visualmente atractivo con emojis y estructura expresiva
+- Usa negritas, saltos de línea y frases originales
+- Ideal para marketing, diseño, atención al cliente
 
 📄 Ejemplo:
 <h2>🎯 Perfil Profesional</h2>
-<p>Creativo apasionado por el diseño con enfoque innovador y atención al detalle...</p>
+<p>Apasionado por la creatividad con enfoque innovador...</p>
 
 ---
 
-❗️ Importante:
-- Si falta información clave, crea ejemplos útiles con marcadores como {Tu nombre}, {Tu institución}, etc.
-- El contenido debe tener al menos 500 palabras para ser útil, incluso si el usuario proporciona poca información.
-- Devuelve SOLO HTML limpio (<p>, <ul>, <li>, <strong>, <h2>) — sin Markdown ni etiquetas HTML generales
-
+💼 Tipo de empleo deseado (si se proporcionó): ${jobType || 'No especificado'}  
+🧩 Formato preferido: ${format}  
+📝 Información del usuario:  
+${resume}
 `.trim();
+
 
 
   try {
