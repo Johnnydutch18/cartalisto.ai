@@ -16,6 +16,7 @@ export default function VerContent() {
   const [loading, setLoading] = useState(true);
   const [output, setOutput] = useState<string | null>(null);
   const [type, setType] = useState<"cv" | "letter" | null>(null);
+  const [format, setFormat] = useState<string | null>(null);
   const [createdAt, setCreatedAt] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export default function VerContent() {
 
       const { data: generation } = await supabase
         .from("generations")
-        .select("output, type, created_at")
+.select("output, type, format, created_at")
         .eq("id", id)
         .eq("user_id", session.user.id)
         .single();
@@ -45,6 +46,7 @@ export default function VerContent() {
         setOutput(generation.output);
         setType(generation.type);
         setCreatedAt(generation.created_at);
+        setFormat(generation.format);
       }
 
       setLoading(false);
@@ -96,12 +98,13 @@ export default function VerContent() {
           </div>
 
           <div
-            id="pdf-content"
-            className="whitespace-pre-wrap bg-gray-100 p-4 rounded-lg leading-relaxed text-sm"
-            style={{ fontFamily: "inherit" }}
-          >
-            {output}
-          </div>
+  id="pdf-content"
+  className={`whitespace-pre-wrap bg-gray-100 p-4 rounded-lg leading-relaxed text-sm ${format}`}
+  style={{ fontFamily: "inherit" }}
+>
+  {output}
+</div>
+
         </>
       )}
     </div>
