@@ -44,66 +44,67 @@ async function handleSubmit() {
 // Replace only this prompt section inside your handleSubmit() function:
 
 const prompt = `
-Actúa como un redactor profesional de currículums con 15 años de experiencia en el mercado hispanohablante. Tu tarea es generar un **currículum completo, profesional y visualmente claro** para el usuario, basado en su información. El contenido debe estar escrito en **español neutro**, y listo para copiar, editar o exportar a PDF.
+Actúa como un experto en redacción de currículums en español neutro. Tu tarea es transformar la información del usuario en un currículum profesional, claro y completo, usando el formato especificado.
 
-🔎 Tu trabajo incluye:
-- Corregir y mejorar el lenguaje profesionalmente
-- Expandir información escasa con contenido coherente
-- Generar secciones clave si faltan (perfil, experiencia, educación, habilidades)
-- Evitar frases de cierre como “Un cordial saludo” o firmas
+🎯 Tu objetivo:
+- Mejorar el lenguaje y presentación
+- Añadir secciones si faltan (perfil, experiencia, educación, habilidades, idiomas)
+- Extender entradas escasas o poco detalladas
+- Asegurar que el contenido sea útil y convincente para empleadores
+- Usar la estructura y estilo correcto según el formato
 
-🧠 Elige la estructura adecuada según el formato seleccionado:
+💼 Tipo de empleo: ${jobType || 'No especificado'}
+🎨 Formato elegido: ${format}
+
+📝 Información del usuario (corrige, completa y mejora):
+${resume || 'Sin información proporcionada. Usa ejemplos genéricos si es necesario.'}
 
 ---
 
-🪶 **Tradicional**
-- Estilo clásico, bloques de texto
-- Encabezados simples: <strong>Perfil Profesional</strong>, etc.
-- No usar listas ni íconos
-- Usa <p> para cada párrafo
-- Ideal para sectores conservadores o administrativos
+🪶 FORMATO: TRADICIONAL
+- Estilo sobrio, solo texto
+- Secciones: Perfil Profesional, Experiencia, Educación, Habilidades, Idiomas
+- Usa <p> por párrafo. No uses listas ni íconos.
+- Ideal para trabajos administrativos o clásicos
 
 📄 Ejemplo:
-<strong>Perfil Profesional</strong>
-<p>Soy un profesional responsable con experiencia como mozo de almacén...</p>
+<p><strong>Perfil Profesional</strong></p>
+<p>Soy un profesional con amplia experiencia en logística...</p>
 
 ---
 
-📋 **Moderno**
-- Diseño estructurado con listas <ul> y <li>
-- Muestra datos personales al inicio
-- Usa subtítulos claros: Educación, Habilidades, Idiomas, etc.
-- Mejora legibilidad y organización
+📋 FORMATO: MODERNO
+- Encabezado inicial con nombre y datos de contacto
+- Usa listas <ul><li> para logros, tareas y habilidades
+- Secciones claras: Experiencia, Educación, Habilidades, Idiomas
+- Estructura profesional y legible
 
 📄 Ejemplo:
 <ul>
   <li><strong>Mozo de almacén</strong> — Empresa XYZ (2021–2023)</li>
-  <li>Gestión de inventario, preparación de pedidos, trabajo en equipo</li>
+  <li>Gestión de inventario, pedidos, coordinación de equipo</li>
 </ul>
 
 ---
 
-🎨 **Creativo**
-- Usa emojis sutiles para secciones (🎯 Perfil, 💼 Experiencia, 🎓 Educación)
-- Estilo expresivo pero profesional
-- Puedes usar negritas, saltos de línea, y frases más originales
-- Ideal para marketing, diseño, atención al cliente
+🎨 FORMATO: CREATIVO
+- Usa emojis sutiles (🎯, 💼, 🎓, 💡) para secciones
+- Usa formato expresivo: frases originales, lenguaje visual
+- Secciones estilizadas y llamativas
+- Ideal para diseño, marketing, atención al cliente
 
 📄 Ejemplo:
 <h2>🎯 Perfil Profesional</h2>
-<p>Apasionado por el diseño gráfico con enfoque creativo e innovador...</p>
+<p>Creativo apasionado por el diseño con enfoque innovador y atención al detalle...</p>
 
 ---
 
-💼 Tipo de empleo (si proporcionado): ${jobType || 'No especificado'}
-🎨 Formato elegido: ${format}
+❗️ Importante:
+- Si falta información clave, crea ejemplos útiles con marcadores como {Tu nombre}, {Tu institución}, etc.
+- El contenido debe tener al menos 500 palabras para ser útil, incluso si el usuario proporciona poca información.
+- Devuelve SOLO HTML limpio (<p>, <ul>, <li>, <strong>, <h2>) — sin Markdown ni etiquetas HTML generales
 
-📝 Información del usuario:
-${resume}
-
-Devuelve solo HTML limpio usando <div>, <p>, <ul>, <li>, <strong>, etc. ❗️No uses etiquetas <html> o <body> ni bloques Markdown.
 `.trim();
-
 
 
   try {
