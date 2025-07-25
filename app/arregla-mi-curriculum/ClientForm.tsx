@@ -141,16 +141,10 @@ ${resume}
   setLoading(false);
 }
 
-function sanitizeHtmlOutput(rawHtml: string): string {
-  return rawHtml
-    .replace(/oklch\([^)]+\)/gi, 'black')                           // Remove oklch() colors
-    .replace(/color:\s*var\([^)]+\)/gi, 'color:black')             // Kill Tailwind var colors
-    .replace(/background(?:-color)?:\s*var\([^)]+\)/gi, 'background:white') // Kill background vars
-    .replace(/--[\w-]+:\s*[^;]+;/gi, '')                            // Remove any CSS custom vars
-    .replace(/class="[^"]*"/gi, '')                                 // Remove Tailwind classes
-}
+// TypeScript-compatible PDF download functions
+// Replace your existing downloadPDF function with this
 
-async function downloadPDF() {
+async function downloadPDF(): Promise<void> {
   console.log("⏬ downloadPDF triggered");
 
   const element = document.getElementById('pdf-content');
@@ -159,11 +153,91 @@ async function downloadPDF() {
     return;
   }
 
-  // 💥 Clone and clean the output HTML so html2pdf doesn't crash
-  const clone = element.cloneNode(true) as HTMLElement;
-  clone.innerHTML = sanitizeHtmlOutput(clone.innerHTML);
-
   try {
+    // Create completely isolated container
+    const isolatedContainer = document.createElement('div');
+    isolatedContainer.style.cssText = `
+      position: fixed;
+      top: -9999px;
+      left: -9999px;
+      width: 8.5in;
+      min-height: 11in;
+      background: white;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+      color: #000000;
+      padding: 0.5in;
+      box-sizing: border-box;
+      z-index: -1000;
+    `;
+
+    // Get clean HTML content and strip all problematic attributes
+    let cleanHTML = element.innerHTML
+      .replace(/oklch\([^)]+\)/gi, 'black')
+      .replace(/color:\s*var\([^)]+\)/gi, 'color:black')
+      .replace(/background(?:-color)?:\s*var\([^)]+\)/gi, 'background:white')
+      .replace(/--[\w-]+:\s*[^;]+;/gi, '')
+      .replace(/class="[^"]*"/gi, '')
+      .replace(/style="[^"]*"/gi, '');
+
+    isolatedContainer.innerHTML = cleanHTML;
+
+    // Apply safe styling to all elements
+    function applySafeStyling(container: HTMLElement): void {
+      const elements = container.querySelectorAll('*');
+      elements.forEach((el: Element) => {
+        const htmlEl = el as HTMLElement;
+        const tagName = htmlEl.tagName.toLowerCase();
+        
+        // Reset everything first
+        htmlEl.style.cssText = 'color: #000000; background: transparent;';
+        
+        // Apply basic styling based on tag
+        switch (tagName) {
+          case 'h1':
+            htmlEl.style.cssText += 'font-size: 24px; font-weight: bold; margin: 0 0 16px 0;';
+            break;
+          case 'h2':
+            htmlEl.style.cssText += 'font-size: 20px; font-weight: bold; margin: 0 0 12px 0;';
+            break;
+          case 'h3':
+            htmlEl.style.cssText += 'font-size: 18px; font-weight: bold; margin: 0 0 10px 0;';
+            break;
+          case 'h4':
+            htmlEl.style.cssText += 'font-size: 16px; font-weight: bold; margin: 0 0 8px 0;';
+            break;
+          case 'p':
+            htmlEl.style.cssText += 'margin: 0 0 12px 0;';
+            break;
+          case 'ul':
+          case 'ol':
+            htmlEl.style.cssText += 'margin: 0 0 12px 20px; padding: 0;';
+            break;
+          case 'li':
+            htmlEl.style.cssText += 'margin: 0 0 4px 0;';
+            break;
+          case 'strong':
+          case 'b':
+            htmlEl.style.cssText += 'font-weight: bold;';
+            break;
+          case 'em':
+          case 'i':
+            htmlEl.style.cssText += 'font-style: italic;';
+            break;
+          case 'section':
+            htmlEl.style.cssText += 'margin: 0 0 20px 0;';
+            break;
+        }
+      });
+    }
+
+    applySafeStyling(isolatedContainer);
+
+    // Add to DOM temporarily
+    document.body.appendChild(isolatedContainer);
+
+    // Import html2pdf with proper typing
     const html2pdfModule = await import('html2pdf.js');
     const html2pdf = html2pdfModule.default;
 
@@ -171,14 +245,137 @@ async function downloadPDF() {
       margin: 0.5,
       filename: 'curriculum-mejorado.pdf',
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
+      html2canvas: { 
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        letterRendering: true
+      },
       jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
     };
 
-    await html2pdf().set(opt).from(clone).save();
+    await html2pdf().set(opt).from(isolatedContainer).save();
+    console.log("✅ PDF generated successfully!");
+
   } catch (err: any) {
     console.error("❌ Error generating PDF:", err);
     alert("❌ Error al generar el PDF. Intenta de nuevo.");
+  } finally {
+    // Clean up
+    const containers = document.querySelectorAll('div[style*="position: fixed"][style*="top: -9999px"]');
+    containers.forEach((container: Element) => {
+      if (container.parentNode) {
+        container.parentNode.removeChild(container);
+      }
+    });
+  }
+}
+
+// Alternative safer method using iframe (if the above doesn't work)
+async function downloadPDFSafer(): Promise<void> {
+  console.log("⏬ downloadPDFSafer triggered");
+
+  const element = document.getElementById('pdf-content');
+  if (!element) {
+    console.error("❌ Element with id 'pdf-content' not found.");
+    return;
+  }
+
+  try {
+    // Create iframe for complete isolation
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = `
+      position: fixed;
+      top: -9999px;
+      left: -9999px;
+      width: 8.5in;
+      height: 11in;
+      border: none;
+      z-index: -1000;
+    `;
+    
+    document.body.appendChild(iframe);
+    
+    await new Promise<void>((resolve) => {
+      iframe.onload = () => resolve();
+      iframe.src = 'about:blank';
+    });
+    
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) {
+      throw new Error('Could not access iframe document');
+    }
+    
+    // Clean HTML content
+    let cleanContent = element.innerHTML
+      .replace(/oklch\([^)]+\)/gi, 'black')
+      .replace(/color:\s*var\([^)]+\)/gi, 'color:black')
+      .replace(/background(?:-color)?:\s*var\([^)]+\)/gi, 'background:white')
+      .replace(/--[\w-]+:\s*[^;]+;/gi, '')
+      .replace(/class="[^"]*"/gi, '')
+      .replace(/style="[^"]*"/gi, '');
+    
+    const cleanHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; color: #000000 !important; }
+          body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.4; color: #000000; background: white; padding: 0.5in; }
+          h1 { font-size: 24px; font-weight: bold; margin: 0 0 16px 0; }
+          h2 { font-size: 20px; font-weight: bold; margin: 0 0 12px 0; }
+          h3 { font-size: 18px; font-weight: bold; margin: 0 0 10px 0; }
+          h4 { font-size: 16px; font-weight: bold; margin: 0 0 8px 0; }
+          p { margin: 0 0 12px 0; }
+          ul, ol { margin: 0 0 12px 20px; }
+          li { margin: 0 0 4px 0; }
+          strong, b { font-weight: bold; }
+          em, i { font-style: italic; }
+          section { margin: 0 0 20px 0; }
+        </style>
+      </head>
+      <body>${cleanContent}</body>
+      </html>
+    `;
+    
+    iframeDoc.open();
+    iframeDoc.write(cleanHTML);
+    iframeDoc.close();
+    
+    await new Promise<void>((resolve) => setTimeout(resolve, 500));
+    
+    const html2pdfModule = await import('html2pdf.js');
+    const html2pdf = html2pdfModule.default;
+    
+    const opt = {
+      margin: 0.5,
+      filename: 'curriculum-mejorado.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { 
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false
+      },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+    };
+    
+    await html2pdf().set(opt).from(iframeDoc.body).save();
+    console.log("✅ PDF generated successfully with iframe method!");
+    
+  } catch (err: any) {
+    console.error("❌ Error generating PDF:", err);
+    alert("❌ Error al generar el PDF. Intenta de nuevo.");
+  } finally {
+    // Clean up iframe
+    const iframes = document.querySelectorAll('iframe[style*="position: fixed"][style*="top: -9999px"]');
+    iframes.forEach((iframe: Element) => {
+      if (iframe.parentNode) {
+        iframe.parentNode.removeChild(iframe);
+      }
+    });
   }
 }
 
