@@ -151,14 +151,12 @@ async function downloadPDFNuclear() {
   const html2pdfModule = await import("html2pdf.js");
   const html2pdf = html2pdfModule.default;
 
-  // Create new window (isolated from your CSS)
   const newWindow = window.open("", "_blank", "width=800,height=600");
   if (!newWindow) {
     alert("❌ Unable to open new window for PDF export.");
     return;
   }
 
-  // Inject the raw HTML into it
   newWindow.document.write(`
     <html>
       <head>
@@ -181,7 +179,6 @@ async function downloadPDFNuclear() {
   `);
   newWindow.document.close();
 
-  // Wait until content is fully loaded
   newWindow.onload = async () => {
     try {
       await html2pdf()
@@ -202,6 +199,7 @@ async function downloadPDFNuclear() {
     }
   };
 }
+
 
 
 // Alternative safer method using iframe (if the above doesn't work)
@@ -407,41 +405,48 @@ return (
     </div>
 
     {output && (
-      <div style={{ marginTop: '2rem' }}>
-        <div
-  id="pdf-content"
-  className="pdf-export"
-  contentEditable={true}
-  suppressContentEditableWarning={true}
-  dangerouslySetInnerHTML={{ __html: output }}
-  lang="es"
-  style={{
-    color: 'black',
-    backgroundColor: 'white',
-    fontFamily: 'Arial, sans-serif',
-  }}
-/>
+  <div style={{ marginTop: '2rem' }}>
+    <div
+      id="pdf-content"
+      dangerouslySetInnerHTML={{ __html: output }}
+      contentEditable={true}
+      suppressContentEditableWarning={true}
+      lang="es"
+    />
 
+    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+      <button
+        onClick={downloadPDFNuclear} // 👈 New, safe method
+        style={{
+          flex: 1,
+          padding: '0.5rem',
+          backgroundColor: '#333',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+        }}
+      >
+        Descargar PDF
+      </button>
+      <button
+        onClick={handleSubmit}
+        style={{
+          flex: 1,
+          padding: '0.5rem',
+          backgroundColor: '#0070f3',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+        }}
+      >
+        Regenerar
+      </button>
+    </div>
+  </div>
+)}
 
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-        
-          <button
-            onClick={handleSubmit}
-            style={{
-              flex: 1,
-              padding: '0.5rem',
-              backgroundColor: '#0070f3',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Regenerar
-          </button>
-        </div>
-      </div>
-    )}
 
     {showPopup && (
       <div
