@@ -142,27 +142,30 @@ ${resume}
 }
 
 async function downloadPDF() {
+  console.log("⏬ downloadPDF triggered");
+
+  const element = document.getElementById('pdf-content');
+  if (!element) {
+    console.error("❌ Element with id 'pdf-content' not found.");
+    return;
+  }
+
+  // ✅ Sanitize ALL inline styles (avoid Tailwind oklch values)
+  const safeStyles = {
+    color: 'black',
+    backgroundColor: 'white',
+    fontFamily: 'Arial, sans-serif',
+  };
+
+  // ✅ Apply to parent
+  Object.assign(element.style, safeStyles);
+
+  // ✅ Apply to all children
+  element.querySelectorAll('*').forEach((child) => {
+    Object.assign((child as HTMLElement).style, safeStyles);
+  });
+
   try {
-    console.log("⏬ downloadPDF triggered");
-
-    const element = document.getElementById('pdf-content');
-    if (!element) {
-      console.error("❌ Element with id 'pdf-content' not found.");
-      return;
-    }
-
-    // Force compatible style
-   element.style.color = 'black';
-element.style.backgroundColor = 'white';
-element.style.fontFamily = 'Arial, sans-serif';
-
-// ✅ Add this to override modern color formats like oklch
-element.querySelectorAll('*').forEach((el) => {
-  (el as HTMLElement).style.color = 'black';
-  (el as HTMLElement).style.backgroundColor = 'white';
-});
-
-
     const html2pdfModule = await import('html2pdf.js');
     const html2pdf = html2pdfModule.default;
 
@@ -180,6 +183,7 @@ element.querySelectorAll('*').forEach((el) => {
     alert("❌ Error al generar el PDF. Intenta de nuevo.");
   }
 }
+
 
 function resetForm() {
   setResume('');
