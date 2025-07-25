@@ -141,6 +141,15 @@ ${resume}
   setLoading(false);
 }
 
+// ✅ Define this FIRST
+function sanitizeHtmlOutput(rawHtml: string): string {
+  return rawHtml
+    .replace(/oklch\([^)]+\)/g, 'black') // Kill all oklch colors
+    .replace(/color:\s*var\([^)]+\)/g, 'color:black') // Kill Tailwind vars
+    .replace(/background(?:-color)?:\s*var\([^)]+\)/g, 'background:white'); // Kill Tailwind background
+}
+
+// ✅ Then your downloadPDF function comes below that
 async function downloadPDF() {
   console.log("⏬ downloadPDF triggered");
 
@@ -150,20 +159,8 @@ async function downloadPDF() {
     return;
   }
 
-  // ✅ Sanitize ALL inline styles (avoid Tailwind oklch values)
-  const safeStyles = {
-    color: 'black',
-    backgroundColor: 'white',
-    fontFamily: 'Arial, sans-serif',
-  };
-
-  // ✅ Apply to parent
-  Object.assign(element.style, safeStyles);
-
-  // ✅ Apply to all children
-  element.querySelectorAll('*').forEach((child) => {
-    Object.assign((child as HTMLElement).style, safeStyles);
-  });
+  const clone = element.cloneNode(true) as HTMLElement;
+  clone.innerHTML = sanitizeHtmlOutput(clone.innerHTML); // <- ✅ Now recognized
 
   try {
     const html2pdfModule = await import('html2pdf.js');
@@ -177,13 +174,12 @@ async function downloadPDF() {
       jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
     };
 
-    await html2pdf().set(opt).from(element).save();
+    await html2pdf().set(opt).from(clone).save();
   } catch (err: any) {
     console.error("❌ Error generating PDF:", err);
     alert("❌ Error al generar el PDF. Intenta de nuevo.");
   }
 }
-
 
 function resetForm() {
   setResume('');
