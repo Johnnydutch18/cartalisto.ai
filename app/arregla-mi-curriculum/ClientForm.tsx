@@ -153,27 +153,28 @@ async function downloadPDFClean() {
     const html2canvas = (await import("html2canvas")).default;
     const jsPDF = (await import("jspdf")).default;
 
-    // Clone and prepare wrapper
     const clone = original.cloneNode(true) as HTMLElement;
     const wrapper = document.createElement("div");
+
     wrapper.className = "pdf-export-wrapper";
     wrapper.appendChild(clone);
 
-    // Clean ALL inline styles that contain oklch(...) or var(...)
-    wrapper.querySelectorAll<HTMLElement>("*").forEach((el) => {
-      const style = el.getAttribute("style");
-      if (style && /oklch\(/i.test(style)) {
-        el.setAttribute("style", style.replace(/oklch\([^)]+\)/gi, "#000000"));
-      }
-      if (style && /var\(/i.test(style)) {
-        el.setAttribute("style", style.replace(/var\([^)]+\)/gi, "#000000"));
-      }
-    });
-
-    // Append off-screen
     wrapper.style.position = "absolute";
     wrapper.style.left = "-9999px";
+    wrapper.style.top = "0";
     document.body.appendChild(wrapper);
+
+    // 🔥 Brutally strip all oklch() colors from inline styles and CSS vars
+    wrapper.querySelectorAll("*").forEach((el) => {
+      const style = window.getComputedStyle(el);
+      const colorProps = ["color", "backgroundColor", "borderColor"];
+      colorProps.forEach((prop) => {
+        const value = style.getPropertyValue(prop);
+        if (value.includes("oklch") || value.includes("var(")) {
+          (el as HTMLElement).style.setProperty(prop, "#000000", "important");
+        }
+      });
+    });
 
     const canvas = await html2canvas(wrapper, {
       backgroundColor: "#ffffff",
@@ -195,7 +196,6 @@ async function downloadPDFClean() {
     alert("❌ Error al generar el PDF.");
   }
 }
-
 
 
 function resetForm() {
