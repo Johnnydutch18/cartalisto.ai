@@ -156,7 +156,9 @@ async function downloadPDFClean() {
   }
 
   try {
-    // Clone and remove style inheritance
+    const html2canvas = (await import("html2canvas")).default;
+    const jsPDF = (await import("jspdf")).default;
+
     const clone = element.cloneNode(true) as HTMLElement;
     document.body.appendChild(clone);
 
@@ -169,7 +171,6 @@ async function downloadPDFClean() {
     clone.style.width = "700px";
     clone.style.maxWidth = "700px";
 
-    // Remove any oklch colors or CSS vars in raw HTML
     clone.innerHTML = clone.innerHTML
       .replace(/oklch\([^)]+\)/gi, '#000000')
       .replace(/var\([^)]+\)/gi, '#000000');
@@ -194,6 +195,7 @@ async function downloadPDFClean() {
     alert("❌ Error al generar el PDF.");
   }
 }
+
 
 
 function resetForm() {
