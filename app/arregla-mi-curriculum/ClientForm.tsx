@@ -141,137 +141,68 @@ ${resume}
   setLoading(false);
 }
 
-// TypeScript-compatible PDF download functions
-// Replace your existing downloadPDF function with this
-
-async function downloadPDF(): Promise<void> {
-  console.log("⏬ downloadPDF triggered");
-
-  const element = document.getElementById('pdf-content');
-  if (!element) {
+async function downloadPDFNuclear() {
+  const original = document.getElementById("pdf-content");
+  if (!original) {
     console.error("❌ Element with id 'pdf-content' not found.");
     return;
   }
 
-  try {
-    // Create completely isolated container
-    const isolatedContainer = document.createElement('div');
-    isolatedContainer.style.cssText = `
-      position: fixed;
-      top: -9999px;
-      left: -9999px;
-      width: 8.5in;
-      min-height: 11in;
-      background: white;
-      font-family: Arial, sans-serif;
-      font-size: 14px;
-      line-height: 1.4;
-      color: #000000;
-      padding: 0.5in;
-      box-sizing: border-box;
-      z-index: -1000;
-    `;
+  const html2pdfModule = await import("html2pdf.js");
+  const html2pdf = html2pdfModule.default;
 
-    // Get clean HTML content and strip all problematic attributes
-    let cleanHTML = element.innerHTML
-      .replace(/oklch\([^)]+\)/gi, 'black')
-      .replace(/color:\s*var\([^)]+\)/gi, 'color:black')
-      .replace(/background(?:-color)?:\s*var\([^)]+\)/gi, 'background:white')
-      .replace(/--[\w-]+:\s*[^;]+;/gi, '')
-      .replace(/class="[^"]*"/gi, '')
-      .replace(/style="[^"]*"/gi, '');
-
-    isolatedContainer.innerHTML = cleanHTML;
-
-    // Apply safe styling to all elements
-    function applySafeStyling(container: HTMLElement): void {
-      const elements = container.querySelectorAll('*');
-      elements.forEach((el: Element) => {
-        const htmlEl = el as HTMLElement;
-        const tagName = htmlEl.tagName.toLowerCase();
-        
-        // Reset everything first
-        htmlEl.style.cssText = 'color: #000000; background: transparent;';
-        
-        // Apply basic styling based on tag
-        switch (tagName) {
-          case 'h1':
-            htmlEl.style.cssText += 'font-size: 24px; font-weight: bold; margin: 0 0 16px 0;';
-            break;
-          case 'h2':
-            htmlEl.style.cssText += 'font-size: 20px; font-weight: bold; margin: 0 0 12px 0;';
-            break;
-          case 'h3':
-            htmlEl.style.cssText += 'font-size: 18px; font-weight: bold; margin: 0 0 10px 0;';
-            break;
-          case 'h4':
-            htmlEl.style.cssText += 'font-size: 16px; font-weight: bold; margin: 0 0 8px 0;';
-            break;
-          case 'p':
-            htmlEl.style.cssText += 'margin: 0 0 12px 0;';
-            break;
-          case 'ul':
-          case 'ol':
-            htmlEl.style.cssText += 'margin: 0 0 12px 20px; padding: 0;';
-            break;
-          case 'li':
-            htmlEl.style.cssText += 'margin: 0 0 4px 0;';
-            break;
-          case 'strong':
-          case 'b':
-            htmlEl.style.cssText += 'font-weight: bold;';
-            break;
-          case 'em':
-          case 'i':
-            htmlEl.style.cssText += 'font-style: italic;';
-            break;
-          case 'section':
-            htmlEl.style.cssText += 'margin: 0 0 20px 0;';
-            break;
-        }
-      });
-    }
-
-    applySafeStyling(isolatedContainer);
-
-    // Add to DOM temporarily
-    document.body.appendChild(isolatedContainer);
-
-    // Import html2pdf with proper typing
-    const html2pdfModule = await import('html2pdf.js');
-    const html2pdf = html2pdfModule.default;
-
-    const opt = {
-      margin: 0.5,
-      filename: 'curriculum-mejorado.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { 
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        letterRendering: true
-      },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-    };
-
-    await html2pdf().set(opt).from(isolatedContainer).save();
-    console.log("✅ PDF generated successfully!");
-
-  } catch (err: any) {
-    console.error("❌ Error generating PDF:", err);
-    alert("❌ Error al generar el PDF. Intenta de nuevo.");
-  } finally {
-    // Clean up
-    const containers = document.querySelectorAll('div[style*="position: fixed"][style*="top: -9999px"]');
-    containers.forEach((container: Element) => {
-      if (container.parentNode) {
-        container.parentNode.removeChild(container);
-      }
-    });
+  // Create new window (isolated from your CSS)
+  const newWindow = window.open("", "_blank", "width=800,height=600");
+  if (!newWindow) {
+    alert("❌ Unable to open new window for PDF export.");
+    return;
   }
+
+  // Inject the raw HTML into it
+  newWindow.document.write(`
+    <html>
+      <head>
+        <title>PDF Export</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: black !important;
+            background: white !important;
+            margin: 40px;
+          }
+        </style>
+      </head>
+      <body>
+        ${original.innerHTML}
+      </body>
+    </html>
+  `);
+  newWindow.document.close();
+
+  // Wait until content is fully loaded
+  newWindow.onload = async () => {
+    try {
+      await html2pdf()
+        .set({
+          margin: 0.5,
+          filename: "curriculum-nuclear.pdf",
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+        })
+        .from(newWindow.document.body)
+        .save();
+
+      newWindow.close();
+    } catch (err) {
+      console.error("❌ PDF export failed:", err);
+      alert("❌ Error al generar el PDF.");
+    }
+  };
 }
+
 
 // Alternative safer method using iframe (if the above doesn't work)
 async function downloadPDFSafer(): Promise<void> {
@@ -493,20 +424,7 @@ return (
 
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-          <button
-            onClick={downloadPDF}
-            style={{
-              flex: 1,
-              padding: '0.5rem',
-              backgroundColor: '#333',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Descargar PDF
-          </button>
+        
           <button
             onClick={handleSubmit}
             style={{
