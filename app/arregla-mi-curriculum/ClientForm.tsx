@@ -256,59 +256,48 @@ ${resume}
       </div>
 
       {output && (
-        <div style={{ marginTop: '2rem' }}>
-          <div
-            id="pdf-content"
-            contentEditable={true}
-            suppressContentEditableWarning={true}
-            dangerouslySetInnerHTML={{ __html: output }}
-            style={{
-              backgroundColor: '#ffffff',
-              padding: '2rem',
-              borderRadius: '6px',
-              border: '1px solid #ccc',
-              fontFamily: 'Georgia, serif',
-              fontSize: '14px',
-              color: '#222',
-              lineHeight: '1.6',
-              whiteSpace: 'normal',
-              wordWrap: 'break-word',
-            }}
-            lang="es"
-          ></div>
+  <div style={{ marginTop: '2rem' }}>
+    <div
+      id="pdf-content"
+      className="pdf-export"
+      contentEditable={true}
+      suppressContentEditableWarning={true}
+      dangerouslySetInnerHTML={{ __html: output }}
+      lang="es"
+    />
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-            <button
-              onClick={downloadPDF}
-              style={{
-                flex: 1,
-                padding: '0.5rem',
-                backgroundColor: '#333',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-              }}
-            >
-              Descargar PDF
-            </button>
-            <button
-              onClick={handleSubmit}
-              style={{
-                flex: 1,
-                padding: '0.5rem',
-                backgroundColor: '#0070f3',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-              }}
-            >
-              Regenerar
-            </button>
-          </div>
-        </div>
-      )}
+    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+      <button
+        onClick={downloadPDF}
+        style={{
+          flex: 1,
+          padding: '0.5rem',
+          backgroundColor: '#333',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+        }}
+      >
+        Descargar PDF
+      </button>
+      <button
+        onClick={handleSubmit}
+        style={{
+          flex: 1,
+          padding: '0.5rem',
+          backgroundColor: '#0070f3',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+        }}
+      >
+        Regenerar
+      </button>
+    </div>
+  </div>
+)}
 
       {showPopup && (
         <div
