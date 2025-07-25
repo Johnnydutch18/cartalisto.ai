@@ -159,8 +159,9 @@ async function downloadPDF() {
     return;
   }
 
+  // 💥 Clone and clean the output HTML so html2pdf doesn't crash
   const clone = element.cloneNode(true) as HTMLElement;
-  clone.innerHTML = sanitizeHtmlOutput(clone.innerHTML); // <- ✅ Now recognized
+  clone.innerHTML = sanitizeHtmlOutput(clone.innerHTML);
 
   try {
     const html2pdfModule = await import('html2pdf.js');
@@ -180,6 +181,7 @@ async function downloadPDF() {
     alert("❌ Error al generar el PDF. Intenta de nuevo.");
   }
 }
+
 
 function resetForm() {
   setResume('');
