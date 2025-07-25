@@ -11,25 +11,13 @@ module.exports = {
       fontFamily: {
         sans: ["Manrope", ...fontFamily.sans],
       },
-    },
-  },
-  plugins: [
-    require("tailwindcss-animate"),
-    require("@tailwindcss/forms"),
-  ],
-};
-// tailwind.config.js
-module.exports = {
-  theme: {
-    extend: {
       colors: {
-        // Force your colors to use HEX or RGB manually if needed
+        // You can add custom HEX/RGB colors here if needed
       },
     },
   },
-  // 👇 This disables modern color functions like oklch
   future: {
-    unstable_defaultColorFormat: "hex",
+    unstable_defaultColorFormat: "hex", // ✅ Block oklch usage
   },
   plugins: [
     require("tailwindcss-animate"),
