@@ -153,23 +153,26 @@ async function downloadPDFClean() {
     const html2canvas = (await import("html2canvas")).default;
     const jsPDF = (await import("jspdf")).default;
 
+    // Clone the content
     const clone = original.cloneNode(true) as HTMLElement;
-    const wrapper = document.createElement("div");
 
-    // Apply clean class to strip Tailwind etc.
+    // Wrap the clone in a reset container
+    const wrapper = document.createElement("div");
     wrapper.className = "pdf-export-wrapper";
     wrapper.appendChild(clone);
 
-    // Replace unsupported styles
-    wrapper.innerHTML = wrapper.innerHTML
+    // Clean oklch and var() inside inner HTML
+    clone.innerHTML = clone.innerHTML
       .replace(/oklch\([^)]+\)/gi, "#000000")
       .replace(/var\([^)]+\)/gi, "#000000");
 
-    // Append off-screen so html2canvas can measure
+    // Position off-screen so it doesn't affect layout
     wrapper.style.position = "absolute";
     wrapper.style.left = "-9999px";
+    wrapper.style.top = "0";
     document.body.appendChild(wrapper);
 
+    // Render to canvas
     const canvas = await html2canvas(wrapper, {
       backgroundColor: "#ffffff",
       scale: 2,
@@ -184,6 +187,7 @@ async function downloadPDFClean() {
     pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
     pdf.save("curriculum.pdf");
 
+    // Cleanup
     document.body.removeChild(wrapper);
   } catch (error) {
     console.error("❌ PDF export failed:", error);

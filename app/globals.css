@@ -293,7 +293,7 @@
 /* =============================== */
 .pdf-export-wrapper,
 .pdf-export-wrapper * {
-  all: revert;
+  all: revert !important;
   color: black !important;
   background: white !important;
   font-family: Arial, sans-serif !important;
@@ -303,3 +303,4 @@
   border: none !important;
   text-shadow: none !important;
 }
+
