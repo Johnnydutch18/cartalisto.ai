@@ -148,7 +148,16 @@ async function downloadPDFNuclear() {
     return;
   }
 
-  const html2pdfModule = await import("html2pdf.js");
+  // Clean the innerHTML to remove oklch and vars
+  let cleanContent = original.innerHTML
+    .replace(/oklch\([^)]+\)/gi, '#000000')
+    .replace(/color:\s*var\([^)]+\)/gi, 'color: #000000')
+    .replace(/background(?:-color)?:\s*var\([^)]+\)/gi, 'background: #ffffff')
+    .replace(/--[\w-]+:\s*[^;]+;/gi, '') // remove custom props
+    .replace(/class="[^"]*"/gi, '')
+    .replace(/style="[^"]*"/gi, '');
+
+  const html2pdfModule = await import('html2pdf.js');
   const html2pdf = html2pdfModule.default;
 
   const newWindow = window.open("", "_blank", "width=800,height=600");
@@ -157,26 +166,45 @@ async function downloadPDFNuclear() {
     return;
   }
 
-  newWindow.document.write(`
+  const docContent = `
+    <!DOCTYPE html>
     <html>
-      <head>
-        <title>PDF Export</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            color: black !important;
-            background: white !important;
-            margin: 40px;
-          }
-        </style>
-      </head>
-      <body>
-        ${original.innerHTML}
-      </body>
+    <head>
+      <meta charset="UTF-8">
+      <title>Export PDF</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          font-size: 14px;
+          line-height: 1.6;
+          color: #000000 !important;
+          background: #ffffff !important;
+          padding: 40px;
+        }
+        h1, h2, h3, h4 {
+          font-weight: bold;
+          margin: 0 0 12px 0;
+        }
+        p {
+          margin: 0 0 10px 0;
+        }
+        ul, ol {
+          margin: 0 0 12px 20px;
+        }
+        li {
+          margin-bottom: 4px;
+        }
+        strong, b { font-weight: bold; }
+        em, i { font-style: italic; }
+      </style>
+    </head>
+    <body>
+      ${cleanContent}
+    </body>
     </html>
-  `);
+  `;
+
+  newWindow.document.write(docContent);
   newWindow.document.close();
 
   newWindow.onload = async () => {
@@ -186,7 +214,7 @@ async function downloadPDFNuclear() {
           margin: 0.5,
           filename: "curriculum-nuclear.pdf",
           image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2 },
+          html2canvas: { scale: 2, backgroundColor: '#ffffff' },
           jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
         })
         .from(newWindow.document.body)
@@ -196,10 +224,10 @@ async function downloadPDFNuclear() {
     } catch (err) {
       console.error("❌ PDF export failed:", err);
       alert("❌ Error al generar el PDF.");
+      newWindow.close();
     }
   };
 }
-
 
 
 // Alternative safer method using iframe (if the above doesn't work)
