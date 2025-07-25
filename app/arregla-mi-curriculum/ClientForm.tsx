@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useRouter, usePathname } from 'next/navigation';
 
+
 export default function FixMyResume() {
   const [resume, setResume] = useState('');
   const [jobType, setJobType] = useState('');
@@ -141,198 +142,56 @@ ${resume}
   setLoading(false);
 }
 
-async function downloadPDFNuclear() {
-  const original = document.getElementById("pdf-content");
-  if (!original) {
-    console.error("❌ Element with id 'pdf-content' not found.");
-    return;
-  }
+// Place this at the top of your file
+// @ts-ignore
+const html2canvas = (await import("html2canvas")).default;
+// @ts-ignore
+const jsPDF = (await import("jspdf")).default;
 
-  // Clean the innerHTML to remove oklch and vars
-  let cleanContent = original.innerHTML
-    .replace(/oklch\([^)]+\)/gi, '#000000')
-    .replace(/color:\s*var\([^)]+\)/gi, 'color: #000000')
-    .replace(/background(?:-color)?:\s*var\([^)]+\)/gi, 'background: #ffffff')
-    .replace(/--[\w-]+:\s*[^;]+;/gi, '') // remove custom props
-    .replace(/class="[^"]*"/gi, '')
-    .replace(/style="[^"]*"/gi, '');
-
-  const html2pdfModule = await import('html2pdf.js');
-  const html2pdf = html2pdfModule.default;
-
-  const newWindow = window.open("", "_blank", "width=800,height=600");
-  if (!newWindow) {
-    alert("❌ Unable to open new window for PDF export.");
-    return;
-  }
-
-  const docContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>Export PDF</title>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          font-size: 14px;
-          line-height: 1.6;
-          color: #000000 !important;
-          background: #ffffff !important;
-          padding: 40px;
-        }
-        h1, h2, h3, h4 {
-          font-weight: bold;
-          margin: 0 0 12px 0;
-        }
-        p {
-          margin: 0 0 10px 0;
-        }
-        ul, ol {
-          margin: 0 0 12px 20px;
-        }
-        li {
-          margin-bottom: 4px;
-        }
-        strong, b { font-weight: bold; }
-        em, i { font-style: italic; }
-      </style>
-    </head>
-    <body>
-      ${cleanContent}
-    </body>
-    </html>
-  `;
-
-  newWindow.document.write(docContent);
-  newWindow.document.close();
-
-  newWindow.onload = async () => {
-    try {
-      await html2pdf()
-        .set({
-          margin: 0.5,
-          filename: "curriculum-nuclear.pdf",
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, backgroundColor: '#ffffff' },
-          jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-        })
-        .from(newWindow.document.body)
-        .save();
-
-      newWindow.close();
-    } catch (err) {
-      console.error("❌ PDF export failed:", err);
-      alert("❌ Error al generar el PDF.");
-      newWindow.close();
-    }
-  };
-}
-
-
-// Alternative safer method using iframe (if the above doesn't work)
-async function downloadPDFSafer(): Promise<void> {
-  console.log("⏬ downloadPDFSafer triggered");
-
-  const element = document.getElementById('pdf-content');
+async function downloadPDFClean() {
+  const element = document.getElementById("pdf-content");
   if (!element) {
     console.error("❌ Element with id 'pdf-content' not found.");
     return;
   }
 
   try {
-    // Create iframe for complete isolation
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = `
-      position: fixed;
-      top: -9999px;
-      left: -9999px;
-      width: 8.5in;
-      height: 11in;
-      border: none;
-      z-index: -1000;
-    `;
-    
-    document.body.appendChild(iframe);
-    
-    await new Promise<void>((resolve) => {
-      iframe.onload = () => resolve();
-      iframe.src = 'about:blank';
+    // Clone and remove style inheritance
+    const clone = element.cloneNode(true) as HTMLElement;
+    document.body.appendChild(clone);
+
+    clone.style.position = "absolute";
+    clone.style.left = "-9999px";
+    clone.style.top = "0";
+    clone.style.background = "#ffffff";
+    clone.style.color = "#000000";
+    clone.style.padding = "20px";
+    clone.style.width = "700px";
+    clone.style.maxWidth = "700px";
+
+    // Remove any oklch colors or CSS vars in raw HTML
+    clone.innerHTML = clone.innerHTML
+      .replace(/oklch\([^)]+\)/gi, '#000000')
+      .replace(/var\([^)]+\)/gi, '#000000');
+
+    const canvas = await html2canvas(clone, {
+      backgroundColor: "#ffffff",
+      scale: 2,
     });
-    
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!iframeDoc) {
-      throw new Error('Could not access iframe document');
-    }
-    
-    // Clean HTML content
-    let cleanContent = element.innerHTML
-      .replace(/oklch\([^)]+\)/gi, 'black')
-      .replace(/color:\s*var\([^)]+\)/gi, 'color:black')
-      .replace(/background(?:-color)?:\s*var\([^)]+\)/gi, 'background:white')
-      .replace(/--[\w-]+:\s*[^;]+;/gi, '')
-      .replace(/class="[^"]*"/gi, '')
-      .replace(/style="[^"]*"/gi, '');
-    
-    const cleanHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; color: #000000 !important; }
-          body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.4; color: #000000; background: white; padding: 0.5in; }
-          h1 { font-size: 24px; font-weight: bold; margin: 0 0 16px 0; }
-          h2 { font-size: 20px; font-weight: bold; margin: 0 0 12px 0; }
-          h3 { font-size: 18px; font-weight: bold; margin: 0 0 10px 0; }
-          h4 { font-size: 16px; font-weight: bold; margin: 0 0 8px 0; }
-          p { margin: 0 0 12px 0; }
-          ul, ol { margin: 0 0 12px 20px; }
-          li { margin: 0 0 4px 0; }
-          strong, b { font-weight: bold; }
-          em, i { font-style: italic; }
-          section { margin: 0 0 20px 0; }
-        </style>
-      </head>
-      <body>${cleanContent}</body>
-      </html>
-    `;
-    
-    iframeDoc.open();
-    iframeDoc.write(cleanHTML);
-    iframeDoc.close();
-    
-    await new Promise<void>((resolve) => setTimeout(resolve, 500));
-    
-    const html2pdfModule = await import('html2pdf.js');
-    const html2pdf = html2pdfModule.default;
-    
-    const opt = {
-      margin: 0.5,
-      filename: 'curriculum-mejorado.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { 
-        scale: 2,
-        backgroundColor: '#ffffff',
-        logging: false
-      },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-    };
-    
-    await html2pdf().set(opt).from(iframeDoc.body).save();
-    console.log("✅ PDF generated successfully with iframe method!");
-    
-  } catch (err: any) {
-    console.error("❌ Error generating PDF:", err);
-    alert("❌ Error al generar el PDF. Intenta de nuevo.");
-  } finally {
-    // Clean up iframe
-    const iframes = document.querySelectorAll('iframe[style*="position: fixed"][style*="top: -9999px"]');
-    iframes.forEach((iframe: Element) => {
-      if (iframe.parentNode) {
-        iframe.parentNode.removeChild(iframe);
-      }
-    });
+
+    const imgData = canvas.toDataURL("image/jpeg", 1.0);
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save("curriculum.pdf");
+
+    document.body.removeChild(clone);
+  } catch (error) {
+    console.error("❌ PDF export failed:", error);
+    alert("❌ Error al generar el PDF.");
   }
 }
 
@@ -444,19 +303,21 @@ return (
 
     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
       <button
-        onClick={downloadPDFNuclear} // 👈 New, safe method
-        style={{
-          flex: 1,
-          padding: '0.5rem',
-          backgroundColor: '#333',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-        }}
-      >
-        Descargar PDF
-      </button>
+  onClick={downloadPDFClean}
+  style={{
+    flex: 1,
+    padding: '0.5rem',
+    backgroundColor: '#333',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  }}
+>
+  Descargar PDF
+</button>
+
+
       <button
         onClick={handleSubmit}
         style={{
