@@ -18,3 +18,21 @@ module.exports = {
     require("@tailwindcss/forms"),
   ],
 };
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        // Force your colors to use HEX or RGB manually if needed
+      },
+    },
+  },
+  // 👇 This disables modern color functions like oklch
+  future: {
+    unstable_defaultColorFormat: "hex",
+  },
+  plugins: [
+    require("tailwindcss-animate"),
+    require("@tailwindcss/forms"),
+  ],
+};
