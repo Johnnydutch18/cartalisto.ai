@@ -143,34 +143,34 @@ ${resume}
 }
 
 async function downloadPDFClean() {
-  const element = document.getElementById("pdf-content");
-  if (!element) {
+  const original = document.getElementById("pdf-content");
+  if (!original) {
     console.error("❌ Element with id 'pdf-content' not found.");
     return;
   }
 
   try {
-    // ✅ Valid: dynamic imports inside async function
     const html2canvas = (await import("html2canvas")).default;
     const jsPDF = (await import("jspdf")).default;
 
-    const clone = element.cloneNode(true) as HTMLElement;
-    document.body.appendChild(clone);
+    const clone = original.cloneNode(true) as HTMLElement;
+    const wrapper = document.createElement("div");
 
-    clone.style.position = "absolute";
-    clone.style.left = "-9999px";
-    clone.style.top = "0";
-    clone.style.background = "#ffffff";
-    clone.style.color = "#000000";
-    clone.style.padding = "20px";
-    clone.style.width = "700px";
-    clone.style.maxWidth = "700px";
+    // Apply clean class to strip Tailwind etc.
+    wrapper.className = "pdf-export-wrapper";
+    wrapper.appendChild(clone);
 
-    clone.innerHTML = clone.innerHTML
-      .replace(/oklch\([^)]+\)/gi, '#000000')
-      .replace(/var\([^)]+\)/gi, '#000000');
+    // Replace unsupported styles
+    wrapper.innerHTML = wrapper.innerHTML
+      .replace(/oklch\([^)]+\)/gi, "#000000")
+      .replace(/var\([^)]+\)/gi, "#000000");
 
-    const canvas = await html2canvas(clone, {
+    // Append off-screen so html2canvas can measure
+    wrapper.style.position = "absolute";
+    wrapper.style.left = "-9999px";
+    document.body.appendChild(wrapper);
+
+    const canvas = await html2canvas(wrapper, {
       backgroundColor: "#ffffff",
       scale: 2,
     });
@@ -184,14 +184,12 @@ async function downloadPDFClean() {
     pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
     pdf.save("curriculum.pdf");
 
-    document.body.removeChild(clone);
+    document.body.removeChild(wrapper);
   } catch (error) {
     console.error("❌ PDF export failed:", error);
     alert("❌ Error al generar el PDF.");
   }
 }
-
-
 
 
 function resetForm() {
