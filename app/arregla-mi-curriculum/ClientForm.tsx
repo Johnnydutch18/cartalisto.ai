@@ -144,16 +144,19 @@ ${resume}
 
   async function downloadPDF() {
   console.log("⏬ downloadPDF triggered");
-  try {
-    const element = document.getElementById('pdf-content');
-    console.log("📄 Found PDF content:", element);
-    if (!element) {
-      alert("No se encontró el contenido del PDF.");
-      return;
-    }
 
+  const element = document.getElementById('pdf-content');
+  if (!element) {
+    console.error("❌ Element with id 'pdf-content' not found.");
+    return;
+  }
+
+  console.log("📄 Found PDF content:", element.outerHTML);
+
+  try {
     const html2pdfModule = await import('html2pdf.js');
     const html2pdf = html2pdfModule.default;
+
     console.log("📦 html2pdf loaded:", html2pdf);
 
     const opt = {
@@ -164,12 +167,21 @@ ${resume}
       jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
     };
 
-    html2pdf().set(opt).from(element).save();
-  } catch (err) {
-    console.error("❌ Error in downloadPDF:", err);
-    alert("Error al generar el PDF. Revisa la consola.");
+    html2pdf()
+      .set(opt)
+      .from(element)
+      .save()
+      .catch((err: any) => {
+        console.error("❌ Error generating PDF:", err);
+        alert("❌ Error al generar el PDF. Intenta de nuevo.");
+      });
+
+  } catch (error) {
+    console.error("❌ Failed to load html2pdf or generate:", error);
+    alert("❌ Error al generar el PDF.");
   }
 }
+
 
 
   function resetForm() {
