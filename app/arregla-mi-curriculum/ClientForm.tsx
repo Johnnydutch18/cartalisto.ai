@@ -142,12 +142,6 @@ ${resume}
   setLoading(false);
 }
 
-// Place this at the top of your file
-// @ts-ignore
-const html2canvas = (await import("html2canvas")).default;
-// @ts-ignore
-const jsPDF = (await import("jspdf")).default;
-
 async function downloadPDFClean() {
   const element = document.getElementById("pdf-content");
   if (!element) {
@@ -156,6 +150,7 @@ async function downloadPDFClean() {
   }
 
   try {
+    // ✅ Valid: dynamic imports inside async function
     const html2canvas = (await import("html2canvas")).default;
     const jsPDF = (await import("jspdf")).default;
 
@@ -195,6 +190,7 @@ async function downloadPDFClean() {
     alert("❌ Error al generar el PDF.");
   }
 }
+
 
 
 
