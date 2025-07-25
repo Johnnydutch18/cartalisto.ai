@@ -152,9 +152,16 @@ async function downloadPDF() {
     }
 
     // Force compatible style
-    element.style.color = 'black';
-    element.style.backgroundColor = 'white';
-    element.style.fontFamily = 'Arial, sans-serif';
+   element.style.color = 'black';
+element.style.backgroundColor = 'white';
+element.style.fontFamily = 'Arial, sans-serif';
+
+// ✅ Add this to override modern color formats like oklch
+element.querySelectorAll('*').forEach((el) => {
+  (el as HTMLElement).style.color = 'black';
+  (el as HTMLElement).style.backgroundColor = 'white';
+});
+
 
     const html2pdfModule = await import('html2pdf.js');
     const html2pdf = html2pdfModule.default;
