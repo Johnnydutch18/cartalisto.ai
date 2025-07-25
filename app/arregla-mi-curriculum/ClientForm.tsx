@@ -141,15 +141,15 @@ ${resume}
   setLoading(false);
 }
 
-// ✅ Define this FIRST
 function sanitizeHtmlOutput(rawHtml: string): string {
   return rawHtml
-    .replace(/oklch\([^)]+\)/g, 'black') // Kill all oklch colors
-    .replace(/color:\s*var\([^)]+\)/g, 'color:black') // Kill Tailwind vars
-    .replace(/background(?:-color)?:\s*var\([^)]+\)/g, 'background:white'); // Kill Tailwind background
+    .replace(/oklch\([^)]+\)/gi, 'black')                           // Remove oklch() colors
+    .replace(/color:\s*var\([^)]+\)/gi, 'color:black')             // Kill Tailwind var colors
+    .replace(/background(?:-color)?:\s*var\([^)]+\)/gi, 'background:white') // Kill background vars
+    .replace(/--[\w-]+:\s*[^;]+;/gi, '')                            // Remove any CSS custom vars
+    .replace(/class="[^"]*"/gi, '')                                 // Remove Tailwind classes
 }
 
-// ✅ Then your downloadPDF function comes below that
 async function downloadPDF() {
   console.log("⏬ downloadPDF triggered");
 
