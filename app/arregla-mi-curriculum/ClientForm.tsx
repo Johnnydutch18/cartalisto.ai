@@ -142,25 +142,33 @@ ${resume}
 }
 
 
-async function downloadPDF() {
-  const element = document.getElementById('pdf-content');
-  if (!element) {
-    console.error("❌ Element with id 'pdf-content' not found.");
-    return;
+  async function downloadPDF() {
+  console.log("⏬ downloadPDF triggered");
+  try {
+    const element = document.getElementById('pdf-content');
+    console.log("📄 Found PDF content:", element);
+    if (!element) {
+      alert("No se encontró el contenido del PDF.");
+      return;
+    }
+
+    const html2pdfModule = await import('html2pdf.js');
+    const html2pdf = html2pdfModule.default;
+    console.log("📦 html2pdf loaded:", html2pdf);
+
+    const opt = {
+      margin: 0.5,
+      filename: 'curriculum-mejorado.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+    };
+
+    html2pdf().set(opt).from(element).save();
+  } catch (err) {
+    console.error("❌ Error in downloadPDF:", err);
+    alert("Error al generar el PDF. Revisa la consola.");
   }
-
-  const html2pdfModule = await import('html2pdf.js');
-  const html2pdf = html2pdfModule.default;
-
-  const opt = {
-    margin: 0.5,
-    filename: 'curriculum-mejorado.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-  };
-
-  html2pdf().set(opt).from(element).save();
 }
 
 
