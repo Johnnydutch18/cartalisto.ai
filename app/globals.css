@@ -288,3 +288,18 @@
 .pulse-glow {
   animation: pulseGlow 2s infinite;
 }
+/* =============================== */
+/* 📄 Clean PDF-only override     */
+/* =============================== */
+.pdf-export-wrapper,
+.pdf-export-wrapper * {
+  all: revert;
+  color: black !important;
+  background: white !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  box-shadow: none !important;
+  border: none !important;
+  text-shadow: none !important;
+}
